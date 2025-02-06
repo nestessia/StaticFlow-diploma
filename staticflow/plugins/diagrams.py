@@ -9,15 +9,18 @@ class MermaidPlugin(Plugin):
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         super().__init__(config)
         self.mermaid_js = '''
-            <script type="module">
-                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.esm.min.mjs';
-                mermaid.initialize({
-                    startOnLoad: true,
-                    theme: 'default',
-                    securityLevel: 'loose',
-                    sequence: { useMaxWidth: false },
-                    flowchart: { useMaxWidth: false },
-                    gantt: { useMaxWidth: false }
+            <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    mermaid.initialize({
+                        startOnLoad: true,
+                        theme: 'default',
+                        securityLevel: 'loose',
+                        flowchart: {
+                            htmlLabels: true,
+                            curve: 'linear'
+                        }
+                    });
                 });
             </script>
         '''
@@ -26,10 +29,13 @@ class MermaidPlugin(Plugin):
         """Process content and render Mermaid diagrams."""
         def replace_diagram(match: re.Match) -> str:
             diagram = match.group(1).strip()
-            return f'<div class="mermaid">\n{diagram}\n</div>'
+            # Remove any extra whitespace and ensure proper line breaks
+            lines = [line.strip() for line in diagram.split('\n') if line.strip()]
+            diagram = '\n'.join(lines)
+            return f'<pre class="mermaid">{diagram}</pre>'
             
         # Find and replace Mermaid diagrams
-        pattern = r'```mermaid\n(.*?)\n```'
+        pattern = r'```mermaid\s*(.*?)\s*```'
         content = re.sub(pattern, replace_diagram, content, flags=re.DOTALL)
         return content
     
