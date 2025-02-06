@@ -14,6 +14,7 @@ class Cache:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._memory_cache: Dict[str, Any] = {}
         self._metadata: Dict[str, Dict] = self._load_metadata()
+        self._save_metadata()  # Save empty metadata file if it doesn't exist
         
     def _load_metadata(self) -> Dict[str, Dict]:
         """Load cache metadata."""
@@ -41,6 +42,13 @@ class Cache:
         
         # Check memory cache first
         if cache_key in self._memory_cache:
+            # Check expiration for memory cache
+            metadata = self._metadata.get(cache_key, {})
+            if metadata.get('expires'):
+                expires = datetime.fromisoformat(metadata['expires'])
+                if expires <= datetime.now():
+                    self.delete(key, namespace)
+                    return None
             return self._memory_cache[cache_key]
             
         # Check file cache

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "staticflow"
-version = "0.1.0"
+version = "0.1.2"
 description = "Modern static site generator framework"
 authors = ["nestessia <nestessia@mail.ru>"]
 readme = "README.md"
@@ -17,7 +17,6 @@ pillow = "^10.2.0"
 watchdog = "^3.0.0"
 click = "^8.1.8"
 rich = "^13.9.0"
-mdx-mermaid = "^1.0.0"
 aiofiles = "^23.2.1"
 python-slugify = "^8.0.4"
 aiohttp = "^3.9.3"

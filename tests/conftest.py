@@ -1,72 +1,50 @@
 import pytest
 from pathlib import Path
-import shutil
-import tempfile
+from aiohttp.test_utils import TestClient, TestServer
 from staticflow.core.config import Config
 from staticflow.core.engine import Engine
+from staticflow.core.cache import Cache
 
 
 @pytest.fixture
-def temp_site_dir():
-    """Create a temporary directory for site testing."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        
-        # Create site structure
-        (temp_path / "content").mkdir()
-        (temp_path / "templates").mkdir()
-        (temp_path / "static").mkdir()
-        (temp_path / "public").mkdir()
-        
-        yield temp_path
+def temp_site_dir(tmp_path):
+    """Create a temporary site directory."""
+    return tmp_path
 
 
 @pytest.fixture
-def sample_config(temp_site_dir):
+def sample_config():
     """Create a sample configuration."""
-    config_data = {
-        "site_name": "Test Site",
-        "base_url": "http://localhost:8000",
-        "description": "A test site",
-        "author": "Test Author",
-        "language": "en"
-    }
-    
-    config_file = temp_site_dir / "config.toml"
-    import toml
-    with open(config_file, "w", encoding="utf-8") as f:
-        toml.dump(config_data, f)
-        
-    return Config(config_file)
+    return Config({
+        'site_name': 'Test Site',
+        'base_url': 'http://localhost:8000',
+        'description': 'A test site'
+    })
 
 
 @pytest.fixture
 def sample_content(temp_site_dir):
     """Create sample content files."""
-    content_dir = temp_site_dir / "content"
+    content_dir = temp_site_dir / 'content'
+    content_dir.mkdir(exist_ok=True)
     
-    # Create a markdown file
-    md_file = content_dir / "test.md"
-    md_file.write_text("""---
+    # Create test markdown file
+    test_md = content_dir / 'test.md'
+    test_md.write_text("""---
 title: Test Post
 date: 2024-02-06
 ---
+
 # Test Post
 
 This is a test post.""")
     
-    # Create an HTML file
-    html_file = content_dir / "about.html"
-    html_file.write_text("""<!DOCTYPE html>
-<html>
-<head>
-    <title>About</title>
-</head>
-<body>
-    <h1>About Page</h1>
-    <p>This is the about page.</p>
-</body>
-</html>""")
+    # Create test HTML file
+    about_html = content_dir / 'about.html'
+    about_html.write_text("""
+<h1>About Page</h1>
+<p>This is the about page.</p>
+""")
     
     return content_dir
 
@@ -74,14 +52,15 @@ This is a test post.""")
 @pytest.fixture
 def sample_templates(temp_site_dir):
     """Create sample template files."""
-    templates_dir = temp_site_dir / "templates"
+    templates_dir = temp_site_dir / 'templates'
+    templates_dir.mkdir(exist_ok=True)
     
     # Create base template
-    base_template = templates_dir / "base.html"
-    base_template.write_text("""<!DOCTYPE html>
+    base_html = templates_dir / 'base.html'
+    base_html.write_text("""<!DOCTYPE html>
 <html>
 <head>
-    <title>{% block title %}{% endblock %}</title>
+    <title>{{ title }}</title>
 </head>
 <body>
     {% block content %}{% endblock %}
@@ -89,16 +68,13 @@ def sample_templates(temp_site_dir):
 </html>""")
     
     # Create post template
-    post_template = templates_dir / "post.html"
-    post_template.write_text("""{% extends "base.html" %}
-
-{% block title %}{{ page.title }}{% endblock %}
-
+    post_html = templates_dir / 'post.html'
+    post_html.write_text("""{% extends "base.html" %}
 {% block content %}
 <article>
-    <h1>{{ page.title }}</h1>
-    <time>{{ page.date }}</time>
-    {{ page.content }}
+    <h1>{{ title }}</h1>
+    <time>{{ date }}</time>
+    {{ content }}
 </article>
 {% endblock %}""")
     
@@ -107,17 +83,43 @@ def sample_templates(temp_site_dir):
 
 @pytest.fixture
 def engine(sample_config):
-    """Create a StaticFlow engine instance."""
+    """Create an engine instance."""
     return Engine(sample_config)
 
 
 @pytest.fixture
-def async_client():
-    """Create an aiohttp test client."""
-    import aiohttp
-    from aiohttp.test_utils import TestClient
+def cache_dir():
+    """Create a cache directory in current working directory."""
+    cache_dir = Path('.cache')
+    cache_dir.mkdir(exist_ok=True)
+    yield cache_dir
+    # Cleanup after tests
+    if cache_dir.exists():
+        for f in cache_dir.glob('*'):
+            f.unlink()
+        cache_dir.rmdir()
+
+
+@pytest.fixture
+def cache(cache_dir):
+    """Create a cache instance."""
+    return Cache(cache_dir)
+
+
+@pytest.fixture
+def async_client(event_loop):
+    """Create an async test client."""
+    clients = []
     
-    async def _create_client():
-        return TestClient(aiohttp.web.Application())
+    async def _get_client(app):
+        server = TestServer(app)
+        client = TestClient(server)
+        await client.start_server()
+        clients.append(client)
+        return client
+        
+    yield _get_client
     
-    return _create_client 
+    # Cleanup
+    for client in clients:
+        event_loop.run_until_complete(client.close()) 

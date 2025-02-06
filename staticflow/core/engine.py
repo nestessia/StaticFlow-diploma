@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 import shutil
 from .config import Config
 from .site import Site
@@ -9,8 +8,16 @@ from .page import Page
 class Engine:
     """Main engine for static site generation."""
     
-    def __init__(self, config_path: Optional[Path] = None):
-        self.config = Config(config_path)
+    def __init__(self, config):
+        """Initialize engine with config."""
+        if isinstance(config, Config):
+            self.config = config
+        elif isinstance(config, (str, Path)):
+            self.config = Config(config)
+        else:
+            raise TypeError(
+                "config must be Config instance or path-like object"
+            )
         self.site = Site(self.config)
         self._cache = {}
         
@@ -45,12 +52,39 @@ class Engine:
             
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
-        # TODO: Implement page processing logic
-        # - Apply templates
-        # - Process markdown
-        # - Handle front matter
-        # - Generate output files
-        pass
+        if not self.site.source_dir or not self.site.output_dir:
+            raise ValueError("Source and output directories must be set")
+
+        # Calculate output path
+        rel_path = page.source_path.relative_to(self.site.source_dir)
+        output_path = (
+            self.site.output_dir / rel_path.with_suffix(".html")
+        )
+        page.output_path = output_path
+
+        # Create parent directories if they don't exist
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # For now, just copy the content directly to demonstrate the process
+        # TODO: Add template rendering and markdown processing
+        with output_path.open("w", encoding="utf-8") as f:
+            # Create a simple HTML wrapper
+            html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>{page.title}</title>
+</head>
+<body>
+    <h1>{page.title}</h1>
+    <div class="metadata">
+        <p>Date: {page.metadata.get('date', '')}</p>
+    </div>
+    <div class="content">
+        {page.content}
+    </div>
+</body>
+</html>"""
+            f.write(html)
     
     def _copy_static_files(self) -> None:
         """Copy static files to the output directory."""

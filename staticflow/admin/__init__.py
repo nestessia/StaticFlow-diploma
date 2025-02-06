@@ -38,6 +38,7 @@ class AdminPanel:
     async def index_handler(self, request):
         """Handle admin panel index page."""
         return {
+            'request': request,
             'site_name': self.config.get('site_name'),
             'content_count': len(list(Path('content').rglob('*.*'))),
             'last_build': 'Not built yet'  # TODO: Add build timestamp
@@ -57,17 +58,41 @@ class AdminPanel:
                     'size': file.stat().st_size
                 })
                 
-        return {'files': files}
+        return {
+            'request': request,
+            'files': files
+        }
         
     @aiohttp_jinja2.template('settings.html')
     async def settings_handler(self, request):
         """Handle settings page."""
-        return {'config': self.config.config}
+        return {
+            'request': request,
+            'config': self.config.config
+        }
         
     async def api_content_handler(self, request):
         """Handle content API requests."""
         data = await request.json()
         action = data.get('action')
+        
+        if not action:
+            return web.json_response({
+                'status': 'error',
+                'message': 'Missing action field'
+            })
+            
+        if action not in ['create', 'update', 'delete']:
+            return web.json_response({
+                'status': 'error',
+                'message': 'Invalid action'
+            })
+            
+        if 'path' not in data:
+            return web.json_response({
+                'status': 'error',
+                'message': 'Missing path field'
+            })
         
         if action == 'create':
             # Create new content file
@@ -90,8 +115,10 @@ class AdminPanel:
             await self.rebuild_site()
             return web.json_response({'status': 'ok'})
             
-        return web.json_response({'status': 'error', 
-                                'message': 'Invalid action'})
+        return web.json_response({
+            'status': 'error',
+            'message': 'Invalid action'
+        })
         
     async def api_settings_handler(self, request):
         """Handle settings API requests."""
