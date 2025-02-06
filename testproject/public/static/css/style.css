@@ -96,9 +96,15 @@ pre {
 }
 
 .mermaid {
+    text-align: center;
     background: white;
-    padding: 1.5rem;
+    padding: 2rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     margin: 1.5rem 0;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
 }

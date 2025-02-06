@@ -140,4 +140,10 @@ class DevServer:
         app = web.Application()
         app.router.add_get('/{tail:.*}', self.handle_request)
         
-        web.run_app(app, host=self.host, port=self.port) 
+        # Отключаем стандартный вывод aiohttp
+        web.run_app(
+            app,
+            host=self.host,
+            port=self.port,
+            print=None  # Отключаем стандартный вывод
+        ) 

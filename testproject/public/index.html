@@ -105,17 +105,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
             </script>
         
 
-            <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     mermaid.initialize({
                         startOnLoad: true,
                         theme: 'default',
-                        securityLevel: 'loose',
-                        flowchart: {
-                            htmlLabels: true,
-                            curve: 'linear'
-                        }
+                        securityLevel: 'loose'
                     });
                 });
             </script>
@@ -278,9 +274,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>StaticFlow - это современный генератор статических сайтов с богатыми возможностями для создания контента.</p>
 <h2>Возможности</h2>
 <h3>1. Подсветка кода</h3>
-<p><code>python
-def hello_world():
-    print("Привет, StaticFlow!")</code></p>
+<pre><code class="python">def hello_world():
+    print(&quot;Привет, StaticFlow!&quot;)
+</code></pre>
 <h3>2. Математические формулы</h3>
 <p>Inline формула: \(E = mc^2\)</p>
 <p>Блочная формула:
@@ -288,12 +284,12 @@ def hello_world():
 \int_0^\infty e^{-x} dx = 1
 \)</p>
 <h3>3. Диаграммы</h3>
-<p><code>mermaid
-graph TD
-    A[Начало] --&gt; B[Создание контента]
-    B --&gt; C[Сборка сайта]
-    C --&gt; D[Публикация]
-    D --&gt; E[Конец]</code></p>
+<pre><code class="mermaid">graph TD;
+    A[Начало] --&gt; B[Создание контента];
+    B --&gt; C[Сборка сайта];
+    C --&gt; D[Публикация];
+    D --&gt; E[Конец];
+</code></pre>
 <h3>4. Блоки в стиле Notion</h3>
 <p>
             <div class="callout info">
@@ -324,11 +320,11 @@ graph TD
 <p>Добавьте свои стили в <code>static/css</code></p>
 </li>
 <li>
-<p>Запуск сервера разработки:
-<code>bash
-staticflow serve</code></p>
+<p>Запуск сервера разработки:</p>
 </li>
 </ol>
+<pre><code class="bash">staticflow serve
+</code></pre>
         </div>
     </main>
     <footer>

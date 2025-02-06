@@ -23,11 +23,19 @@ class Engine:
             )
         self.site = Site(self.config)
         self._cache = {}
-        self.markdown = markdown.Markdown(extensions=['meta'])
+        self.markdown = markdown.Markdown(
+            extensions=['meta', 'fenced_code'],
+            extension_configs={
+                'fenced_code': {
+                    'lang_prefix': ''
+                }
+            }
+        )
         self.plugins: List[Plugin] = []
         
     def add_plugin(self, plugin: Plugin) -> None:
         """Add a plugin to the engine."""
+        plugin.engine = self
         plugin.initialize()
         self.plugins.append(plugin)
         

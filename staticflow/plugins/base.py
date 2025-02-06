@@ -6,6 +6,7 @@ class Plugin(ABC):
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
+        self.engine = None
     
     @abstractmethod
     def process_content(self, content: str) -> str:
