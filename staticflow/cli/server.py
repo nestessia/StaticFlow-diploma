@@ -103,8 +103,14 @@ class DevServer:
             ))
             
         # Build the site before starting server
-        self.engine.build()
-        
+        with console.status("[bold blue]Building site..."):
+            try:
+                self.engine.build()
+                console.print("[green]Site built successfully![/green]")
+            except Exception as e:
+                console.print(f"[red]Error building site:[/red] {str(e)}")
+                raise SystemExit(1)
+            
     async def handle_request(self, request):
         """Handle incoming HTTP request."""
         path = request.path

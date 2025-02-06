@@ -90,7 +90,7 @@ def build(config: str):
 @click.option('--host', '-h', default='localhost', help='Host to run server on')
 @click.option('--config', '-c', default='config.toml', help='Path to config file')
 def serve(port: int, host: str, config: str):
-    """Start development server with hot reload"""
+    """Start development server with live preview"""
     try:
         config_path = Path(config)
         if not config_path.exists():
