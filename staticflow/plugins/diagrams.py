@@ -1,36 +1,37 @@
-from typing import Dict, Any, Optional
-from markdown import Extension
+"""Mermaid diagrams plugin for StaticFlow."""
+
 from markdown.preprocessors import Preprocessor
+from markdown.extensions import Extension
 from .base import Plugin
 
 
 class MermaidPreprocessor(Preprocessor):
-    """Preprocessor for handling Mermaid diagrams in Markdown."""
+    """Preprocessor for Mermaid diagrams."""
     
     def run(self, lines):
         new_lines = []
         is_mermaid = False
-        mermaid_lines = []
+        diagram = []
         
         for line in lines:
-            # Проверяем начало блока Mermaid
-            if line.strip().startswith('```') and 'mermaid' in line.strip():
+            if line.strip() == '```mermaid':
                 is_mermaid = True
                 continue
-            # Проверяем конец блока
-            elif is_mermaid and line.strip() == '```':
+            elif line.strip() == '```' and is_mermaid:
                 is_mermaid = False
-                # Собираем диаграмму и оборачиваем в div
-                diagram = '\n'.join(mermaid_lines).strip()
-                new_lines.append(f'<div class="mermaid">{diagram}</div>')
-                mermaid_lines = []
+                diagram_content = '\n'.join(diagram)
+                new_lines.append(
+                    '<pre class="mermaid" data-processed="false">'
+                    f'{diagram_content}</pre>'
+                )
+                diagram = []
                 continue
-            
+                
             if is_mermaid:
-                mermaid_lines.append(line)
+                diagram.append(line)
             else:
                 new_lines.append(line)
-        
+                
         return new_lines
 
 
@@ -38,42 +39,46 @@ class MermaidExtension(Extension):
     """Markdown extension for Mermaid diagrams."""
     
     def extendMarkdown(self, md):
-        # Регистрируем препроцессор с высоким приоритетом
-        # Он должен выполниться до обработки блоков кода
+        """Add MermaidPreprocessor to the Markdown instance."""
         md.preprocessors.register(
             MermaidPreprocessor(md),
             'mermaid',
-            200  # Приоритет выше, чем у fenced_code (30)
+            175
         )
 
 
 class MermaidPlugin(Plugin):
     """Plugin for rendering Mermaid diagrams."""
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        super().__init__(config)
-        self.mermaid_js = '''
-            <script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    mermaid.initialize({
-                        startOnLoad: true,
-                        theme: 'default',
-                        securityLevel: 'loose'
-                    });
-                });
-            </script>
-        '''
-    
-    def initialize(self) -> None:
-        """Initialize the plugin and register Markdown extension."""
-        if hasattr(self.engine, 'markdown'):
-            self.engine.markdown.registerExtension(MermaidExtension())
-    
+    def __init__(self):
+        super().__init__()
+        self.name = 'mermaid'
+        self.description = 'Renders Mermaid diagrams in Markdown files'
+        
+    def init(self, engine):
+        """Initialize the plugin with the engine instance."""
+        super().init(engine)
+        self.engine = engine
+        self.engine.md.registerExtension(MermaidExtension())
+        
     def process_content(self, content: str) -> str:
         """Process content and render Mermaid diagrams."""
-        return content  # Обработка уже выполнена через Markdown расширение
-    
+        # Обработка уже выполнена через Markdown расширение
+        return content
+        
     def get_head_content(self) -> str:
-        """Get content to be inserted in the head section."""
-        return self.mermaid_js
+        """Return content to be added to the head section."""
+        mermaid_script = (
+            '<script src="https://cdn.jsdelivr.net/npm/'
+            'mermaid@10.2.3/dist/mermaid.min.js"></script>'
+        )
+        init_script = """
+        <script>
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'default'
+            });
+            mermaid.run();
+        </script>
+        """
+        return f'{mermaid_script}\n{init_script}'

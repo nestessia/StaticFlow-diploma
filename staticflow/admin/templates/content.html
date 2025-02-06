@@ -10,133 +10,26 @@
 {% endblock %}
 
 {% block content %}
-<div x-data="contentManager()" class="space-y-6">
-    <!-- Toolbar -->
-    <div class="flex justify-between items-center">
-        <div class="flex space-x-4">
-            <button @click="showCreateModal = true"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                New File
-            </button>
-            <select x-model="filterType" class="border rounded px-3 py-2">
-                <option value="all">All Files</option>
-                <option value="md">Markdown</option>
-                <option value="html">HTML</option>
-            </select>
-        </div>
-        <div class="relative">
-            <input type="text" 
-                   x-model="searchQuery" 
-                   placeholder="Search files..."
-                   class="border rounded px-3 py-2 pl-10 w-64">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        </div>
-    </div>
+<div class="content-manager">
+    <h1>Content Management</h1>
     
-    <!-- File List -->
-    <div class="border rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        File Name
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Modified
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Size
-                    </th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                <template x-for="file in filteredFiles" :key="file.path">
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span x-text="file.path"></span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span x-text="formatDate(file.modified)"></span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span x-text="formatSize(file.size)"></span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <button @click="editFile(file)"
-                                    class="text-blue-600 hover:text-blue-800 mr-3">
-                                Edit
-                            </button>
-                            <button @click="deleteFile(file)"
-                                    class="text-red-600 hover:text-red-800">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Create Modal -->
-    <div x-show="showCreateModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-         @click.self="showCreateModal = false">
-        <div class="bg-white rounded-lg p-6 w-1/2">
-            <h3 class="text-lg font-semibold mb-4">Create New File</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">File Path</label>
-                    <input type="text" 
-                           x-model="newFile.path" 
-                           class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2"
-                           placeholder="posts/my-new-post.md">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Content</label>
-                    <div id="create-editor" class="h-64 border rounded-md"></div>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button @click="showCreateModal = false"
-                            class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
-                        Cancel
-                    </button>
-                    <button @click="createFile()"
-                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                        Create
-                    </button>
-                </div>
+    <div class="content-list">
+        {% for file in files %}
+        <div class="content-item">
+            <div class="content-info">
+                <h3>{{ file.path }}</h3>
+                <p>Last modified: {{ file.modified }}</p>
+                <p>Size: {{ file.size }} bytes</p>
+            </div>
+            <div class="content-actions">
+                <button onclick="editContent('{{ file.path }}')">Edit</button>
+                <button onclick="deleteContent('{{ file.path }}')" class="danger">Delete</button>
             </div>
         </div>
+        {% endfor %}
     </div>
     
-    <!-- Edit Modal -->
-    <div x-show="showEditModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-         @click.self="showEditModal = false">
-        <div class="bg-white rounded-lg p-6 w-3/4 h-3/4">
-            <h3 class="text-lg font-semibold mb-4" x-text="'Edit: ' + (currentFile?.path || '')"></h3>
-            <div class="space-y-4 h-full">
-                <div class="h-5/6">
-                    <div id="edit-editor" class="h-full border rounded-md"></div>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button @click="showEditModal = false"
-                            class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
-                        Cancel
-                    </button>
-                    <button @click="saveFile()"
-                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                        Save
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <button onclick="createContent()" class="create-btn">Create New Content</button>
 </div>
 {% endblock %}
 

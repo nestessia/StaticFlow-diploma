@@ -2,60 +2,24 @@
 
 {% block title %}Dashboard{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
-
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Site Info -->
-    <div class="bg-blue-50 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-blue-800 mb-2">Site Info</h3>
-        <div class="space-y-2">
-            <p class="text-gray-600">
-                <span class="font-medium">Site Name:</span>
-                {{ site_name }}
-            </p>
-            <p class="text-gray-600">
-                <span class="font-medium">Content Files:</span>
-                {{ content_count }}
-            </p>
-            <p class="text-gray-600">
-                <span class="font-medium">Last Build:</span>
-                {{ last_build }}
-            </p>
-        </div>
-    </div>
+<div class="dashboard">
+    <h1>Dashboard</h1>
     
-    <!-- Quick Actions -->
-    <div class="bg-green-50 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-green-800 mb-2">Quick Actions</h3>
-        <div class="space-y-3">
-            <button onclick="window.location.href='/content'"
-                    class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                Create Content
-            </button>
-            <button onclick="rebuildSite()"
-                    class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                Rebuild Site
-            </button>
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Site Name</h3>
+            <p>{{ site_name }}</p>
         </div>
-    </div>
-    
-    <!-- System Status -->
-    <div class="bg-purple-50 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-purple-800 mb-2">System Status</h3>
-        <div class="space-y-2">
-            <p class="text-gray-600">
-                <span class="font-medium">Environment:</span>
-                Development
-            </p>
-            <p class="text-gray-600">
-                <span class="font-medium">Cache Status:</span>
-                Active
-            </p>
-            <p class="text-gray-600">
-                <span class="font-medium">Server Status:</span>
-                Running
-            </p>
+        
+        <div class="stat-card">
+            <h3>Content Files</h3>
+            <p>{{ content_count }}</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Last Build</h3>
+            <p>{{ last_build }}</p>
         </div>
     </div>
 </div>

@@ -19,6 +19,12 @@ class AdminPanel:
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel."""
         template_path = Path(__file__).parent / 'templates'
+        print(f"Template path: {template_path} (exists: {template_path.exists()})")
+        
+        if not template_path.exists():
+            template_path.mkdir(parents=True)
+            print(f"Created template directory: {template_path}")
+            
         aiohttp_jinja2.setup(
             self.app,
             loader=jinja2.FileSystemLoader(str(template_path))
@@ -26,19 +32,52 @@ class AdminPanel:
         
     def setup_routes(self):
         """Setup admin panel routes."""
-        self.app.router.add_get('/', self.index_handler)
+        self.app.router.add_get('', self.index_handler)
+        self.app.router.add_get('/', self.index_handler)  # Добавляем явный обработчик для /
         self.app.router.add_get('/content', self.content_handler)
         self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
         self.app.router.add_post('/api/settings', self.api_settings_handler)
-        self.app.router.add_static('/admin/static', 
-                                 Path(__file__).parent / 'static')
+        
+        # Добавляем статические файлы
+        static_path = Path(__file__).parent / 'static'
+        print(f"Static path: {static_path} (exists: {static_path.exists()})")
+        
+        if not static_path.exists():
+            static_path.mkdir(parents=True)
+            print(f"Created static directory: {static_path}")
+            
+        self.app.router.add_static('/static', static_path)
+        
+    async def handle_request(self, request):
+        """Handle admin panel request."""
+        print(f"Admin request: {request.path}")
+        
+        # Remove /admin prefix from path
+        path = request.path.replace('/admin', '', 1)
+        if not path:
+            path = '/'
+            
+        print(f"Modified path: {path}")
+        
+        # Create subrequest with modified path
+        subrequest = request.clone(rel_url=path)
+        
+        try:
+            # Handle the request using the admin app
+            response = await self.app._handle(subrequest)
+            return response
+        except web.HTTPNotFound:
+            print(f"Admin page not found: {path}")
+            return web.Response(status=404, text="Admin page not found")
+        except Exception as e:
+            print(f"Error handling admin request: {e}")
+            return web.Response(status=500, text=str(e))
         
     @aiohttp_jinja2.template('index.html')
     async def index_handler(self, request):
         """Handle admin panel index page."""
         return {
-            'request': request,
             'site_name': self.config.get('site_name'),
             'content_count': len(list(Path('content').rglob('*.*'))),
             'last_build': 'Not built yet'  # TODO: Add build timestamp
@@ -59,7 +98,6 @@ class AdminPanel:
                 })
                 
         return {
-            'request': request,
             'files': files
         }
         
@@ -67,7 +105,6 @@ class AdminPanel:
     async def settings_handler(self, request):
         """Handle settings page."""
         return {
-            'request': request,
             'config': self.config.config
         }
         

@@ -6,6 +6,7 @@ from rich.panel import Panel
 from ..core.config import Config
 from ..core.engine import Engine
 from ..plugins import initialize_plugins
+from ..admin import AdminPanel
 
 console = Console()
 
@@ -67,6 +68,9 @@ class DevServer:
         # Initialize plugins
         initialize_plugins(self.engine)
         
+        # Initialize admin panel
+        self.admin = AdminPanel(config, self.engine)
+        
         # Validate project structure before starting
         errors, warnings = validate_project_structure()
         
@@ -115,6 +119,14 @@ class DevServer:
         """Handle incoming HTTP request."""
         path = request.path
         
+        # Redirect /admin to /admin/
+        if path == "/admin":
+            return web.HTTPFound("/admin/")
+            
+        # Handle admin panel requests
+        if path.startswith("/admin/"):
+            return await self.admin.handle_request(request)
+            
         # Serve files from public directory
         if path == "/":
             path = "/index.html"
