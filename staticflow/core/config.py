@@ -16,6 +16,9 @@ class Config:
     
     def load_config(self, path: Path) -> None:
         """Load configuration from a YAML or TOML file."""
+        if not isinstance(path, Path):
+            path = Path(path)
+            
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {path}")
             

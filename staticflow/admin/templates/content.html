@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Content Management{% endblock %}
+
+{% block page_title %}Content Management{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.3.3/min/monaco.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.3.3/min/monaco.js"></script>
+{% endblock %}
+
+{% block content %}
+<div x-data="contentManager()" class="space-y-6">
+    <!-- Toolbar -->
+    <div class="flex justify-between items-center">
+        <div class="flex space-x-4">
+            <button @click="showCreateModal = true"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                New File
+            </button>
+            <select x-model="filterType" class="border rounded px-3 py-2">
+                <option value="all">All Files</option>
+                <option value="md">Markdown</option>
+                <option value="html">HTML</option>
+            </select>
+        </div>
+        <div class="relative">
+            <input type="text" 
+                   x-model="searchQuery" 
+                   placeholder="Search files..."
+                   class="border rounded px-3 py-2 pl-10 w-64">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+    </div>
+    
+    <!-- File List -->
+    <div class="border rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        File Name
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Modified
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Size
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <template x-for="file in filteredFiles" :key="file.path">
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span x-text="file.path"></span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span x-text="formatDate(file.modified)"></span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span x-text="formatSize(file.size)"></span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <button @click="editFile(file)"
+                                    class="text-blue-600 hover:text-blue-800 mr-3">
+                                Edit
+                            </button>
+                            <button @click="deleteFile(file)"
+                                    class="text-red-600 hover:text-red-800">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Create Modal -->
+    <div x-show="showCreateModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+         @click.self="showCreateModal = false">
+        <div class="bg-white rounded-lg p-6 w-1/2">
+            <h3 class="text-lg font-semibold mb-4">Create New File</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">File Path</label>
+                    <input type="text" 
+                           x-model="newFile.path" 
+                           class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2"
+                           placeholder="posts/my-new-post.md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Content</label>
+                    <div id="create-editor" class="h-64 border rounded-md"></div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button @click="showCreateModal = false"
+                            class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
+                        Cancel
+                    </button>
+                    <button @click="createFile()"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div x-show="showEditModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+         @click.self="showEditModal = false">
+        <div class="bg-white rounded-lg p-6 w-3/4 h-3/4">
+            <h3 class="text-lg font-semibold mb-4" x-text="'Edit: ' + (currentFile?.path || '')"></h3>
+            <div class="space-y-4 h-full">
+                <div class="h-5/6">
+                    <div id="edit-editor" class="h-full border rounded-md"></div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button @click="showEditModal = false"
+                            class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
+                        Cancel
+                    </button>
+                    <button @click="saveFile()"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function contentManager() {
+    return {
+        files: {{ files | tojson }},
+        filterType: 'all',
+        searchQuery: '',
+        showCreateModal: false,
+        showEditModal: false,
+        currentFile: null,
+        newFile: {
+            path: '',
+            content: ''
+        },
+        createEditor: null,
+        editEditor: null,
+        
+        init() {
+            this.$watch('showCreateModal', value => {
+                if (value && !this.createEditor) {
+                    this.initCreateEditor();
+                }
+            });
+            
+            this.$watch('showEditModal', value => {
+                if (value && !this.editEditor) {
+                    this.initEditEditor();
+                }
+            });
+        },
+        
+        get filteredFiles() {
+            return this.files
+                .filter(file => {
+                    if (this.filterType === 'all') return true;
+                    return file.path.endsWith(this.filterType);
+                })
+                .filter(file => 
+                    file.path.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+        },
+        
+        async initCreateEditor() {
+            const loader = require('@monaco-editor/loader');
+            const monaco = await loader.init();
+            
+            this.createEditor = monaco.editor.create(
+                document.getElementById('create-editor'),
+                {
+                    value: '',
+                    language: 'markdown',
+                    theme: 'vs',
+                    minimap: { enabled: false }
+                }
+            );
+        },
+        
+        async initEditEditor() {
+            const loader = require('@monaco-editor/loader');
+            const monaco = await loader.init();
+            
+            this.editEditor = monaco.editor.create(
+                document.getElementById('edit-editor'),
+                {
+                    value: this.currentFile.content || '',
+                    language: this.currentFile.path.endsWith('.md') ? 'markdown' : 'html',
+                    theme: 'vs',
+                    minimap: { enabled: false }
+                }
+            );
+        },
+        
+        formatDate(timestamp) {
+            return new Date(timestamp * 1000).toLocaleString();
+        },
+        
+        formatSize(bytes) {
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let size = bytes;
+            let unit = 0;
+            
+            while (size >= 1024 && unit < units.length - 1) {
+                size /= 1024;
+                unit++;
+            }
+            
+            return `${size.toFixed(1)} ${units[unit]}`;
+        },
+        
+        async createFile() {
+            try {
+                const response = await fetch('/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create',
+                        path: this.newFile.path,
+                        content: this.createEditor.getValue()
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    window.dispatchEvent(new CustomEvent('notification', {
+                        detail: 'File created successfully!'
+                    }));
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: `Error: ${error.message}`
+                }));
+            }
+        },
+        
+        async editFile(file) {
+            try {
+                const response = await fetch(`/api/content?path=${file.path}`);
+                const data = await response.json();
+                
+                this.currentFile = {
+                    ...file,
+                    content: data.content
+                };
+                this.showEditModal = true;
+            } catch (error) {
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: `Error: ${error.message}`
+                }));
+            }
+        },
+        
+        async saveFile() {
+            try {
+                const response = await fetch('/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update',
+                        path: this.currentFile.path,
+                        content: this.editEditor.getValue()
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    window.dispatchEvent(new CustomEvent('notification', {
+                        detail: 'File saved successfully!'
+                    }));
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: `Error: ${error.message}`
+                }));
+            }
+        },
+        
+        async deleteFile(file) {
+            if (!confirm(`Are you sure you want to delete ${file.path}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        path: file.path
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    window.dispatchEvent(new CustomEvent('notification', {
+                        detail: 'File deleted successfully!'
+                    }));
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: `Error: ${error.message}`
+                }));
+            }
+        }
+    };
+}
+</script>
+{% endblock %} 

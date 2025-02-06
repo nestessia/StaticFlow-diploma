@@ -2,7 +2,7 @@
 name = "staticflow"
 version = "0.1.0"
 description = "Modern static site generator framework"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["nestessia <nestessia@mail.ru>"]
 readme = "README.md"
 packages = [{include = "staticflow"}]
 
@@ -20,6 +20,8 @@ rich = "^13.9.0"
 mdx-mermaid = "^1.0.0"
 aiofiles = "^23.2.1"
 python-slugify = "^8.0.4"
+aiohttp = "^3.9.3"
+aiohttp-jinja2 = "^1.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"
@@ -31,3 +33,6 @@ mypy = "^1.8.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+staticflow = "staticflow.cli:cli"
