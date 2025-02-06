@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang|default('en') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title|default(site_name) }}{% endblock %}</title>
+    
+    {# Мета-теги #}
+    <meta name="description" content="{{ page.description|default(site_description) }}">
+    {% block meta %}{% endblock %}
+    
+    {# Стили #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    {# Шапка #}
+    <header>
+        {% block header %}
+        <nav>
+            <a href="{{ url_for('index') }}">{{ site_name }}</a>
+            {% block navigation %}{% endblock %}
+        </nav>
+        {% endblock %}
+    </header>
+
+    {# Основной контент #}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {# Подвал #}
+    <footer>
+        {% block footer %}
+        <p>&copy; {{ now.year }} {{ site_name }}. Built with StaticFlow.</p>
+        {% endblock %}
+    </footer>
+
+    {# Скрипты #}
+    {% block scripts %}{% endblock %}
+</body>
+</html> 
