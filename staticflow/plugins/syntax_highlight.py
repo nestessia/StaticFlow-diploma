@@ -14,14 +14,16 @@ class SyntaxHighlightPlugin(Plugin):
         self.formatter = HtmlFormatter(
             style=self.config.get('style', 'monokai'),
             cssclass=self.config.get('css_class', 'highlight'),
-            linenos=self.config.get('line_numbers', False)
+            linenos=self.config.get('line_numbers', False),
+            wrapcode=True,
+            noclasses=False
         )
         
     def process_content(self, content: str) -> str:
         """Process content and highlight code blocks."""
         def replace_code_block(match: re.Match) -> str:
             lang = match.group(1) or 'text'
-            code = match.group(2)
+            code = match.group(2).strip()
             
             try:
                 lexer = get_lexer_by_name(lang)
@@ -32,8 +34,9 @@ class SyntaxHighlightPlugin(Plugin):
             
         # Find and replace code blocks
         pattern = r'```(\w+)?\n(.*?)\n```'
-        return re.sub(pattern, replace_code_block, content, flags=re.DOTALL)
+        content = re.sub(pattern, replace_code_block, content, flags=re.DOTALL)
+        return content
     
-    def get_css(self) -> str:
-        """Get the CSS for syntax highlighting."""
-        return self.formatter.get_style_defs() 
+    def get_head_content(self) -> str:
+        """Get content to be inserted in the head section."""
+        return f'<style>{self.formatter.get_style_defs()}</style>' 

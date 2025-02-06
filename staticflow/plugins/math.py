@@ -1,6 +1,5 @@
 from typing import Dict, Any, Optional
 import re
-import markdown
 from .base import Plugin
 
 
@@ -12,23 +11,33 @@ class MathPlugin(Plugin):
         self.katex_css = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">'
         self.katex_js = '''
             <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-                onload="renderMathInElement(document.body);"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "\\\\[", right: "\\\\]", display: true},
+                            {left: "\\\\(", right: "\\\\)", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
         '''
 
     def process_content(self, content: str) -> str:
         """Process content and render math formulas."""
         # Process inline math: $formula$
         content = re.sub(
-            r'\$(.+?)\$',
-            lambda m: f'<span class="math inline">{m.group(1)}</span>',
+            r'\$([^$]+?)\$',
+            r'\\(\1\\)',
             content
         )
 
         # Process display math: $$formula$$
         content = re.sub(
             r'\$\$(.*?)\$\$',
-            lambda m: f'<div class="math display">{m.group(1)}</div>',
+            r'\\[\1\\]',
             content,
             flags=re.DOTALL
         )
@@ -37,4 +46,4 @@ class MathPlugin(Plugin):
 
     def get_head_content(self) -> str:
         """Get content to be inserted in the head section."""
-        return f"{self.katex_css}\n{self.katex_js}" 
+        return self.katex_css + self.katex_js 

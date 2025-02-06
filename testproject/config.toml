@@ -1,0 +1,23 @@
+site_name = "testproject"
+base_url = "http://localhost:8000"
+description = "A new StaticFlow site"
+author = ""
+language = "ru"
+source_dir = "content"
+template_dir = "templates"
+static_dir = "static"
+output_dir = "public"
+default_template = "base.html"
+
+[plugins.syntax_highlight]
+style = "monokai"
+line_numbers = true
+
+[plugins.math]
+auto_render = true
+
+[plugins.diagrams]
+theme = "default"
+
+[plugins.notion_blocks]
+enabled = true

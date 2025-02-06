@@ -113,10 +113,12 @@ class Engine:
         html = template_content.replace("{{ page.title }}", page.title)
         html = html.replace("{{ page.content }}", content_html)
         
-        # Insert head content before </head>
+        # Insert head content
         if head_content:
             head_html = "\n".join(head_content)
-            html = html.replace("</head>", f"{head_html}\n</head>")
+            html = html.replace("{{ page.head_content }}", head_html)
+        else:
+            html = html.replace("{{ page.head_content }}", "")
 
         # Write the rendered page
         with output_path.open("w", encoding="utf-8") as f:

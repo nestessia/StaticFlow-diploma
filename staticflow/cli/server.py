@@ -1,161 +1,16 @@
-import asyncio
 from aiohttp import web
 from pathlib import Path
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from rich.console import Console
 from rich.panel import Panel
 from ..core.config import Config
 from ..core.engine import Engine
+from ..plugins import initialize_plugins
 
 console = Console()
 
 REQUIRED_DIRECTORIES = ['content', 'templates', 'static', 'public']
 REQUIRED_FILES = ['config.toml']
-
-
-def create_welcome_page():
-    """Create welcome page and necessary files for new projects."""
-    content_dir = Path('content/pages')
-    templates_dir = Path('templates')
-    static_dir = Path('static/css')
-    
-    # Create directories if they don't exist
-    content_dir.mkdir(parents=True, exist_ok=True)
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    static_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Create welcome page
-    welcome_content = """---
-title: Welcome to StaticFlow
-template: base.html
----
-<div class="welcome-container">
-    <h1 class="welcome-title">Welcome to StaticFlow!</h1>
-    
-    <div class="welcome-content">
-        <p>
-            Congratulations! Your StaticFlow site is up and running. 
-            Now you can start creating your content.
-        </p>
-        
-        <h2>Getting Started</h2>
-        <ol class="steps-list">
-            <li>Create content in <code>content/pages/</code> using Markdown or HTML</li>
-            <li>Customize templates in <code>templates/</code> directory</li>
-            <li>Add your styles to <code>static/css/</code> directory</li>
-            <li>Configure your site in <code>config.toml</code></li>
-        </ol>
-        
-        <h2>Example Structure</h2>
-        <pre class="file-tree">
-project_name/
-├── content/
-│   └── pages/
-│       ├── index.md
-│       └── about.md
-├── templates/
-│   └── base.html
-├── static/
-│   └── css/
-│       └── style.css
-├── public/
-└── config.toml</pre>
-        
-        <div class="help-section">
-            <h2>Need Help?</h2>
-            <p>
-                Check out our documentation or visit our GitHub repository 
-                for more information.
-            </p>
-        </div>
-    </div>
-</div>"""
-
-    # Create base template
-    base_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <main>
-        {{ page.content }}
-    </main>
-</body>
-</html>"""
-
-    # Create basic styles
-    welcome_styles = """/* Welcome page styles */
-body {
-    font-family: system-ui, -apple-system, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 20px;
-    background: #f5f5f5;
-}
-
-.welcome-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.welcome-title {
-    color: #2563eb;
-    font-size: 2.5rem;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.welcome-content {
-    color: #374151;
-}
-
-.steps-list {
-    padding-left: 1.5rem;
-}
-
-.steps-list li {
-    margin-bottom: 0.5rem;
-}
-
-code {
-    background: #f1f5f9;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: monospace;
-}
-
-.file-tree {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 4px;
-    font-family: monospace;
-    white-space: pre;
-    overflow-x: auto;
-}
-
-.help-section {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-}"""
-
-    # Write files
-    index_path = content_dir / 'index.md'
-    template_path = templates_dir / 'base.html'
-    style_path = static_dir / 'style.css'
-    
-    index_path.write_text(welcome_content)
-    template_path.write_text(base_template)
-    style_path.write_text(welcome_styles)
 
 
 def validate_project_structure():
@@ -182,15 +37,12 @@ def validate_project_structure():
                 )
     
     # Check content structure
-    content_path = Path('content/pages')
+    content_path = Path('content')
     if not content_path.exists() or not any(content_path.iterdir()):
-        warnings.append("No content found - creating welcome page")
-        try:
-            create_welcome_page()
-        except Exception as e:
-            warnings.append(f"Failed to create welcome page: {str(e)}")
+        warnings.append("No content found in content directory")
     
     return errors, warnings
+
 
 class FileChangeHandler(FileSystemEventHandler):
     """Handler for file system changes."""
@@ -212,6 +64,9 @@ class DevServer:
         self.port = port
         self.engine = Engine(config)
         
+        # Initialize plugins
+        initialize_plugins(self.engine)
+        
         # Validate project structure before starting
         errors, warnings = validate_project_structure()
         
@@ -227,7 +82,6 @@ class DevServer:
                     "\nProject structure should be:",
                     "project_name/",
                     "├── content/",
-                    "│   └── pages/",
                     "├── templates/",
                     "├── static/",
                     "├── public/",

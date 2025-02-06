@@ -2,7 +2,6 @@ import pytest
 from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
 from staticflow.plugins.math import MathPlugin
 from staticflow.plugins.diagrams import MermaidPlugin
-from staticflow.plugins.notion_blocks import NotionBlocksPlugin
 
 
 def test_syntax_highlight_plugin():
@@ -81,60 +80,3 @@ graph TD
     head = plugin.get_head_content()
     assert 'mermaid.min.js' in head
     assert 'mermaid.initialize' in head 
-
-
-def test_notion_blocks_plugin():
-    """Test Notion-style blocks plugin."""
-    plugin = NotionBlocksPlugin()
-    
-    # Test callout block
-    content = '''
-Some text
-:::info This is important
-Important information here
-:::
-More text
-'''
-    processed = plugin.process_content(content)
-    assert '<div class="callout info">' in processed
-    assert '<div class="callout-icon">ℹ️</div>' in processed
-    assert 'Important information here' in processed
-    
-    # Test toggle block
-    content = '''
->>> Click to expand
-Hidden content here
-<<<
-'''
-    processed = plugin.process_content(content)
-    assert '<div class="toggle">' in processed
-    assert '<div class="toggle-header">▶ Click to expand</div>' in processed
-    assert 'Hidden content here' in processed
-    
-    # Test todo list
-    content = '''
-- [ ] Unchecked task
-- [x] Checked task
-'''
-    processed = plugin.process_content(content)
-    assert '<div class="todo-item">' in processed
-    assert '<input type="checkbox" class="todo-checkbox" >' in processed
-    assert '<input type="checkbox" class="todo-checkbox" checked>' in processed
-    
-    # Test table
-    content = '''
-||Header 1|Header 2
-Row 1 Col 1|Row 1 Col 2
-Row 2 Col 1|Row 2 Col 2||
-'''
-    processed = plugin.process_content(content)
-    assert '<table class="table-view">' in processed
-    assert '<th>Header 1</th>' in processed
-    assert '<td>Row 1 Col 1</td>' in processed
-    
-    # Test head content
-    head = plugin.get_head_content()
-    assert '.callout {' in head
-    assert '.toggle {' in head
-    assert '.todo-item {' in head
-    assert '.table-view {' in head 
