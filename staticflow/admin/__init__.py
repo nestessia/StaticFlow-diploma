@@ -420,52 +420,132 @@ class AdminPanel:
             content = data['content']
             metadata = data.get('metadata', {})
             
-            # Создаем временный объект Page
-            from tempfile import NamedTemporaryFile
-            from ..core.page import Page
-            
-            with NamedTemporaryFile(suffix='.md', delete=False) as temp:
-                temp_path = Path(temp.name)
-                temp_path.write_text(content, encoding='utf-8')
+            # Рендерим контент напрямую, без создания Page
+            try:
+                # Рендерим контент напрямую с помощью стандартной библиотеки markdown
+                import markdown
+                # Добавляем базовые расширения, которые точно работают
+                html_content = markdown.markdown(content, extensions=['fenced_code', 'tables', 'nl2br'])
                 
-                try:
-                    page = Page.from_file(temp_path)
-                    
-                    # Рендерим контент через движок
-                    from ..parsers import markdown_parser
-                    html_content = markdown_parser.parse(page.content)
-                    
-                    # Оборачиваем HTML в базовый шаблон для предпросмотра
-                    preview_html = f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>{metadata.get('title', 'Preview')}</title>
-                        <style>
-                            body {{ font-family: system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }}
-                            pre {{ background: #f5f5f5; padding: 1em; border-radius: 4px; overflow: auto; }}
-                            blockquote {{ border-left: 4px solid #ddd; padding-left: 1em; color: #777; }}
-                            img {{ max-width: 100%; }}
-                            .math {{ text-align: center; margin: 1em 0; }}
-                            .mermaid {{ text-align: center; }}
-                        </style>
-                        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-                        <script>mermaid.initialize({{startOnLoad:true}});</script>
-                    </head>
-                    <body>
-                        <h1>{metadata.get('title', 'Preview')}</h1>
-                        {html_content}
-                    </body>
-                    </html>
-                    """
-                    
-                    return web.Response(
-                        text=preview_html,
-                        content_type='text/html'
-                    )
-                finally:
-                    # Удаляем временный файл
-                    temp_path.unlink(missing_ok=True)
+                # Оборачиваем HTML в базовый шаблон для предпросмотра с улучшенными стилями
+                preview_html = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>{metadata.get('title', 'Preview')}</title>
+                    <style>
+                        body {{ 
+                            font-family: system-ui, sans-serif; 
+                            line-height: 1.6; 
+                            max-width: 800px; 
+                            margin: 0 auto; 
+                            padding: 20px;
+                            color: #333;
+                        }}
+                        h1, h2, h3, h4, h5, h6 {{ 
+                            margin-top: 1.5em;
+                            margin-bottom: 0.5em;
+                            font-weight: 600;
+                            line-height: 1.25;
+                        }}
+                        h1 {{ font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
+                        h2 {{ font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
+                        h3 {{ font-size: 1.25em; }}
+                        a {{ color: #0366d6; text-decoration: none; }}
+                        a:hover {{ text-decoration: underline; }}
+                        pre {{ 
+                            background: #f6f8fa; 
+                            padding: 16px; 
+                            border-radius: 6px; 
+                            overflow: auto;
+                            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+                            font-size: 85%;
+                            line-height: 1.45;
+                        }}
+                        code {{ 
+                            background: rgba(27, 31, 35, 0.05);
+                            border-radius: 3px;
+                            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+                            font-size: 85%;
+                            margin: 0;
+                            padding: 0.2em 0.4em;
+                        }}
+                        pre code {{ 
+                            background: transparent;
+                            padding: 0;
+                            margin: 0;
+                            font-size: 100%;
+                            word-break: normal;
+                            white-space: pre;
+                            border: 0;
+                        }}
+                        blockquote {{ 
+                            border-left: 4px solid #ddd; 
+                            padding-left: 1em; 
+                            color: #6a737d;
+                            margin: 1em 0;
+                        }}
+                        img {{ max-width: 100%; }}
+                        table {{
+                            border-collapse: collapse;
+                            margin: 1em 0;
+                            overflow: auto;
+                            width: 100%;
+                        }}
+                        table th, table td {{
+                            border: 1px solid #dfe2e5;
+                            padding: 6px 13px;
+                        }}
+                        table tr {{
+                            background-color: #fff;
+                            border-top: 1px solid #c6cbd1;
+                        }}
+                        table tr:nth-child(2n) {{
+                            background-color: #f6f8fa;
+                        }}
+                        /* Стили для Mermaid диаграмм */
+                        .mermaid {{ 
+                            text-align: center;
+                            margin: 1.5em 0;
+                        }}
+                    </style>
+                    <!-- Подключаем внешние библиотеки для специальных элементов -->
+                    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Инициализация Mermaid для диаграмм
+                            mermaid.initialize({{startOnLoad:true}});
+                            
+                            // Преобразуем блоки с диаграммами
+                            const preElements = document.querySelectorAll('pre code.mermaid');
+                            preElements.forEach(function(codeBlock) {{
+                                const parent = codeBlock.parentNode;
+                                const content = codeBlock.textContent;
+                                const div = document.createElement('div');
+                                div.className = 'mermaid';
+                                div.textContent = content;
+                                parent.parentNode.replaceChild(div, parent);
+                            }});
+                        });
+                    </script>
+                </head>
+                <body>
+                    <h1>{metadata.get('title', 'Preview')}</h1>
+                    {html_content}
+                </body>
+                </html>
+                """
+                
+                return web.Response(
+                    text=preview_html,
+                    content_type='text/html'
+                )
+            except Exception as e:
+                print(f"Error generating preview: {e}")
+                return web.json_response({
+                    'success': False,
+                    'error': f"Error generating preview: {e}"
+                }, status=500)
         except json.JSONDecodeError as e:
             print(f"Preview JSON parse error: {e}")
             return web.json_response({
