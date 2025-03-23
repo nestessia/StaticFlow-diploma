@@ -17,6 +17,34 @@ class AdminPanel:
         self.setup_routes()
         self.setup_templates()
         
+    def _safe_metadata(self, metadata):
+        """Convert metadata to JSON-safe format."""
+        if not metadata:
+            return {}
+            
+        result = {}
+        for key, value in metadata.items():
+            if key == 'date' and hasattr(value, 'isoformat'):
+                # Convert datetime to ISO string
+                result[key] = value.isoformat()
+            elif isinstance(value, (str, int, float, bool, type(None))):
+                # These types are JSON-serializable
+                result[key] = value
+            elif isinstance(value, list):
+                # Handle lists (e.g., tags)
+                safe_list = []
+                for item in value:
+                    if isinstance(item, (str, int, float, bool)):
+                        safe_list.append(item)
+                    else:
+                        safe_list.append(str(item))
+                result[key] = safe_list
+            else:
+                # Convert other types to string
+                result[key] = str(value)
+                
+        return result
+        
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel."""
         template_path = Path(__file__).parent / 'templates'
@@ -137,6 +165,7 @@ class AdminPanel:
         """Handle block editor page."""
         path = request.match_info.get('path', '')
         page = None
+        safe_metadata = {}
         
         if path:
             content_path = Path('content') / path
@@ -150,16 +179,21 @@ class AdminPanel:
                     # Устанавливаем правильный путь к исходному файлу
                     page.source_path = path
                     
+                    # Преобразуем метаданные в JSON-безопасный формат
+                    safe_metadata = self._safe_metadata(page.metadata)
+                    
                     print(f"Successfully loaded page: {path}")
                     print(f"Page content length: {len(page.content)}")
                     print(f"Page metadata: {page.metadata}")
+                    print(f"Safe metadata: {safe_metadata}")
                 except Exception as e:
                     print(f"Error loading page: {e}")
                     import traceback
                     traceback.print_exc()
         
         return {
-            'page': page
+            'page': page,
+            'safe_metadata': safe_metadata
         }
         
     async def api_content_handler(self, request):
@@ -263,9 +297,6 @@ class AdminPanel:
                     
                     full_path = path / path_str
                     
-                    # Сохраняем контент
-                    full_path.parent.mkdir(parents=True, exist_ok=True)
-                    
                     # Создаем контент с правильными метаданными
                     final_content = '---\n'
                     for key, value in metadata.items():
@@ -290,10 +321,22 @@ class AdminPanel:
                         full_path.write_text(final_content, encoding='utf-8')
                         print(f"Content successfully saved to {full_path}")
                         
-                        return web.json_response({
-                            'success': True,
-                            'path': path_str
-                        })
+                        # Пересобираем сайт после изменения контента
+                        print("Starting site rebuild after content change...")
+                        rebuild_success = self.rebuild_site()
+                        
+                        if rebuild_success:
+                            return web.json_response({
+                                'success': True,
+                                'path': path_str,
+                                'message': "Content saved and site rebuilt successfully"
+                            })
+                        else:
+                            return web.json_response({
+                                'success': True,
+                                'path': path_str,
+                                'warning': "Content saved but site rebuild failed"
+                            })
                     except Exception as e:
                         print(f"Error saving content: {e}")
                         import traceback
@@ -328,21 +371,21 @@ class AdminPanel:
                     # Create new content file
                     path = Path('content') / data['path']
                     path.write_text(data['content'], encoding='utf-8')
-                    await self.rebuild_site()
+                    self.rebuild_site()
                     return web.json_response({'status': 'ok'})
                     
                 elif action == 'update':
                     # Update existing content file
                     path = Path('content') / data['path']
                     path.write_text(data['content'], encoding='utf-8')
-                    await self.rebuild_site()
+                    self.rebuild_site()
                     return web.json_response({'status': 'ok'})
                     
                 elif action == 'delete':
                     # Delete content file
                     path = Path('content') / data['path']
                     path.unlink(missing_ok=True)
-                    await self.rebuild_site()
+                    self.rebuild_site()
                     return web.json_response({'status': 'ok'})
             
             except Exception as e:
@@ -447,7 +490,7 @@ class AdminPanel:
                 self.config.set(key, value)
                 
             self.config.save()
-            await self.rebuild_site()
+            self.rebuild_site()
             
             return web.json_response({'status': 'ok'})
         except json.JSONDecodeError as e:
@@ -465,11 +508,59 @@ class AdminPanel:
                 'error': str(e)
             }, status=500)
         
-    async def rebuild_site(self):
+    def rebuild_site(self):
         """Rebuild the site."""
         print("Rebuilding site...")
-        await self.engine.build()
-        print("Site rebuilt successfully!")
+        try:
+            # Очищаем кеш перед перестроением
+            print("Clearing cache...")
+            self.engine._cache.clear()
+            if hasattr(self.engine.site, 'clear'):
+                print("Clearing site data...")
+                self.engine.site.clear()
+            
+            # Перезагружаем конфигурацию
+            print("Reloading configuration...")
+            if hasattr(self.engine.config, 'reload'):
+                self.engine.config.reload()
+            
+            # Пересобираем сайт с нуля
+            print("Building site from scratch...")
+            
+            # Перед перестроением проверим все директории
+            source_dir = Path(self.engine.config.get("source_dir", "content"))
+            output_dir = Path(self.engine.config.get("output_dir", "public"))
+            templates_dir = Path(self.engine.config.get("template_dir", "templates"))
+            
+            print(f"Source directory: {source_dir} (exists: {source_dir.exists()})")
+            print(f"Output directory: {output_dir} (exists: {output_dir.exists()})")
+            print(f"Templates directory: {templates_dir} (exists: {templates_dir.exists()})")
+            
+            # Очистим выходную директорию, если она существует
+            if output_dir.exists():
+                import shutil
+                print(f"Removing old output directory: {output_dir}")
+                shutil.rmtree(output_dir)
+                output_dir.mkdir(parents=True)
+                print("Output directory recreated")
+
+            # Полностью переинициализируем сайт
+            self.engine.initialize(source_dir, output_dir, templates_dir)
+
+            # Перестраиваем сайт
+            self.engine.build()
+            
+            content_count = len(list(source_dir.rglob("*.md")))
+            pages_generated = len(list(output_dir.rglob("*.html")))
+            
+            print(f"Site rebuilt successfully! Content files: {content_count}, Pages generated: {pages_generated}")
+            
+            return True
+        except Exception as e:
+            print(f"Error rebuilding site: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
             
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""

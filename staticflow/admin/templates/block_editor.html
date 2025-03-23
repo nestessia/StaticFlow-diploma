@@ -70,13 +70,13 @@ console.log("Initializing block editor...");
 var pageData = {
     content: {% if page %}{{ page.content|tojson }}{% else %}null{% endif %},
     path: {% if page %}{{ page.source_path|tojson }}{% else %}"New Page"{% endif %},
-    title: {% if page and page.metadata and page.metadata.title %}{{ page.metadata.title|tojson }}{% else %}"Untitled Page"{% endif %},
+    title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}"Untitled Page"{% endif %},
     metadata: {
-        title: {% if page and page.metadata and page.metadata.title %}{{ page.metadata.title|tojson }}{% else %}""{% endif %},
-        date: {% if page and page.metadata and page.metadata.date %}{{ page.metadata.date|tojson }}{% else %}""{% endif %},
-        author: {% if page and page.metadata and page.metadata.author %}{{ page.metadata.author|tojson }}{% else %}""{% endif %},
-        tags: {% if page and page.metadata and page.metadata.tags %}{{ ','.join(page.metadata.tags)|tojson }}{% else %}""{% endif %},
-        draft: {% if page and page.metadata and page.metadata.draft %}true{% else %}false{% endif %}
+        title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}""{% endif %},
+        date: {% if safe_metadata and safe_metadata.date %}{{ safe_metadata.date|tojson }}{% else %}""{% endif %},
+        author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
+        tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
+        draft: {% if safe_metadata and safe_metadata.draft %}true{% else %}false{% endif %}
     }
 };
 
