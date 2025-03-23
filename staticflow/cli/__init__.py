@@ -6,6 +6,12 @@ from rich import print as rprint
 from ..core.engine import Engine
 from ..core.config import Config
 from .server import DevServer
+from .templates import (
+    WELCOME_CONTENT,
+    BASE_TEMPLATE,
+    DEFAULT_STYLES,
+    DEFAULT_CONFIG
+)
 
 console = Console()
 
@@ -29,20 +35,26 @@ def create(path: str):
         (project_path / "content").mkdir()
         (project_path / "templates").mkdir()
         (project_path / "static").mkdir()
+        (project_path / "static/css").mkdir(parents=True)
         (project_path / "public").mkdir()
         
-        # Create default config
-        config = {
-            "site_name": project_path.name,
-            "base_url": "http://localhost:8000",
-            "description": "A new StaticFlow site",
-            "author": "",
-            "language": "en"
-        }
-        
+        # Update config with project name
+        config = DEFAULT_CONFIG.copy()
+        config["site_name"] = project_path.name
+
+        # Write files
         with open(project_path / "config.toml", "w", encoding="utf-8") as f:
             import toml
             toml.dump(config, f)
+
+        with open(project_path / "content/index.md", "w", encoding="utf-8") as f:
+            f.write(WELCOME_CONTENT)
+
+        with open(project_path / "templates/base.html", "w", encoding="utf-8") as f:
+            f.write(BASE_TEMPLATE)
+
+        with open(project_path / "static/css/style.css", "w", encoding="utf-8") as f:
+            f.write(DEFAULT_STYLES)
             
         console.print(Panel.fit(
             "[green]Project created successfully![/green]\n\n"
@@ -78,7 +90,7 @@ def build(config: str):
 @click.option('--host', '-h', default='localhost', help='Host to run server on')
 @click.option('--config', '-c', default='config.toml', help='Path to config file')
 def serve(port: int, host: str, config: str):
-    """Start development server with hot reload"""
+    """Start development server with live preview"""
     try:
         config_path = Path(config)
         if not config_path.exists():
@@ -93,7 +105,7 @@ def serve(port: int, host: str, config: str):
         
         console.print(
             Panel.fit(
-                f"[green]Development server running at[/green] http://{host}:{port}\n"
+                f"[green]Server running at[/green] http://{host}:{port}\n"
                 "[dim]Press CTRL+C to stop[/dim]",
                 title="StaticFlow Dev Server"
             )

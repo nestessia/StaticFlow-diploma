@@ -4,5 +4,8 @@ __pycache__
 .DS_Store
 .venv
 .env
+/dist
 
+/testsite-md
+/testsite-html
 

@@ -1,161 +1,17 @@
-import asyncio
 from aiohttp import web
 from pathlib import Path
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from rich.console import Console
 from rich.panel import Panel
 from ..core.config import Config
 from ..core.engine import Engine
+from ..plugins import initialize_plugins
+from ..admin import AdminPanel
 
 console = Console()
 
 REQUIRED_DIRECTORIES = ['content', 'templates', 'static', 'public']
 REQUIRED_FILES = ['config.toml']
-
-
-def create_welcome_page():
-    """Create welcome page and necessary files for new projects."""
-    content_dir = Path('content/pages')
-    templates_dir = Path('templates')
-    static_dir = Path('static/css')
-    
-    # Create directories if they don't exist
-    content_dir.mkdir(parents=True, exist_ok=True)
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    static_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Create welcome page
-    welcome_content = """---
-title: Welcome to StaticFlow
-template: base.html
----
-<div class="welcome-container">
-    <h1 class="welcome-title">Welcome to StaticFlow!</h1>
-    
-    <div class="welcome-content">
-        <p>
-            Congratulations! Your StaticFlow site is up and running. 
-            Now you can start creating your content.
-        </p>
-        
-        <h2>Getting Started</h2>
-        <ol class="steps-list">
-            <li>Create content in <code>content/pages/</code> using Markdown or HTML</li>
-            <li>Customize templates in <code>templates/</code> directory</li>
-            <li>Add your styles to <code>static/css/</code> directory</li>
-            <li>Configure your site in <code>config.toml</code></li>
-        </ol>
-        
-        <h2>Example Structure</h2>
-        <pre class="file-tree">
-project_name/
-├── content/
-│   └── pages/
-│       ├── index.md
-│       └── about.md
-├── templates/
-│   └── base.html
-├── static/
-│   └── css/
-│       └── style.css
-├── public/
-└── config.toml</pre>
-        
-        <div class="help-section">
-            <h2>Need Help?</h2>
-            <p>
-                Check out our documentation or visit our GitHub repository 
-                for more information.
-            </p>
-        </div>
-    </div>
-</div>"""
-
-    # Create base template
-    base_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <main>
-        {{ page.content }}
-    </main>
-</body>
-</html>"""
-
-    # Create basic styles
-    welcome_styles = """/* Welcome page styles */
-body {
-    font-family: system-ui, -apple-system, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 20px;
-    background: #f5f5f5;
-}
-
-.welcome-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.welcome-title {
-    color: #2563eb;
-    font-size: 2.5rem;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.welcome-content {
-    color: #374151;
-}
-
-.steps-list {
-    padding-left: 1.5rem;
-}
-
-.steps-list li {
-    margin-bottom: 0.5rem;
-}
-
-code {
-    background: #f1f5f9;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: monospace;
-}
-
-.file-tree {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 4px;
-    font-family: monospace;
-    white-space: pre;
-    overflow-x: auto;
-}
-
-.help-section {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-}"""
-
-    # Write files
-    index_path = content_dir / 'index.md'
-    template_path = templates_dir / 'base.html'
-    style_path = static_dir / 'style.css'
-    
-    index_path.write_text(welcome_content)
-    template_path.write_text(base_template)
-    style_path.write_text(welcome_styles)
 
 
 def validate_project_structure():
@@ -182,15 +38,12 @@ def validate_project_structure():
                 )
     
     # Check content structure
-    content_path = Path('content/pages')
+    content_path = Path('content')
     if not content_path.exists() or not any(content_path.iterdir()):
-        warnings.append("No content found - creating welcome page")
-        try:
-            create_welcome_page()
-        except Exception as e:
-            warnings.append(f"Failed to create welcome page: {str(e)}")
+        warnings.append("No content found in content directory")
     
     return errors, warnings
+
 
 class FileChangeHandler(FileSystemEventHandler):
     """Handler for file system changes."""
@@ -212,6 +65,12 @@ class DevServer:
         self.port = port
         self.engine = Engine(config)
         
+        # Initialize plugins
+        initialize_plugins(self.engine)
+        
+        # Initialize admin panel
+        self.admin = AdminPanel(config, self.engine)
+        
         # Validate project structure before starting
         errors, warnings = validate_project_structure()
         
@@ -227,7 +86,6 @@ class DevServer:
                     "\nProject structure should be:",
                     "project_name/",
                     "├── content/",
-                    "│   └── pages/",
                     "├── templates/",
                     "├── static/",
                     "├── public/",
@@ -247,98 +105,57 @@ class DevServer:
                 title="[yellow]Project Structure Warnings[/yellow]",
                 border_style="yellow"
             ))
-        
-        # Ensure output directory exists
-        self.output_dir = Path('public')
-        self.output_dir.mkdir(exist_ok=True)
-        
-        self.app = web.Application()
-        self.setup_routes()
-        self.setup_watchers()
-        
-    def setup_routes(self):
-        """Setup server routes."""
-        try:
-            self.app.router.add_static('/static', Path('static'))
-            self.app.router.add_static('/', self.output_dir)
-            self.app.router.add_get('/_dev/events', self.sse_handler)
-        except Exception as e:
-            console.print(Panel(
-                "\n".join([
-                    f"[red]Error setting up routes:[/red]\n{str(e)}\n",
-                    "Common solutions:",
-                    "1. Check if 'static' and 'public' directories exist",
-                    "2. Verify directory permissions",
-                    "3. Make sure you're in the project root directory"
-                ]),
-                title="[red]Server Configuration Error[/red]",
-                border_style="red"
-            ))
-            raise
-        
-    def setup_watchers(self):
-        """Setup file system watchers."""
-        self.observer = Observer()
-        handler = FileChangeHandler(self.handle_file_change)
-        
-        # Watch content and templates directories
-        self.observer.schedule(handler, 'content', recursive=True)
-        self.observer.schedule(handler, 'templates', recursive=True)
-        self.observer.schedule(handler, 'static', recursive=True)
-        
-    async def sse_handler(self, request):
-        """Server-Sent Events handler for live reload."""
-        response = web.StreamResponse(
-            status=200,
-            reason='OK',
-            headers={
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-            }
-        )
-        
-        await response.prepare(request)
-        
-        while True:
-            await response.write(b'data: ping\n\n')
-            await asyncio.sleep(1)
             
-    def handle_file_change(self, path: str):
-        """Handle file system changes."""
-        try:
-            console.print(f"[yellow]File changed:[/yellow] {path}")
-            self.engine.build()
-            console.print("[green]Site rebuilt successfully![/green]")
-        except Exception as e:
-            console.print(f"[red]Error rebuilding site:[/red] {str(e)}")
+        # Build the site before starting server
+        with console.status("[bold blue]Building site..."):
+            try:
+                self.engine.build()
+                console.print("[green]Site built successfully![/green]")
+            except Exception as e:
+                console.print(f"[red]Error building site:[/red] {str(e)}")
+                raise SystemExit(1)
             
-    def inject_live_reload(self):
-        """Inject live reload script into HTML files."""
-        script = """
-        <script>
-            const evtSource = new EventSource('/_dev/events');
-            evtSource.onmessage = function(event) {
-                if (event.data === 'reload') {
-                    window.location.reload();
-                }
-            }
-        </script>
-        """
+    async def handle_request(self, request):
+        """Handle incoming HTTP request."""
+        path = request.path
         
-        public_dir = Path('public')
-        for html_file in public_dir.rglob('*.html'):
-            content = html_file.read_text(encoding='utf-8')
-            if '</body>' in content and script not in content:
-                content = content.replace('</body>', f'{script}</body>')
-                html_file.write_text(content, encoding='utf-8')
-                
+        # Redirect /admin to /admin/
+        if path == "/admin":
+            return web.HTTPFound("/admin/")
+            
+        # Handle admin panel requests
+        if path.startswith("/admin/"):
+            return await self.admin.handle_request(request)
+            
+        # Serve files from public directory
+        if path == "/":
+            path = "/index.html"
+            
+        file_path = Path(self.config.get("output_dir")) / path.lstrip("/")
+        
+        if not file_path.exists():
+            return web.Response(status=404, text="Not Found")
+            
+        if not file_path.is_file():
+            return web.Response(status=403, text="Forbidden")
+            
+        content_type = "text/html"
+        if path.endswith(".css"):
+            content_type = "text/css"
+        elif path.endswith(".js"):
+            content_type = "application/javascript"
+            
+        return web.FileResponse(file_path, headers={"Content-Type": content_type})
+        
     def start(self):
         """Start the development server."""
-        try:
-            self.observer.start()
-            self.inject_live_reload()
-            web.run_app(self.app, host=self.host, port=self.port)
-        finally:
-            self.observer.stop()
-            self.observer.join() 
+        app = web.Application()
+        app.router.add_route('*', '/{tail:.*}', self.handle_request)
+        
+        # Отключаем стандартный вывод aiohttp
+        web.run_app(
+            app,
+            host=self.host,
+            port=self.port,
+            print=None  # Отключаем стандартный вывод
+        ) 
