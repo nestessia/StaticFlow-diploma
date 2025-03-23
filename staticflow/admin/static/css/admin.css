@@ -205,4 +205,87 @@ button.danger {
     background: var(--success-color);
     padding: 0.75rem 2rem;
     font-size: 1.1rem;
+}
+
+/* Стили для кнопок блочного редактора на странице контента */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #0069d9;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin-right: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: 1px solid #5a6268;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.content-actions-global {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.block-btn {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.block-btn:hover {
+    background-color: #218838;
+}
+
+/* Улучшения для административного интерфейса */
+.admin-main {
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.admin-nav {
+    padding: 0 20px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .content-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .content-actions-global {
+        flex-direction: column;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+    }
 } 

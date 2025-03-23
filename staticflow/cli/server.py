@@ -150,7 +150,7 @@ class DevServer:
     def start(self):
         """Start the development server."""
         app = web.Application()
-        app.router.add_get('/{tail:.*}', self.handle_request)
+        app.router.add_route('*', '/{tail:.*}', self.handle_request)
         
         # Отключаем стандартный вывод aiohttp
         web.run_app(

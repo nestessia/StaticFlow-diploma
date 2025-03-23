@@ -4,6 +4,7 @@ import aiohttp_jinja2
 import jinja2
 from ..core.config import Config
 from ..core.engine import Engine
+import json
 
 
 class AdminPanel:
@@ -39,6 +40,11 @@ class AdminPanel:
         self.app.router.add_post('/api/content', self.api_content_handler)
         self.app.router.add_post('/api/settings', self.api_settings_handler)
         
+        # Добавляем маршруты для блочного редактора
+        self.app.router.add_get('/block-editor', self.block_editor_handler)
+        self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
+        self.app.router.add_post('/api/preview', self.api_preview_handler)
+        
         # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
         print(f"Static path: {static_path} (exists: {static_path.exists()})")
@@ -51,7 +57,7 @@ class AdminPanel:
         
     async def handle_request(self, request):
         """Handle admin panel request."""
-        print(f"Admin request: {request.path}")
+        print(f"Admin request: {request.path}, method: {request.method}")
         
         # Remove /admin prefix from path
         path = request.path.replace('/admin', '', 1)
@@ -60,11 +66,27 @@ class AdminPanel:
             
         print(f"Modified path: {path}")
         
-        # Create subrequest with modified path
-        subrequest = request.clone(rel_url=path)
+        # Прямое перенаправление для API запросов без клонирования
+        if request.method == 'POST' and path.startswith('/api/'):
+            # Маршрутизация API напрямую к обработчикам
+            if path == '/api/content':
+                return await self.api_content_handler(request)
+            elif path == '/api/preview':
+                return await self.api_preview_handler(request)
+            elif path == '/api/settings':
+                return await self.api_settings_handler(request)
+            else:
+                return web.json_response({
+                    'success': False,
+                    'error': f"Unknown API endpoint: {path}"
+                }, status=404)
         
+        # Для GET запросов и всех остальных используем клонирование
         try:
-            # Handle the request using the admin app
+            # Клонируем запрос с новым URL
+            subrequest = request.clone(rel_url=path)
+            
+            # Обрабатываем запрос через приложение админ-панели
             response = await self.app._handle(subrequest)
             return response
         except web.HTTPNotFound:
@@ -72,6 +94,8 @@ class AdminPanel:
             return web.Response(status=404, text="Admin page not found")
         except Exception as e:
             print(f"Error handling admin request: {e}")
+            import traceback
+            traceback.print_exc()
             return web.Response(status=500, text=str(e))
         
     @aiohttp_jinja2.template('index.html')
@@ -108,79 +132,344 @@ class AdminPanel:
             'config': self.config.config
         }
         
+    @aiohttp_jinja2.template('block_editor.html')
+    async def block_editor_handler(self, request):
+        """Handle block editor page."""
+        path = request.match_info.get('path', '')
+        page = None
+        
+        if path:
+            content_path = Path('content') / path
+            print(f"Attempting to load page from: {content_path}")
+            if content_path.exists():
+                try:
+                    # Создаем объект Page из существующего файла
+                    from ..core.page import Page
+                    page = Page.from_file(content_path)
+                    
+                    # Устанавливаем правильный путь к исходному файлу
+                    page.source_path = path
+                    
+                    print(f"Successfully loaded page: {path}")
+                    print(f"Page content length: {len(page.content)}")
+                    print(f"Page metadata: {page.metadata}")
+                except Exception as e:
+                    print(f"Error loading page: {e}")
+                    import traceback
+                    traceback.print_exc()
+        
+        return {
+            'page': page
+        }
+        
     async def api_content_handler(self, request):
         """Handle content API requests."""
-        data = await request.json()
-        action = data.get('action')
+        print("api_content_handler called")
         
-        if not action:
+        # Проверка метода
+        if request.method != 'POST':
+            print(f"Method not allowed: {request.method}")
             return web.json_response({
-                'status': 'error',
-                'message': 'Missing action field'
-            })
-            
-        if action not in ['create', 'update', 'delete']:
-            return web.json_response({
-                'status': 'error',
-                'message': 'Invalid action'
-            })
-            
-        if 'path' not in data:
-            return web.json_response({
-                'status': 'error',
-                'message': 'Missing path field'
-            })
+                'success': False,
+                'error': f"Method not allowed: {request.method}"
+            }, status=405)
         
-        if action == 'create':
-            # Create new content file
-            path = Path('content') / data['path']
-            path.write_text(data['content'], encoding='utf-8')
-            await self.rebuild_site()
-            return web.json_response({'status': 'ok'})
+        # Печатаем все заголовки для отладки
+        print("Request headers:")
+        for header_name, header_value in request.headers.items():
+            print(f"  {header_name}: {header_value}")
+        
+        # Проверка наличия тела запроса 
+        content_length = request.content_length
+        print(f"Content-Length: {content_length}")
+        
+        content_type = request.headers.get('Content-Type', '')
+        print(f"Content-Type: {content_type}")
+        
+        if content_type != 'application/json':
+            print(f"Invalid Content-Type: {content_type}")
+            return web.json_response({
+                'success': False,
+                'error': f"Invalid Content-Type: {content_type}, expected application/json"
+            }, status=400)
             
-        elif action == 'update':
-            # Update existing content file
-            path = Path('content') / data['path']
-            path.write_text(data['content'], encoding='utf-8')
-            await self.rebuild_site()
-            return web.json_response({'status': 'ok'})
+        try:
+            # Проверка читабельности тела запроса без вызова async методов
+            if not request.can_read_body:
+                print("Request has no body (can_read_body is False)")
+                return web.json_response({
+                    'success': False,
+                    'error': "Request has no body (can_read_body is False)"
+                }, status=400)
             
-        elif action == 'delete':
-            # Delete content file
-            path = Path('content') / data['path']
-            path.unlink()
-            await self.rebuild_site()
-            return web.json_response({'status': 'ok'})
+            if request.content_length is None or request.content_length <= 0:
+                print("Request has empty content length")
+                return web.json_response({
+                    'success': False,
+                    'error': "Request has empty content length"
+                }, status=400)
             
-        return web.json_response({
-            'status': 'error',
-            'message': 'Invalid action'
-        })
+            try:
+                # Прямое чтение тела запроса как строки для отладки
+                raw_body = await request.text()
+                print(f"Raw request body ({len(raw_body)} bytes): {raw_body[:200]}...")
+                
+                if not raw_body:
+                    print("Request body is empty")
+                    return web.json_response({
+                        'success': False, 
+                        'error': "Request body is empty"
+                    }, status=400)
+                
+                # Явный разбор JSON
+                try:
+                    data = json.loads(raw_body)
+                except json.JSONDecodeError as e:
+                    print(f"JSON parse error: {e}, body: {raw_body}")
+                    return web.json_response({
+                        'success': False, 
+                        'error': f"Invalid JSON: {e}"
+                    }, status=400)
+            
+                print(f"Request data keys: {list(data.keys())}")
+                
+                # Проверка необходимых полей
+                if 'path' in data and 'content' in data:
+                    # Сохранение контента из блочного редактора
+                    path_str = data['path']
+                    content = data['content']
+                    metadata = data.get('metadata', {})
+                    
+                    print(f"Received request to save content to {path_str}")
+                    print(f"Content length: {len(content)}")
+                    print(f"Metadata: {metadata}")
+                    
+                    # Если это новая страница, генерируем имя файла из заголовка
+                    if path_str == 'New Page' and 'title' in metadata:
+                        import re
+                        from datetime import datetime
+                        
+                        # Создаем slug из заголовка
+                        slug = re.sub(r'[^\w\s-]', '', metadata['title'].lower())
+                        slug = re.sub(r'[\s-]+', '-', slug).strip('-_')
+                        
+                        # Добавляем дату к имени файла
+                        date_prefix = datetime.now().strftime('%Y-%m-%d')
+                        path_str = f"{date_prefix}-{slug}.md"
+                    
+                    # Создаем полный путь к файлу
+                    path = Path('content')
+                    path.mkdir(exist_ok=True)
+                    
+                    full_path = path / path_str
+                    
+                    # Сохраняем контент
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    # Создаем контент с правильными метаданными
+                    final_content = '---\n'
+                    for key, value in metadata.items():
+                        if isinstance(value, list):
+                            value_str = '[' + ', '.join(f'"{item}"' for item in value) + ']'
+                            final_content += f"{key}: {value_str}\n"
+                        else:
+                            final_content += f"{key}: {value}\n"
+                    final_content += '---\n\n'
+                    
+                    # Добавляем основной контент без frontmatter, если он есть
+                    content_without_frontmatter = content
+                    if content.startswith('---'):
+                        parts = content.split('---', 2)
+                        if len(parts) >= 3:
+                            content_without_frontmatter = parts[2].strip()
+                    
+                    final_content += content_without_frontmatter
+                    
+                    # Записываем в файл
+                    try:
+                        full_path.write_text(final_content, encoding='utf-8')
+                        print(f"Content successfully saved to {full_path}")
+                        
+                        return web.json_response({
+                            'success': True,
+                            'path': path_str
+                        })
+                    except Exception as e:
+                        print(f"Error saving content: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        return web.json_response({
+                            'success': False,
+                            'error': str(e)
+                        }, status=500)
+                
+                # Обработка стандартного API (для обратной совместимости)
+                action = data.get('action')
+                
+                if not action:
+                    return web.json_response({
+                        'status': 'error',
+                        'message': 'Missing action field'
+                    })
+                    
+                if action not in ['create', 'update', 'delete']:
+                    return web.json_response({
+                        'status': 'error',
+                        'message': 'Invalid action'
+                    })
+                    
+                if 'path' not in data:
+                    return web.json_response({
+                        'status': 'error',
+                        'message': 'Missing path field'
+                    })
+                
+                if action == 'create':
+                    # Create new content file
+                    path = Path('content') / data['path']
+                    path.write_text(data['content'], encoding='utf-8')
+                    await self.rebuild_site()
+                    return web.json_response({'status': 'ok'})
+                    
+                elif action == 'update':
+                    # Update existing content file
+                    path = Path('content') / data['path']
+                    path.write_text(data['content'], encoding='utf-8')
+                    await self.rebuild_site()
+                    return web.json_response({'status': 'ok'})
+                    
+                elif action == 'delete':
+                    # Delete content file
+                    path = Path('content') / data['path']
+                    path.unlink(missing_ok=True)
+                    await self.rebuild_site()
+                    return web.json_response({'status': 'ok'})
+            
+            except Exception as e:
+                print(f"Error processing request body: {e}")
+                import traceback
+                traceback.print_exc()
+                return web.json_response({
+                    'success': False,
+                    'error': str(e)
+                }, status=500)
+        
+        except Exception as e:
+            print(f"Unexpected error in api_content_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+        
+    async def api_preview_handler(self, request):
+        """Handle preview API requests."""
+        try:
+            data = await request.json()
+            
+            if 'content' not in data:
+                return web.Response(
+                    status=400,
+                    text="Missing content field"
+                )
+                
+            content = data['content']
+            metadata = data.get('metadata', {})
+            
+            # Создаем временный объект Page
+            from tempfile import NamedTemporaryFile
+            from ..core.page import Page
+            
+            with NamedTemporaryFile(suffix='.md', delete=False) as temp:
+                temp_path = Path(temp.name)
+                temp_path.write_text(content, encoding='utf-8')
+                
+                try:
+                    page = Page.from_file(temp_path)
+                    
+                    # Рендерим контент через движок
+                    from ..parsers import markdown_parser
+                    html_content = markdown_parser.parse(page.content)
+                    
+                    # Оборачиваем HTML в базовый шаблон для предпросмотра
+                    preview_html = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>{metadata.get('title', 'Preview')}</title>
+                        <style>
+                            body {{ font-family: system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }}
+                            pre {{ background: #f5f5f5; padding: 1em; border-radius: 4px; overflow: auto; }}
+                            blockquote {{ border-left: 4px solid #ddd; padding-left: 1em; color: #777; }}
+                            img {{ max-width: 100%; }}
+                            .math {{ text-align: center; margin: 1em 0; }}
+                            .mermaid {{ text-align: center; }}
+                        </style>
+                        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+                        <script>mermaid.initialize({{startOnLoad:true}});</script>
+                    </head>
+                    <body>
+                        <h1>{metadata.get('title', 'Preview')}</h1>
+                        {html_content}
+                    </body>
+                    </html>
+                    """
+                    
+                    return web.Response(
+                        text=preview_html,
+                        content_type='text/html'
+                    )
+                finally:
+                    # Удаляем временный файл
+                    temp_path.unlink(missing_ok=True)
+        except json.JSONDecodeError as e:
+            print(f"Preview JSON parse error: {e}")
+            return web.json_response({
+                'success': False,
+                'error': f"Invalid JSON: {e}"
+            }, status=400)
+        except Exception as e:
+            print(f"Unexpected error in api_preview_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
         
     async def api_settings_handler(self, request):
         """Handle settings API requests."""
-        data = await request.json()
-        
-        # Update config
-        for key, value in data.items():
-            self.config.set(key, value)
+        try:
+            data = await request.json()
             
-        # Save config
-        with open('config.toml', 'w', encoding='utf-8') as f:
-            import toml
-            toml.dump(self.config.config, f)
+            for key, value in data.items():
+                self.config.set(key, value)
+                
+            self.config.save()
+            await self.rebuild_site()
             
-        await self.rebuild_site()
-        return web.json_response({'status': 'ok'})
+            return web.json_response({'status': 'ok'})
+        except json.JSONDecodeError as e:
+            print(f"Settings JSON parse error: {e}")
+            return web.json_response({
+                'success': False,
+                'error': f"Invalid JSON: {e}"
+            }, status=400)
+        except Exception as e:
+            print(f"Unexpected error in api_settings_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
         
     async def rebuild_site(self):
-        """Rebuild the site after changes."""
-        try:
-            self.engine.build()
-            return True
-        except Exception as e:
-            print(f"Error rebuilding site: {e}")
-            return False
+        """Rebuild the site."""
+        print("Rebuilding site...")
+        await self.engine.build()
+        print("Site rebuilt successfully!")
             
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""

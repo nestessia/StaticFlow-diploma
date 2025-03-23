@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Block Editor{% endblock %}
+
+{% block page_title %}Block Editor{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/admin/static/css/block-editor.css">
+<!-- KaTeX для математических формул -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<!-- Mermaid для диаграмм -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="block-editor-page">
+    <div class="editor-header">
+        <div class="editor-file-info">
+            <input 
+                type="text" 
+                id="page-title" 
+                placeholder="Page Title" 
+                value="{{ page.title if page else 'Untitled Page' }}"
+            >
+            <div class="file-path">{{ page.source_path if page else 'New Page' }}</div>
+        </div>
+        <div class="editor-actions">
+            <button class="btn" id="save-btn">Save</button>
+            <button class="btn btn-secondary" id="preview-btn">Preview</button>
+        </div>
+    </div>
+
+    <div class="editor-container">
+        <!-- Блочный редактор будет инициализирован здесь -->
+        <div id="block-editor"></div>
+    </div>
+
+    <div class="editor-metadata">
+        <h3>Page Metadata</h3>
+        <div class="metadata-fields">
+            <div class="metadata-field">
+                <label for="meta-date">Date</label>
+                <input type="datetime-local" id="meta-date" value="{{ page.metadata.date if page and page.metadata else '' }}">
+            </div>
+            <div class="metadata-field">
+                <label for="meta-author">Author</label>
+                <input type="text" id="meta-author" value="{{ page.metadata.author if page and page.metadata else '' }}">
+            </div>
+            <div class="metadata-field">
+                <label for="meta-tags">Tags (comma separated)</label>
+                <input type="text" id="meta-tags" value="{{ ','.join(page.metadata.tags) if page and page.metadata and page.metadata.tags else '' }}">
+            </div>
+            <div class="metadata-field">
+                <label for="meta-draft">Draft</label>
+                <input type="checkbox" id="meta-draft" {% if page and page.metadata and page.metadata.draft %}checked{% endif %}>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/admin/static/js/block-editor.js"></script>
+<script>
+// Отладочная информация
+console.log("Initializing block editor...");
+
+// Сохраняем данные страницы
+var pageData = {
+    content: {% if page %}{{ page.content|tojson }}{% else %}null{% endif %},
+    path: {% if page %}{{ page.source_path|tojson }}{% else %}"New Page"{% endif %},
+    title: {% if page and page.metadata and page.metadata.title %}{{ page.metadata.title|tojson }}{% else %}"Untitled Page"{% endif %},
+    metadata: {
+        title: {% if page and page.metadata and page.metadata.title %}{{ page.metadata.title|tojson }}{% else %}""{% endif %},
+        date: {% if page and page.metadata and page.metadata.date %}{{ page.metadata.date|tojson }}{% else %}""{% endif %},
+        author: {% if page and page.metadata and page.metadata.author %}{{ page.metadata.author|tojson }}{% else %}""{% endif %},
+        tags: {% if page and page.metadata and page.metadata.tags %}{{ ','.join(page.metadata.tags)|tojson }}{% else %}""{% endif %},
+        draft: {% if page and page.metadata and page.metadata.draft %}true{% else %}false{% endif %}
+    }
+};
+
+// Простая инициализация без AlpineJS
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация редактора
+    var editor = new BlockEditor('#block-editor', pageData.content);
+    
+    // Добавляем обработчики событий для кнопок
+    document.getElementById('save-btn').addEventListener('click', function() {
+        savePage(editor);
+    });
+    
+    document.getElementById('preview-btn').addEventListener('click', function() {
+        previewPage(editor);
+    });
+});
+
+// Функция сохранения страницы
+function savePage(editor) {
+    try {
+        const content = editor.getContent();
+        const title = document.getElementById('page-title').value;
+        const path = document.querySelector('.file-path').textContent;
+        
+        if (!content) {
+            console.error("Content is empty");
+            alert("Error: Content is empty");
+            return;
+        }
+        
+        if (!path) {
+            console.error("Path is empty");
+            alert("Error: Path is empty");
+            return;
+        }
+        
+        const metadata = {
+            title: title || "Untitled",
+            date: document.getElementById('meta-date').value || new Date().toISOString(),
+            author: document.getElementById('meta-author').value || "",
+            tags: document.getElementById('meta-tags').value
+                  ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
+                  : [],
+            draft: document.getElementById('meta-draft').checked
+        };
+        
+        // Создаем объект запроса
+        const requestData = {
+            path: path,
+            content: content,
+            metadata: metadata
+        };
+        
+        // Преобразуем в JSON
+        const jsonData = JSON.stringify(requestData);
+        
+        console.log("Saving page with path:", path);
+        console.log("Content length:", content.length, "bytes");
+        console.log("Metadata:", metadata);
+        console.log("Request JSON length:", jsonData.length, "bytes");
+        console.log("JSON data preview:", jsonData.substring(0, 200) + "...");
+        
+        // Отправляем через fetch
+        fetch('/admin/api/content', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: jsonData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Page saved successfully!');
+                if (data.path && path === 'New Page') {
+                    document.querySelector('.file-path').textContent = data.path;
+                }
+            } else {
+                alert('Error saving page: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error saving page:', error);
+            alert('Error saving page: ' + error.message);
+        });
+    } catch (error) {
+        console.error('Error in savePage function:', error);
+        alert('Error preparing page for save: ' + error.message);
+    }
+}
+
+// Функция предпросмотра страницы
+function previewPage(editor) {
+    try {
+        const content = editor.getContent();
+        const title = document.getElementById('page-title').value;
+        
+        const metadata = {
+            title: title || "Untitled",
+            date: document.getElementById('meta-date').value || new Date().toISOString(),
+            author: document.getElementById('meta-author').value || "",
+            tags: document.getElementById('meta-tags').value
+                  ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
+                  : [],
+            draft: document.getElementById('meta-draft').checked
+        };
+        
+        fetch('/admin/api/preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                metadata: metadata
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
+                });
+            }
+            return response.text();
+        })
+        .then(html => {
+            const win = window.open('', 'preview', 'width=800,height=600');
+            win.document.write(html);
+            win.document.close();
+        })
+        .catch(error => {
+            console.error('Error previewing page:', error);
+            alert('Error previewing page: ' + error.message);
+        });
+    } catch (error) {
+        console.error('Error in previewPage function:', error);
+        alert('Error preparing page for preview: ' + error.message);
+    }
+}
+</script>
+{% endblock %} 

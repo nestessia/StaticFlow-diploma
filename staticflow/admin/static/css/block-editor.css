@@ -1,0 +1,305 @@
+/* StaticFlow Block Editor Styles */
+
+.sf-block-editor {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 300px;
+    background-color: #fff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sf-block-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+}
+
+.sf-block-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sf-block-button:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.sf-block {
+    position: relative;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.sf-block:hover {
+    border-color: #ddd;
+}
+
+.sf-block-selected {
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+}
+
+.sf-block-controls {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+    z-index: 10;
+}
+
+.sf-block:hover .sf-block-controls,
+.sf-block-selected .sf-block-controls {
+    display: flex;
+}
+
+.sf-block-controls button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+}
+
+.sf-block-controls button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.sf-block-content {
+    padding: 8px;
+}
+
+/* Input styles for different block types */
+.sf-heading-input,
+.sf-paragraph-input,
+.sf-code-input,
+.sf-math-input,
+.sf-diagram-input {
+    width: 100%;
+    border: 1px solid transparent;
+    background-color: transparent;
+    font-family: inherit;
+    padding: 4px;
+    border-radius: 2px;
+    resize: vertical;
+}
+
+.sf-heading-input:focus,
+.sf-paragraph-input:focus,
+.sf-code-input:focus,
+.sf-math-input:focus,
+.sf-diagram-input:focus {
+    border-color: #ddd;
+    outline: none;
+    background-color: #f9f9f9;
+}
+
+.sf-heading1 {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.sf-heading2 {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+.sf-heading3 {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.sf-paragraph-input {
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.sf-code-input {
+    font-family: monospace;
+    min-height: 120px;
+    background-color: #f5f5f5;
+    padding: 8px;
+    white-space: pre;
+}
+
+.sf-code-language {
+    margin-top: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 12px;
+}
+
+.sf-math-input, 
+.sf-diagram-input {
+    font-family: monospace;
+    min-height: 80px;
+}
+
+.sf-math-preview,
+.sf-diagram-preview {
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    min-height: 50px;
+}
+
+.sf-empty-editor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #999;
+    font-style: italic;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+}
+
+/* Add plus button between blocks for adding new blocks */
+.sf-block::after {
+    content: "+";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    color: #999;
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    cursor: pointer;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sf-block:hover::after {
+    opacity: 1;
+}
+
+/* Добавляем стили, которые были в шаблоне */
+.block-editor-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.editor-file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#page-title {
+    font-size: 24px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.file-path {
+    font-size: 12px;
+    color: #777;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.editor-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.editor-metadata {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    background-color: #f9f9f9;
+}
+
+.metadata-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.metadata-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.metadata-field label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.metadata-field input[type="text"],
+.metadata-field input[type="datetime-local"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+} 
