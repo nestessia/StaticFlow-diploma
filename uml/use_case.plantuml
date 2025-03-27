@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+
+actor "Developer" as dev
+actor "User" as user
+
+rectangle "StaticFlow Framework" {
+  usecase "Create New Site" as UC1
+  usecase "Configure Site Settings" as UC2
+  usecase "Add Content" as UC3
+  usecase "Customize Templates" as UC4
+  usecase "Add Plugins" as UC5
+  usecase "Build Site" as UC6
+  usecase "Preview Site" as UC7
+  usecase "Deploy Site" as UC8
+}
+
+dev --> UC1
+dev --> UC2
+dev --> UC3
+dev --> UC4
+dev --> UC5
+dev --> UC6
+dev --> UC7
+dev --> UC8
+
+user --> UC7
+user --> UC8
+
+UC6 ..> UC7 : <<include>>
+UC7 ..> UC8 : <<extend>>
+UC3 ..> UC4 : <<include>>
+UC5 ..> UC6 : <<include>>
+
+@enduml
