@@ -1,0 +1,30 @@
+@startuml
+participant "Developer" as dev
+participant "Engine" as engine
+participant "Site" as site
+participant "Page" as page
+participant "Plugin" as plugin
+participant "Cache" as cache
+
+dev -> engine: initialize(source_dir, output_dir, templates_dir)
+engine -> site: set_directories(source_dir, output_dir, templates_dir)
+dev -> engine: add_plugin(plugin)
+engine -> plugin: initialize()
+dev -> engine: build()
+activate engine
+engine -> site: get_pages()
+site --> engine: pages
+loop for each page
+    engine -> page: process()
+    page -> cache: get_cached_content()
+    alt cache miss
+        page -> page: render_content()
+        page -> cache: cache_content()
+    end
+    engine -> plugin: process_page(page)
+end
+engine -> site: copy_static_files()
+engine --> dev: build complete
+deactivate engine
+
+@enduml

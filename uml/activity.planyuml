@@ -1,0 +1,26 @@
+@startuml
+start
+:Initialize Framework;
+:Load Configuration;
+:Set Directories;
+:Initialize Plugins;
+
+while (Has Pages?) is (yes)
+    :Load Page Content;
+    if (Cache Hit?) then (yes)
+        :Use Cached Content;
+    else (no)
+        :Parse Content;
+        :Process Metadata;
+        :Apply Templates;
+        :Cache Result;
+    endif
+    :Process with Plugins;
+endwhile (no)
+
+:Copy Static Files;
+:Generate Site Map;
+:Build Complete;
+stop
+
+@enduml
