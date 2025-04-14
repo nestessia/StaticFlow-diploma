@@ -24,10 +24,11 @@ actor "Пользователь" as user #32CD32
 
 ' Группировка вариантов использования
 rectangle "Техническая настройка" <<Technical>> {
-  usecase "Создать новый сайт" as UC1
   usecase "Настроить параметры сайта" as UC2
   usecase "Настроить шаблоны" as UC4
   usecase "Добавить плагины" as UC5
+  usecase "Управлять кэшем" as UC14
+  usecase "Управлять парсерами" as UC15
 }
 
 rectangle "Управление контентом" <<Content>> {
@@ -40,6 +41,8 @@ rectangle "Управление контентом" <<Content>> {
   usecase "Выбрать шаблоны" as UC10_2
   usecase "Настроить виджеты" as UC10_3
   usecase "Управлять SEO" as UC10_4
+  usecase "Просматривать историю изменений" as UC16
+  usecase "Откатить изменения" as UC17
 }
 
 rectangle "Публикация" <<Publishing>> {
@@ -52,13 +55,14 @@ rectangle "Публикация" <<Publishing>> {
 }
 
 ' Связи разработчика
-dev --> UC1
 dev --> UC2
 dev --> UC4
 dev --> UC5
 dev --> UC6
 dev --> UC7
 dev --> UC8
+dev --> UC14
+dev --> UC15
 
 ' Связи контент-менеджера
 cm --> UC3
@@ -72,6 +76,8 @@ cm --> UC10_3
 cm --> UC10_4
 cm --> UC7
 cm --> UC8
+cm --> UC16
+cm --> UC17
 
 ' Связи пользователя
 user --> UC11
@@ -79,13 +85,12 @@ user --> UC12
 user --> UC13
 
 ' Отношения include/extend
-UC1 ..> UC2 : <<include>>
-UC1 ..> UC3 : <<include>>
-UC1 ..> UC4 : <<include>>
-UC1 ..> UC5 : <<include>>
-UC1 ..> UC6 : <<include>>
 UC6 ..> UC7 : <<include>>
 UC7 ..> UC8 : <<extend>>
+UC9_1 ..> UC16 : <<include>>
+UC9_1 ..> UC17 : <<extend>>
+UC14 ..> UC6 : <<extend>>
+UC15 ..> UC6 : <<extend>>
 
 ' Пояснительные заметки
 note right of dev #FFA500
