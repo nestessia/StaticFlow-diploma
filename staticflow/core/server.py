@@ -20,7 +20,14 @@ class Server:
         
     def setup_templates(self):
         """Setup Jinja2 templates."""
-        template_path = Path(self.config.get('template_dir'))
+        template_dir = self.config.get('template_dir')
+        
+        # Преобразуем к Path только если это строка
+        if not isinstance(template_dir, Path):
+            template_path = Path(template_dir)
+        else:
+            template_path = template_dir
+            
         aiohttp_jinja2.setup(
             self.app,
             loader=jinja2.FileSystemLoader(str(template_path))
@@ -35,9 +42,16 @@ class Server:
         self.app.router.add_get('/admin/{tail:.*}', self.admin_handler)
         
         # Handle static files
+        static_dir = self.config.get('static_dir')
+        # Преобразуем к Path только если это строка
+        if not isinstance(static_dir, Path):
+            static_path = Path(static_dir)
+        else:
+            static_path = static_dir
+            
         self.app.router.add_static(
             '/static',
-            Path(self.config.get('static_dir'))
+            static_path
         )
         
         # Handle all other routes
@@ -56,9 +70,20 @@ class Server:
         path = request.path
         if path == '/':
             path = '/index.html'
-            
-        file_path = Path('public') / path.lstrip('/')
         
+        output_dir = self.config.get('output_dir', 'public')
+        # Преобразуем к Path только если это строка
+        if not isinstance(output_dir, Path):
+            output_path = Path(output_dir)
+        else:
+            output_path = output_dir
+            
+        # Ensure path is a string before calling lstrip
+        if isinstance(path, Path):
+            path = str(path)
+            
+        file_path = output_path / path.lstrip('/')
+            
         if not file_path.exists():
             raise web.HTTPNotFound()
             

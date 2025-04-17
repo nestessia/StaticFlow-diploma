@@ -285,6 +285,9 @@ class AdminPanel:
                         
                         # Создаем slug из заголовка
                         slug = re.sub(r'[^\w\s-]', '', metadata['title'].lower())
+                        # Ensure slug is a string before calling strip
+                        if isinstance(slug, Path):
+                            slug = str(slug)
                         slug = re.sub(r'[\s-]+', '-', slug).strip('-_')
                         
                         # Добавляем дату к имени файла
@@ -312,7 +315,11 @@ class AdminPanel:
                     if content.startswith('---'):
                         parts = content.split('---', 2)
                         if len(parts) >= 3:
-                            content_without_frontmatter = parts[2].strip()
+                            # Ensure parts[2] is a string before calling strip
+                            part = parts[2]
+                            if isinstance(part, Path):
+                                part = str(part)
+                            content_without_frontmatter = part.strip()
                     
                     final_content += content_without_frontmatter
                     
@@ -675,9 +682,17 @@ class AdminPanel:
             print("Building site from scratch...")
             
             # Перед перестроением проверим все директории
-            source_dir = Path(self.engine.config.get("source_dir", "content"))
-            output_dir = Path(self.engine.config.get("output_dir", "public"))
-            templates_dir = Path(self.engine.config.get("template_dir", "templates"))
+            source_dir = self.engine.config.get("source_dir", "content")
+            output_dir = self.engine.config.get("output_dir", "public")
+            templates_dir = self.engine.config.get("template_dir", "templates")
+            
+            # Преобразуем к Path только если это строки
+            if not isinstance(source_dir, Path):
+                source_dir = Path(source_dir)
+            if not isinstance(output_dir, Path):
+                output_dir = Path(output_dir)
+            if not isinstance(templates_dir, Path):
+                templates_dir = Path(templates_dir)
             
             print(f"Source directory: {source_dir} (exists: {source_dir.exists()})")
             print(f"Output directory: {output_dir} (exists: {output_dir.exists()})")

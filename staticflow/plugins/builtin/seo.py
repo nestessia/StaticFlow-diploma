@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from bs4 import BeautifulSoup
-from ..core.base import Plugin, PluginMetadata, HookType
+from ..core.base import Plugin, PluginMetadata
 
 
 class SEOPlugin(Plugin):
@@ -15,6 +15,11 @@ class SEOPlugin(Plugin):
             author="StaticFlow",
             requires_config=True
         )
+    
+    def process_content(self, content: str) -> str:
+        """Пустая реализация для совместимости с интерфейсом плагина.
+        SEO плагин не изменяет контент на этом этапе."""
+        return content
     
     def validate_config(self) -> bool:
         """Проверяет конфигурацию плагина."""

@@ -131,7 +131,18 @@ class DevServer:
         if path == "/":
             path = "/index.html"
             
-        file_path = Path(self.config.get("output_dir")) / path.lstrip("/")
+        output_dir = self.config.get("output_dir")
+        # Преобразуем к Path только если это строка
+        if not isinstance(output_dir, Path):
+            output_path = Path(output_dir)
+        else:
+            output_path = output_dir
+            
+        # Ensure path is a string before calling lstrip
+        if isinstance(path, Path):
+            path = str(path)
+            
+        file_path = output_path / path.lstrip("/")
         
         if not file_path.exists():
             return web.Response(status=404, text="Not Found")

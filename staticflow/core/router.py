@@ -31,9 +31,18 @@ class Router:
         return self.routes.get(content_type, default_pattern)
     
     def generate_url(self, content_type: str, metadata: Dict[str, Any]) -> str:
-        """Generate a URL for content based on its type and metadata."""
-        pattern = self.get_route_pattern(content_type)
+        """Generate a URL for a content item based on the router config."""
+        if content_type not in self.routes:
+            return ""
+
+        pattern = self.routes.get(content_type, "")
+        # Ensure pattern is a string
+        pattern = str(pattern)
         
+        url = pattern
+        if not url:
+            return ""
+
         # Replace placeholders with metadata values
         def replace_placeholder(match):
             key = match.group(1)
@@ -49,11 +58,10 @@ class Router:
             # Regular metadata lookup
             return str(metadata.get(key, ""))
         
-        # Replace placeholders using regex
-        url = re.sub(r'\{([^}]+)\}', replace_placeholder, pattern)
+        url = re.sub(r'\{([^}]+)\}', replace_placeholder, url)
         
-        # Clean up URL (remove double slashes)
-        url = url.replace('//', '/')
+        # Ensure no double slashes (except in protocol)
+        url = re.sub(r"(?<!:)//+", "/", url)
         
         return url
     
@@ -62,6 +70,11 @@ class Router:
     ) -> Path:
         """Get the full output path for a content item."""
         url = self.generate_url(content_type, metadata)
+        # Ensure base_dir is a Path object
+        if not isinstance(base_dir, Path):
+            base_dir = Path(str(base_dir))
+        # Ensure url is a string
+        url = str(url)
         return base_dir / url
     
     def _format_date(self, date_value: Any, format_str: str) -> str:

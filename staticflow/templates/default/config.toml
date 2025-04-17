@@ -13,17 +13,3 @@ output_dir = "public"
 
 # Default settings
 default_template = "base.html"
-
-# Plugin settings
-[plugins.syntax_highlight]
-style = "monokai"
-line_numbers = true
-
-[plugins.math]
-auto_render = true
-
-[plugins.diagrams]
-theme = "default"
-
-[plugins.notion_blocks]
-enabled = true 

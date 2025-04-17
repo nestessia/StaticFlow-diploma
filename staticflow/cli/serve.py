@@ -19,7 +19,10 @@ def serve(port: int, host: str, config: str):
     try:
         config_path = Path(config)
         if not config_path.exists():
-            console.print(f"[red]Error:[/red] Config file not found: {config}")
+            console.print(
+                f"[red]Error:[/red] Config file not found: {config}. "
+                "Check your directory."
+            )
             return
 
         server = DevServer(
