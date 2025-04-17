@@ -182,14 +182,9 @@ class AdminPanel:
                     # Добавляем время последнего изменения файла, если его нет
                     if not hasattr(page, 'modified'):
                         page.modified = content_path.stat().st_mtime
-                    
                     # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
-                    
                     print(f"Successfully loaded page: {path}")
-                    print(f"Page content length: {len(page.content)}")
-                    print(f"Page metadata: {page.metadata}")
-                    print(f"Safe metadata: {safe_metadata}")
                 except Exception as e:
                     print(f"Error loading page: {e}")
                     import traceback
@@ -202,9 +197,6 @@ class AdminPanel:
         
     async def api_content_handler(self, request):
         """Handle content API requests."""
-        print("api_content_handler called")
-        
-        # Проверка метода
         if request.method != 'POST':
             print(f"Method not allowed: {request.method}")
             return web.json_response({
@@ -212,34 +204,23 @@ class AdminPanel:
                 'error': f"Method not allowed: {request.method}"
             }, status=405)
         
-        # Печатаем все заголовки для отладки
-        print("Request headers:")
-        for header_name, header_value in request.headers.items():
-            print(f"  {header_name}: {header_value}")
-        
-        # Проверка наличия тела запроса 
-        content_length = request.content_length
-        print(f"Content-Length: {content_length}")
-        
         content_type = request.headers.get('Content-Type', '')
-        print(f"Content-Type: {content_type}")
-        
+
         if content_type != 'application/json':
             print(f"Invalid Content-Type: {content_type}")
             return web.json_response({
                 'success': False,
                 'error': f"Invalid Content-Type: {content_type}, expected application/json"
             }, status=400)
-            
+
         try:
-            # Проверка читабельности тела запроса без вызова async методов
             if not request.can_read_body:
                 print("Request has no body (can_read_body is False)")
                 return web.json_response({
                     'success': False,
                     'error': "Request has no body (can_read_body is False)"
                 }, status=400)
-            
+
             if request.content_length is None or request.content_length <= 0:
                 print("Request has empty content length")
                 return web.json_response({
@@ -277,10 +258,6 @@ class AdminPanel:
                     path_str = data['path']
                     content = data['content']
                     metadata = data.get('metadata', {})
-                    
-                    print(f"Received request to save content to {path_str}")
-                    print(f"Content length: {len(content)}")
-                    print(f"Metadata: {metadata}")
                     
                     # Если это новая страница, генерируем имя файла из заголовка
                     if path_str == 'New Page' and 'title' in metadata:
@@ -697,12 +674,7 @@ class AdminPanel:
                 output_dir = Path(output_dir)
             if not isinstance(templates_dir, Path):
                 templates_dir = Path(templates_dir)
-            
-            print(f"Source directory: {source_dir} (exists: {source_dir.exists()})")
-            print(f"Output directory: {output_dir} (exists: {output_dir.exists()})")
-            print(f"Templates directory: {templates_dir} (exists: {templates_dir.exists()})")
-            
-            # Очистим выходную директорию, если она существует
+
             if output_dir.exists():
                 import shutil
                 print(f"Removing old output directory: {output_dir}")

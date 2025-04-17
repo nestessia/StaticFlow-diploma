@@ -142,6 +142,8 @@ function savePage(editor) {
         console.log("Metadata:", metadata);
         console.log("Request JSON length:", jsonData.length, "bytes");
         console.log("JSON data preview:", jsonData.substring(0, 200) + "...");
+        console.log("Request URL:", '/admin/api/content');
+        console.log("Request method:", 'POST');
         
         // Отправляем через fetch
         fetch('/admin/api/content', {
@@ -153,14 +155,19 @@ function savePage(editor) {
             body: jsonData
         })
         .then(response => {
+            console.log("Response status:", response.status, response.statusText);
+            console.log("Response headers:", [...response.headers.entries()]);
+            
             if (!response.ok) {
                 return response.text().then(text => {
+                    console.error("Response error text:", text);
                     throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
                 });
             }
             return response.json();
         })
         .then(data => {
+            console.log("Response data:", data);
             if (data.success) {
                 alert('Page saved successfully!');
                 if (data.path && path === 'New Page') {
@@ -172,11 +179,25 @@ function savePage(editor) {
         })
         .catch(error => {
             console.error('Error saving page:', error);
-            alert('Error saving page: ' + error.message);
+            // Используем полный текст ошибки
+            const errorText = error.toString();
+            alert('Error saving page: ' + errorText);
+            
+            // Добавляем дополнительную диагностику
+            const diagElement = document.createElement('div');
+            diagElement.style.display = 'none';
+            diagElement.id = 'save-error-diag';
+            diagElement.innerText = JSON.stringify({
+                error: errorText,
+                path: path,
+                contentLength: content.length,
+                metadataStr: JSON.stringify(metadata)
+            }, null, 2);
+            document.body.appendChild(diagElement);
         });
     } catch (error) {
         console.error('Error in savePage function:', error);
-        alert('Error preparing page for save: ' + error.message);
+        alert('Error preparing page for save: ' + error.toString());
     }
 }
 
