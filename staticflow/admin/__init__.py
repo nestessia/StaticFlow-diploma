@@ -179,6 +179,10 @@ class AdminPanel:
                     # Устанавливаем правильный путь к исходному файлу
                     page.source_path = path
                     
+                    # Добавляем время последнего изменения файла, если его нет
+                    if not hasattr(page, 'modified'):
+                        page.modified = content_path.stat().st_mtime
+                    
                     # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
                     

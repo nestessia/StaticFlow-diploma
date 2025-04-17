@@ -44,7 +44,12 @@ class Page:
         else:
             content = raw_content
             
-        return cls(path, content, metadata)
+        page = cls(path, content, metadata)
+        
+        # Update modified timestamp from file stat
+        page.modified = path.stat().st_mtime
+        
+        return page
     
     @property
     def title(self) -> str:

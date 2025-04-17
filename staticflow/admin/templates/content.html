@@ -18,7 +18,7 @@
         <div class="content-item">
             <div class="content-info">
                 <h3>{{ file.path }}</h3>
-                <p>Last modified: {{ file.modified }}</p>
+                <p>Last modified: <script>document.write(new Date({{ file.modified }} * 1000).toLocaleString())</script></p>
             </div>
             <div class="content-actions">
                 <a href="/admin/block-editor/{{ file.path }}" class="btn btn-primary">Edit</a>

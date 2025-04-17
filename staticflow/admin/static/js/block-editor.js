@@ -272,7 +272,26 @@ class BlockEditor {
             const option = document.createElement('option');
             option.value = lang;
             option.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+            
+            // Выбираем язык, если он сохранен в блоке
+            if (block.language === lang) {
+                option.selected = true;
+            }
+            
             langSelect.appendChild(option);
+        });
+        
+        // Устанавливаем начальное значение языка, если его еще нет
+        if (!block.language) {
+            block.language = 'python';
+        }
+        
+        // Добавляем обработчик события изменения языка
+        langSelect.addEventListener('change', (event) => {
+            block.language = event.target.value;
+            console.log(`Language changed to: ${block.language}`);
+            // Предотвращаем всплытие события, чтобы оно не вызвало перерисовку всего блока
+            event.stopPropagation();
         });
         
         container.appendChild(langSelect);
@@ -349,7 +368,9 @@ class BlockEditor {
                         output += `${block.content}\n\n`;
                         break;
                     case 'code':
-                        output += '```\n' + block.content + '\n```\n\n';
+                        // Добавляем язык программирования в блок кода
+                        const lang = block.language || 'python';
+                        output += '```' + lang + '\n' + block.content + '\n```\n\n';
                         break;
                     case 'math':
                         output += '$$\n' + block.content + '\n$$\n\n';
@@ -386,6 +407,7 @@ class BlockEditor {
             let inCodeBlock = false;
             let inMathBlock = false;
             let codeBlockContent = '';
+            let codeBlockLanguage = 'python'; // Язык по умолчанию
             let paragraphContent = '';
             
             for (let i = 0; i < lines.length; i++) {
@@ -398,7 +420,9 @@ class BlockEditor {
                         if (inCodeBlock === 'diagram') {
                             this.addBlock('diagram', codeBlockContent.trim());
                         } else {
-                            this.addBlock('code', codeBlockContent.trim());
+                            // Создаем блок кода с указанным языком
+                            const newBlock = this.addBlock('code', codeBlockContent.trim());
+                            newBlock.language = codeBlockLanguage;
                         }
                         codeBlockContent = '';
                         inCodeBlock = false;
@@ -411,9 +435,17 @@ class BlockEditor {
                         }
                         
                         inCodeBlock = true;
-                        // Check if it's a mermaid diagram
-                        if (line.includes('mermaid')) {
-                            inCodeBlock = 'diagram';
+                        
+                        // Извлекаем язык из маркера начала блока кода
+                        const langMatch = line.match(/```(\w+)/);
+                        if (langMatch && langMatch[1]) {
+                            codeBlockLanguage = langMatch[1];
+                            // Если это mermaid, то это диаграмма
+                            if (langMatch[1] === 'mermaid') {
+                                inCodeBlock = 'diagram';
+                            }
+                        } else {
+                            codeBlockLanguage = 'python'; // Язык по умолчанию
                         }
                     }
                     continue;

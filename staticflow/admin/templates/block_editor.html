@@ -24,6 +24,9 @@
                 value="{{ page.title if page else 'Untitled Page' }}"
             >
             <div class="file-path">{{ page.source_path if page else 'New Page' }}</div>
+            {% if page and page.modified %}
+            <div class="file-modified">Last modified: <script>document.write(new Date({{ page.modified }} * 1000).toLocaleString())</script></div>
+            {% endif %}
         </div>
         <div class="editor-actions">
             <button class="btn" id="save-btn">Save</button>

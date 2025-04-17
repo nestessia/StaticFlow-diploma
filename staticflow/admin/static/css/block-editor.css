@@ -159,6 +159,19 @@
     border-radius: 4px;
     padding: 4px;
     font-size: 12px;
+    width: auto;
+    min-width: 120px;
+    position: relative;
+    z-index: 100;
+    background-color: white;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sf-code-language:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
 }
 
 .sf-math-input, 
@@ -246,6 +259,12 @@
 .file-path {
     font-size: 12px;
     color: #777;
+}
+
+.file-modified {
+    font-size: 12px;
+    color: #777;
+    margin-top: 2px;
 }
 
 .editor-actions {
