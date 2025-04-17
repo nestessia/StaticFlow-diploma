@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from .config import Config
 from .page import Page
+from .router import Router
 
 
 class Site:
@@ -14,8 +15,13 @@ class Site:
         self.output_dir: Optional[Path] = None
         self.templates_dir: Optional[Path] = None
         
-    def set_directories(self, source_dir: Path, output_dir: Path, 
-                       templates_dir: Path) -> None:
+        # Initialize router with routes from config
+        config_routes = config.get("routes", {})
+        self.router = Router(config_routes)
+        
+    def set_directories(
+        self, source_dir: Path, output_dir: Path, templates_dir: Path
+    ) -> None:
         """Set the main directories for the site."""
         self.source_dir = source_dir
         self.output_dir = output_dir
@@ -37,6 +43,49 @@ class Site:
         """Get all pages in the site."""
         return list(self.pages.values())
     
+    def determine_content_type(self, page: Page) -> str:
+        """Determine the content type of a page."""
+        # First check if the content type is specified in the metadata
+        if "type" in page.metadata:
+            return page.metadata["type"]
+        
+        # Check if it's in a special directory
+        source_path_str = str(page.source_path)
+        if "/posts/" in source_path_str or "\\posts\\" in source_path_str:
+            return "post"
+        
+        # Check if it's an index file
+        if page.source_path.stem == "index":
+            return "index"
+            
+        # Default to page
+        return "page"
+    
+    def generate_page_output_path(self, page: Page) -> Path:
+        """Generate the output path for a page using the router."""
+        if not self.output_dir:
+            raise ValueError("Output directory not set")
+            
+        # Build metadata for URL generation
+        metadata = page.metadata.copy()
+        
+        # Ensure slug is available
+        if "slug" not in metadata:
+            metadata["slug"] = page.source_path.stem
+            
+        # Determine content type
+        content_type = self.determine_content_type(page)
+        
+        # Use router to generate output path
+        output_path = self.router.get_output_path(
+            self.output_dir, content_type, metadata
+        )
+        
+        # Create parent directories
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        return output_path
+    
     def load_pages(self) -> None:
         """Load all pages from the source directory."""
         if not self.source_dir:
@@ -50,6 +99,11 @@ class Site:
             for path in self.source_dir.rglob(f"*{ext}"):
                 if path.is_file():
                     page = Page.from_file(path)
+                    
+                    # Set the output path using the router
+                    output_path = self.generate_page_output_path(page)
+                    page.set_output_path(output_path)
+                    
                     self.add_page(page)
     
     def get_url(self, path: str) -> str:

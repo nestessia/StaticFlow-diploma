@@ -80,12 +80,13 @@ class Engine:
         if not self.site.source_dir or not self.site.output_dir:
             raise ValueError("Source and output directories must be set")
 
-        # Calculate output path
-        rel_path = page.source_path.relative_to(self.site.source_dir)
-        output_path = (
-            self.site.output_dir / rel_path.with_suffix(".html")
-        )
-        page.output_path = output_path
+        # Use the output path already set by router in the Site.load_pages method
+        if not page.output_path:
+            # If for some reason output_path is not set, generate it now
+            output_path = self.site.generate_page_output_path(page)
+            page.set_output_path(output_path)
+        else:
+            output_path = page.output_path
 
         # Create parent directories if they don't exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
