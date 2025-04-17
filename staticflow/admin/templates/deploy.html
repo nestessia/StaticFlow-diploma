@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Deploy to GitHub Pages{% endblock %}
+
+{% block page_title %}Deploy to GitHub Pages{% endblock %}
+
+{% block content %}
+<div class="deploy-container">
+    <div class="deploy-form-container">
+        <div class="deploy-config">
+            <h3>GitHub Pages Configuration</h3>
+            <form id="github-pages-form" class="settings-form">
+                <div class="form-group">
+                    <label for="repo-url">Repository URL</label>
+                    <input type="text" id="repo-url" name="repo_url" placeholder="https://github.com/username/repo" value="{{ config.repo_url }}">
+                    <small>GitHub repository URL (HTTPS or SSH)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="branch">Branch</label>
+                    <input type="text" id="branch" name="branch" placeholder="gh-pages" value="{{ config.branch }}">
+                    <small>The branch where your site will be deployed</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">GitHub Username</label>
+                    <input type="text" id="username" name="username" placeholder="Your GitHub username" value="{{ config.username }}">
+                    <small>Your GitHub username for commits</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Git Email</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" value="{{ config.email }}">
+                    <small>Email associated with your GitHub account</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="token">GitHub Token (Personal Access Token)</label>
+                    <input type="password" id="token" name="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="{{ 'STORED_TOKEN' if config.has_token else '' }}">
+                    <small>Personal access token with repo scope (stored securely)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cname">Custom Domain (CNAME)</label>
+                    <input type="text" id="cname" name="cname" placeholder="example.com" value="{{ config.cname }}">
+                    <small>Custom domain for your GitHub Pages site (optional)</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Configuration</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="deploy-action">
+            <h3>Deploy Site</h3>
+            <p>Build your site and deploy it to GitHub Pages.</p>
+            
+            <div class="deploy-status">
+                {% if status.configured %}
+                <p><strong>Status:</strong> <span id="deploy-status-msg">Configuration ready</span></p>
+                {% if status.last_deployment %}
+                <p><strong>Last deployment:</strong> <span id="last-deployment-time">{{ status.last_deployment }}</span></p>
+                {% else %}
+                <p><strong>Last deployment:</strong> <span id="last-deployment-time">Never</span></p>
+                {% endif %}
+                {% else %}
+                <p><strong>Status:</strong> <span id="deploy-status-msg">Not configured</span></p>
+                {% endif %}
+            </div>
+            
+            <button id="deploy-btn" class="btn btn-success" {% if not status.configured %}disabled{% endif %}>Deploy to GitHub Pages</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block head %}
+<style>
+    .deploy-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .deploy-form-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .deploy-config, .deploy-action, .deployment-history {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .form-group small {
+        display: block;
+        color: #666;
+        margin-top: 5px;
+        font-size: 12px;
+    }
+    
+    .form-actions {
+        margin-top: 20px;
+    }
+    
+    .deploy-status {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .history-table-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table th, .table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-transform: capitalize;
+    }
+    
+    .status-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    @media (max-width: 768px) {
+        .deploy-form-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Loading spinner */
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top-color: #2b96f1;
+        animation: spin 1s linear infinite;
+        margin-right: 5px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deployBtn = document.getElementById('deploy-btn');
+        const deployForm = document.getElementById('github-pages-form');
+        const statusMsg = document.getElementById('deploy-status-msg');
+        const lastDeploymentTime = document.getElementById('last-deployment-time');
+        const historyTable = document.getElementById('history-table').querySelector('tbody');
+        
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+        
+        // Initial date formatting
+        if (lastDeploymentTime) {
+            lastDeploymentTime.textContent = formatDate(lastDeploymentTime.textContent);
+        }
+        
+        document.querySelectorAll('#history-table tbody td:first-child').forEach(cell => {
+            cell.textContent = formatDate(cell.textContent);
+        });
+        
+        // Handle form submission
+        if (deployForm) {
+            deployForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(deployForm);
+                const configData = {};
+                
+                formData.forEach((value, key) => {
+                    // Don't send empty token (keep existing)
+                    if (key === 'token' && value === 'STORED_TOKEN') {
+                        return;
+                    }
+                    // Don't send empty token (keep existing)
+                    if (key === 'token' && !value) {
+                        return;
+                    }
+                    configData[key] = value;
+                });
+                
+                // Show saving status
+                const submitBtn = deployForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/admin/api/deploy/config', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(configData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        alert('Configuration saved successfully');
+                        
+                        // Enable deploy button if config is valid
+                        if (data.is_valid) {
+                            deployBtn.disabled = false;
+                            statusMsg.textContent = 'Configuration ready';
+                        } else {
+                            statusMsg.textContent = 'Configuration incomplete';
+                        }
+                    } else {
+                        alert('Error saving configuration: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error saving configuration:', error);
+                    alert('Error saving configuration: ' + error.message);
+                } finally {
+                    // Restore button
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        // Handle deploy button click
+        if (deployBtn) {
+            deployBtn.addEventListener('click', async function() {
+                // Change button to loading state
+                const originalBtnText = deployBtn.textContent;
+                deployBtn.innerHTML = '<span class="spinner"></span> Deploying...';
+                deployBtn.disabled = true;
+                statusMsg.textContent = 'Deployment in progress...';
+                
+                try {
+                    const response = await fetch('/admin/api/deploy/start', {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        statusMsg.textContent = 'Deployment successful!';
+                        
+                        // Update last deployment time
+                        if (data.timestamp) {
+                            lastDeploymentTime.textContent = formatDate(data.timestamp);
+                        }
+                        
+                        // Add to history table
+                        if (data.history && data.history.length > 0) {
+                            const latestDeployment = data.history[0];
+                            
+                            // Clear "no history" row if present
+                            if (historyTable.querySelector('td[colspan="2"]')) {
+                                historyTable.innerHTML = '';
+                            }
+                            
+                            // Add new row to the top
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                                <td>${formatDate(latestDeployment.timestamp)}</td>
+                                <td><span class="status-badge status-${latestDeployment.status}">${latestDeployment.status}</span></td>
+                            `;
+                            
+                            historyTable.insertBefore(newRow, historyTable.firstChild);
+                        }
+                        
+                        alert('Site deployed successfully!');
+                    } else {
+                        statusMsg.textContent = 'Deployment failed';
+                        alert('Error deploying site: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error deploying site:', error);
+                    statusMsg.textContent = 'Deployment failed';
+                    alert('Error deploying site: ' + error.message);
+                } finally {
+                    // Restore button
+                    deployBtn.innerHTML = originalBtnText;
+                    deployBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

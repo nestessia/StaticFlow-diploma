@@ -76,6 +76,11 @@ class AdminPanel:
         self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
         self.app.router.add_post('/api/preview', self.api_preview_handler)
         
+        # Добавляем маршруты для деплоя на GitHub Pages
+        self.app.router.add_get('/deploy', self.deploy_handler)
+        self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
+        self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
+        
         # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
         print(f"Static path: {static_path} (exists: {static_path.exists()})")
@@ -116,6 +121,10 @@ class AdminPanel:
                 return await self.api_preview_handler(request)
             elif path == '/api/settings':
                 return await self.api_settings_handler(request)
+            elif path == '/api/deploy/config':
+                return await self.api_deploy_config_handler(request)
+            elif path == '/api/deploy/start':
+                return await self.api_deploy_start_handler(request)
             else:
                 return web.json_response({
                     'success': False,
@@ -173,6 +182,21 @@ class AdminPanel:
             'config': self.config.config
         }
         
+    @aiohttp_jinja2.template('deploy.html')
+    async def deploy_handler(self, request):
+        """Handle deployment page."""
+        # Инициализируем GitHub Pages deployer
+        from ..deploy.github_pages import GitHubPagesDeployer
+        deployer = GitHubPagesDeployer()
+        
+        # Получаем статус и конфигурацию деплоя
+        status = deployer.get_deployment_status()
+        
+        return {
+            'status': status,
+            'config': status['config']
+        }
+        
     @aiohttp_jinja2.template('block_editor.html')
     async def block_editor_handler(self, request):
         """Handle block editor page."""
@@ -198,6 +222,7 @@ class AdminPanel:
                     # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
                     print(f"Successfully loaded page: {path}")
+                
                 except Exception as e:
                     print(f"Error loading page: {e}")
                     import traceback
@@ -207,194 +232,82 @@ class AdminPanel:
             'page': page,
             'safe_metadata': safe_metadata
         }
-        
+    
     async def api_content_handler(self, request):
         """Handle content API requests."""
-        if request.method != 'POST':
-            print(f"Method not allowed: {request.method}")
-            return web.json_response({
-                'success': False,
-                'error': f"Method not allowed: {request.method}"
-            }, status=405)
-        
-        content_type = request.headers.get('Content-Type', '')
-
-        if content_type != 'application/json':
-            print(f"Invalid Content-Type: {content_type}")
-            return web.json_response({
-                'success': False,
-                'error': f"Invalid Content-Type: {content_type}, expected application/json"
-            }, status=400)
-
         try:
-            if not request.can_read_body:
-                print("Request has no body (can_read_body is False)")
+            data = await request.json()
+            
+            if 'path' not in data:
                 return web.json_response({
                     'success': False,
-                    'error': "Request has no body (can_read_body is False)"
+                    'error': 'Missing path field'
                 }, status=400)
-
-            if request.content_length is None or request.content_length <= 0:
-                print("Request has empty content length")
+                
+            if 'content' not in data:
                 return web.json_response({
                     'success': False,
-                    'error': "Request has empty content length"
+                    'error': 'Missing content field'
                 }, status=400)
+                
+            path = data['path']
+            content = data['content']
+            metadata = data.get('metadata', {})
             
-            try:
-                # Прямое чтение тела запроса как строки для отладки
-                raw_body = await request.text()
-                print(f"Raw request body ({len(raw_body)} bytes): {raw_body[:200]}...")
+            # Handle new page creation
+            is_new_page = path == 'New Page'
+            if is_new_page:
+                title = metadata.get('title', 'Untitled')
+                # Create sanitized filename from title
+                filename = title.lower().replace(' ', '-')
+                # Remove any character that's not alphanumeric, dash, or underscore
+                filename = re.sub(r'[^a-z0-9\-_]', '', filename)
+                # Ensure we have a valid filename
+                if not filename:
+                    filename = 'untitled'
                 
-                if not raw_body:
-                    print("Request body is empty")
-                    return web.json_response({
-                        'success': False, 
-                        'error': "Request body is empty"
-                    }, status=400)
-                
-                # Явный разбор JSON
-                try:
-                    data = json.loads(raw_body)
-                except json.JSONDecodeError as e:
-                    print(f"JSON parse error: {e}, body: {raw_body}")
-                    return web.json_response({
-                        'success': False, 
-                        'error': f"Invalid JSON: {e}"
-                    }, status=400)
+                # Set path to new file in content directory
+                path = f"{filename}.md"
+                print(f"Creating new page at: {path}")
             
-                print(f"Request data keys: {list(data.keys())}")
+            # Normalize path to be relative to content directory
+            if path.startswith('/'):
+                path = path[1:]
                 
-                # Проверка необходимых полей
-                if 'path' in data and 'content' in data:
-                    # Сохранение контента из блочного редактора
-                    path_str = data['path']
-                    content = data['content']
-                    metadata = data.get('metadata', {})
-                    
-                    # Если это новая страница, генерируем имя файла из заголовка
-                    if path_str == 'New Page' and 'title' in metadata:
-                        # Создаем slug из заголовка
-                        slug = re.sub(r'[^\w\s-]', '', metadata['title'].lower())
-                        # Ensure slug is a string before calling strip
-                        if isinstance(slug, Path):
-                            slug = str(slug)
-                        slug = re.sub(r'[\s-]+', '-', slug).strip('-_')
-                        
-                        # Добавляем дату к имени файла
-                        date_prefix = datetime.now().strftime('%Y-%m-%d')
-                        path_str = f"{date_prefix}-{slug}.md"
-                    
-                    # Создаем полный путь к файлу
-                    path = Path('content')
-                    path.mkdir(exist_ok=True)
-                    
-                    full_path = path / path_str
-                    
-                    # Создаем контент с правильными метаданными
-                    final_content = '---\n'
-                    for key, value in metadata.items():
-                        if isinstance(value, list):
-                            value_str = '[' + ', '.join(f'"{item}"' for item in value) + ']'
-                            final_content += f"{key}: {value_str}\n"
-                        else:
-                            final_content += f"{key}: {value}\n"
-                    final_content += '---\n\n'
-                    
-                    # Добавляем основной контент без frontmatter, если он есть
-                    content_without_frontmatter = content
-                    if content.startswith('---'):
-                        parts = content.split('---', 2)
-                        if len(parts) >= 3:
-                            # Ensure parts[2] is a string before calling strip
-                            part = parts[2]
-                            if isinstance(part, Path):
-                                part = str(part)
-                            content_without_frontmatter = part.strip()
-                    
-                    final_content += content_without_frontmatter
-                    
-                    # Записываем в файл
-                    try:
-                        full_path.write_text(final_content, encoding='utf-8')
-                        print(f"Content successfully saved to {full_path}")
-                        
-                        # Пересобираем сайт после изменения контента
-                        print("Starting site rebuild after content change...")
-                        rebuild_success = self.rebuild_site()
-                        
-                        if rebuild_success:
-                            return web.json_response({
-                                'success': True,
-                                'path': path_str,
-                                'message': "Content saved and site rebuilt successfully"
-                            })
-                        else:
-                            return web.json_response({
-                                'success': True,
-                                'path': path_str,
-                                'warning': "Content saved but site rebuild failed"
-                            })
-                    except Exception as e:
-                        print(f"Error saving content: {e}")
-                        import traceback
-                        traceback.print_exc()
-                        return web.json_response({
-                            'success': False,
-                            'error': str(e)
-                        }, status=500)
-                
-                # Обработка стандартного API (для обратной совместимости)
-                action = data.get('action')
-                
-                if not action:
-                    return web.json_response({
-                        'status': 'error',
-                        'message': 'Missing action field'
-                    })
-                    
-                if action not in ['create', 'update', 'delete']:
-                    return web.json_response({
-                        'status': 'error',
-                        'message': 'Invalid action'
-                    })
-                    
-                if 'path' not in data:
-                    return web.json_response({
-                        'status': 'error',
-                        'message': 'Missing path field'
-                    })
-                
-                if action == 'create':
-                    # Create new content file
-                    path = Path('content') / data['path']
-                    path.write_text(data['content'], encoding='utf-8')
-                    self.rebuild_site()
-                    return web.json_response({'status': 'ok'})
-                    
-                elif action == 'update':
-                    # Update existing content file
-                    path = Path('content') / data['path']
-                    path.write_text(data['content'], encoding='utf-8')
-                    self.rebuild_site()
-                    return web.json_response({'status': 'ok'})
-                    
-                elif action == 'delete':
-                    # Delete content file
-                    path = Path('content') / data['path']
-                    path.unlink(missing_ok=True)
-                    self.rebuild_site()
-                    return web.json_response({'status': 'ok'})
+            content_path = Path('content') / path
             
-            except Exception as e:
-                print(f"Error processing request body: {e}")
-                import traceback
-                traceback.print_exc()
-                return web.json_response({
-                    'success': False,
-                    'error': str(e)
-                }, status=500)
-        
+            # Ensure parent directories exist
+            content_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Create frontmatter
+            frontmatter = '---\n'
+            for key, value in metadata.items():
+                if isinstance(value, list):
+                    frontmatter += f"{key}:\n"
+                    for item in value:
+                        frontmatter += f"  - {item}\n"
+                else:
+                    frontmatter += f"{key}: {value}\n"
+            frontmatter += '---\n\n'
+            
+            # Write content to file with frontmatter
+            with open(content_path, 'w', encoding='utf-8') as f:
+                f.write(frontmatter + content)
+                
+            # Rebuild the site
+            self.rebuild_site()
+            
+            return web.json_response({
+                'success': True,
+                'path': path
+            })
+            
+        except json.JSONDecodeError as e:
+            print(f"Content JSON parse error: {e}")
+            return web.json_response({
+                'success': False,
+                'error': f"Invalid JSON: {e}"
+            }, status=400)
         except Exception as e:
             print(f"Unexpected error in api_content_handler: {e}")
             import traceback
@@ -651,6 +564,86 @@ class AdminPanel:
             return web.json_response({
                 'success': False,
                 'error': str(e)
+            }, status=500)
+            
+    async def api_deploy_config_handler(self, request):
+        """Handle deploy configuration API requests."""
+        try:
+            data = await request.json()
+            
+            # Инициализируем GitHub Pages deployer
+            from ..deploy.github_pages import GitHubPagesDeployer
+            deployer = GitHubPagesDeployer()
+            
+            # Обновляем конфигурацию
+            deployer.update_config(**data)
+            
+            # Проверяем, валидна ли конфигурация
+            is_valid, errors = deployer.validate_config()
+            
+            return web.json_response({
+                'success': True,
+                'is_valid': is_valid,
+                'errors': errors if not is_valid else []
+            })
+        except json.JSONDecodeError as e:
+            print(f"Deploy config JSON parse error: {e}")
+            return web.json_response({
+                'success': False,
+                'error': f"Invalid JSON: {e}"
+            }, status=400)
+        except Exception as e:
+            print(f"Unexpected error in api_deploy_config_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to save deployment configuration'
+            }, status=500)
+            
+    async def api_deploy_start_handler(self, request):
+        """Handle deploy start API requests."""
+        try:
+            # Инициализируем GitHub Pages deployer
+            from ..deploy.github_pages import GitHubPagesDeployer
+            deployer = GitHubPagesDeployer()
+            
+            # Проверяем, валидна ли конфигурация
+            is_valid, errors = deployer.validate_config()
+            if not is_valid:
+                return web.json_response({
+                    'success': False,
+                    'message': f"Invalid configuration: {', '.join(errors)}"
+                }, status=400)
+                
+            # Сначала перестраиваем сайт
+            rebuild_success = self.rebuild_site()
+            if not rebuild_success:
+                return web.json_response({
+                    'success': False,
+                    'message': 'Failed to build site'
+                }, status=500)
+                
+            # Деплоим сайт
+            success, message = deployer.deploy()
+            
+            # Получаем обновленный статус
+            status = deployer.get_deployment_status()
+            
+            return web.json_response({
+                'success': success,
+                'message': message,
+                'timestamp': status.get('last_deployment'),
+                'history': status.get('history', [])
+            })
+        except Exception as e:
+            print(f"Unexpected error in api_deploy_start_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'message': f"Deployment failed: {str(e)}"
             }, status=500)
         
     def copy_static_to_public(self):
