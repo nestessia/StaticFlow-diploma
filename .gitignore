@@ -6,6 +6,6 @@ __pycache__
 .env
 /dist
 
-/testsite-md
-/testsite-html
+/testsite
+/test-site
 

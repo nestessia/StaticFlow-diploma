@@ -512,7 +512,7 @@ class AdminPanel:
                     <!-- Подключаем внешние библиотеки для специальных элементов -->
                     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
                     <script>
-                        document.addEventListener('DOMContentLoaded', function() {
+                        document.addEventListener('DOMContentLoaded', function() {{
                             // Инициализация Mermaid для диаграмм
                             mermaid.initialize({{startOnLoad:true}});
                             
@@ -526,7 +526,7 @@ class AdminPanel:
                                 div.textContent = content;
                                 parent.parentNode.replaceChild(div, parent);
                             }});
-                        });
+                        }});
                     </script>
                 </head>
                 <body>
