@@ -3,7 +3,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from ..core.config import Config
-from .server import DevServer
+from ..core.server import Server
 
 console = Console()
 
@@ -25,10 +25,11 @@ def serve(port: int, host: str, config: str):
             )
             return
 
-        server = DevServer(
+        server = Server(
             config=Config(config_path),
             host=host,
-            port=port
+            port=port,
+            dev_mode=True
         )
  
         console.print(
@@ -39,7 +40,7 @@ def serve(port: int, host: str, config: str):
             )
         )
 
-        server.start()
+        server.run()
 
     except Exception as e:
         console.print(f"[red]Error starting server:[/red] {str(e)}") 
