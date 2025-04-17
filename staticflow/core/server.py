@@ -5,7 +5,6 @@ import jinja2
 from rich.console import Console
 from rich.panel import Panel
 from watchdog.events import FileSystemEventHandler
-from ..core.config import Config
 from ..core.engine import Engine
 from ..admin import AdminPanel
 from ..plugins import initialize_plugins
@@ -99,7 +98,8 @@ class Server:
                     "\n".join([
                         "[red]Critical errors found:[/red]",
                         *[f"• {error}" for error in errors],
-                        "\n[yellow]Please fix these issues before starting the server:[/yellow]",
+                        "\n[yellow]Please fix these issues before starting "
+                        "the server:[/yellow]",
                         "1. Make sure you're in the correct project directory",
                         "2. Check if all required directories and files exist",
                         "3. Verify file and directory permissions",

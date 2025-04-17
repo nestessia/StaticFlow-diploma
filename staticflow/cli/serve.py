@@ -1,7 +1,6 @@
 import click
 from pathlib import Path
 from rich.console import Console
-from rich.panel import Panel
 from ..core.config import Config
 from ..core.server import Server
 
@@ -32,14 +31,6 @@ def serve(port: int, host: str, config: str):
             dev_mode=True
         )
  
-        console.print(
-            Panel.fit(
-                f"[green]Server running at[/green] http://{host}:{port}\n"
-                "[dim]Press CTRL+C to stop[/dim]",
-                title="StaticFlow Dev Server"
-            )
-        )
-
         server.run()
 
     except Exception as e:
