@@ -54,10 +54,6 @@
                 <label for="meta-tags">Tags (comma separated)</label>
                 <input type="text" id="meta-tags" value="{{ ','.join(page.metadata.tags) if page and page.metadata and page.metadata.tags else '' }}">
             </div>
-            <div class="metadata-field">
-                <label for="meta-draft">Draft</label>
-                <input type="checkbox" id="meta-draft" {% if page and page.metadata and page.metadata.draft %}checked{% endif %}>
-            </div>
         </div>
     </div>
 </div>
