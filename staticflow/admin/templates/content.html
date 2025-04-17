@@ -19,11 +19,9 @@
             <div class="content-info">
                 <h3>{{ file.path }}</h3>
                 <p>Last modified: {{ file.modified }}</p>
-                <p>Size: {{ file.size }} bytes</p>
             </div>
             <div class="content-actions">
-                <button onclick="editContent('{{ file.path }}')">Edit</button>
-                <a href="/admin/block-editor/{{ file.path }}" class="btn btn-primary">Block Edit</a>
+                <a href="/admin/block-editor/{{ file.path }}" class="btn btn-primary">Edit</a>
                 <button onclick="deleteContent('{{ file.path }}')" class="danger">Delete</button>
             </div>
         </div>
@@ -31,8 +29,7 @@
     </div>
     
     <div class="content-actions-global">
-        <button onclick="createContent()" class="create-btn">Create New Content</button>
-        <a href="/admin/block-editor" class="create-btn block-btn">Create With Block Editor</a>
+        <a href="/admin/block-editor" class="create-btn block-btn">Create new page</a>
     </div>
 </div>
 {% endblock %}
