@@ -47,38 +47,33 @@ class Engine:
         self.site.set_directories(source_dir, output_dir, templates_dir)
         
     def build(self) -> None:
-        """Build the static site."""
-        # Auto-initialize if not initialized
-        if not self.site.source_dir or not self.site.output_dir:
-            source_dir = self.config.get("source_dir", "content")
-            output_dir = self.config.get("output_dir", "public")
-            templates_dir = self.config.get("template_dir", "templates")
+        """Build the site."""
+        # Create output directory if it doesn't exist
+        if self.site.output_dir:
+            self.site.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Execute pre-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'pre_build'):
+                plugin.pre_build(self.site)
             
-            # Преобразуем к Path только если это строки
-            if not isinstance(source_dir, Path):
-                source_dir = Path(source_dir)
-            if not isinstance(output_dir, Path):
-                output_dir = Path(output_dir)
-            if not isinstance(templates_dir, Path):
-                templates_dir = Path(templates_dir)
-                
-            self.initialize(source_dir, output_dir, templates_dir)
-        
-        if not self.site.source_dir or not self.site.output_dir:
-            raise ValueError("Source and output directories must be set")
-            
-        # Clear output directory
-        if self.site.output_dir.exists():
-            shutil.rmtree(self.site.output_dir)
-        self.site.output_dir.mkdir(parents=True)
-        
-        # Load all pages
-        self.site.load_pages()
-        
-        # Process pages
+        self.site.clear()
         self._process_pages()
         
-        # Copy static assets
+        # Execute post-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'post_build'):
+                plugin.post_build(self.site)
+            
+        # Копируем статику админки в папку public
+        try:
+            from ..admin import AdminPanel
+            admin = AdminPanel(self.config, self)
+            admin.copy_static_to_public()
+        except Exception as e:
+            print(f"Ошибка при копировании статики админки: {e}")
+            
+        # Copy static files
         self._copy_static_files()
         
     def _process_pages(self) -> None:

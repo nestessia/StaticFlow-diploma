@@ -5,6 +5,9 @@ import jinja2
 from ..core.config import Config
 from ..core.engine import Engine
 import json
+import shutil
+from datetime import datetime
+import re
 
 
 class AdminPanel:
@@ -80,8 +83,18 @@ class AdminPanel:
         if not static_path.exists():
             static_path.mkdir(parents=True)
             print(f"Created static directory: {static_path}")
-            
-        self.app.router.add_static('/static', static_path)
+        
+        # Проверяем наличие кэшированной статики в public
+        cached_static_path = Path('public/admin/static')
+        use_cached = cached_static_path.exists()
+        
+        # Используем кэшированную статику, если она есть, иначе берем из фреймворка
+        final_static_path = cached_static_path if use_cached else static_path
+        self.app.router.add_static('/static', final_static_path)
+        
+        # Если кэш не существует, копируем статику при инициализации
+        if not use_cached:
+            self.copy_static_to_public()
         
     async def handle_request(self, request):
         """Handle admin panel request."""
@@ -261,9 +274,6 @@ class AdminPanel:
                     
                     # Если это новая страница, генерируем имя файла из заголовка
                     if path_str == 'New Page' and 'title' in metadata:
-                        import re
-                        from datetime import datetime
-                        
                         # Создаем slug из заголовка
                         slug = re.sub(r'[^\w\s-]', '', metadata['title'].lower())
                         # Ensure slug is a string before calling strip
@@ -643,56 +653,33 @@ class AdminPanel:
                 'error': str(e)
             }, status=500)
         
+    def copy_static_to_public(self):
+        """Копирует статические файлы админки в папку public для кэширования."""
+        source_static_path = Path(__file__).parent / 'static'
+        if not source_static_path.exists():
+            print("Исходная директория статики не существует, нечего копировать")
+            return
+            
+        dest_static_path = Path('public/admin/static')
+        
+        # Создаем директории, если они не существуют
+        dest_static_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Копируем статические файлы
+        if dest_static_path.exists():
+            shutil.rmtree(dest_static_path)
+            
+        print(f"Копирование статики админки из {source_static_path} в {dest_static_path}")
+        shutil.copytree(source_static_path, dest_static_path)
+        print("Статика админки успешно скопирована в public")
+    
     def rebuild_site(self):
-        """Rebuild the site."""
-        print("Rebuilding site...")
+        """Rebuild the site using the engine."""
         try:
-            # Очищаем кеш перед перестроением
-            print("Clearing cache...")
-            self.engine._cache.clear()
-            if hasattr(self.engine.site, 'clear'):
-                print("Clearing site data...")
-                self.engine.site.clear()
+            # Убедимся, что статика админки тоже обновлена
+            self.copy_static_to_public()
             
-            # Перезагружаем конфигурацию
-            print("Reloading configuration...")
-            if hasattr(self.engine.config, 'reload'):
-                self.engine.config.reload()
-            
-            # Пересобираем сайт с нуля
-            print("Building site from scratch...")
-            
-            # Перед перестроением проверим все директории
-            source_dir = self.engine.config.get("source_dir", "content")
-            output_dir = self.engine.config.get("output_dir", "public")
-            templates_dir = self.engine.config.get("template_dir", "templates")
-            
-            # Преобразуем к Path только если это строки
-            if not isinstance(source_dir, Path):
-                source_dir = Path(source_dir)
-            if not isinstance(output_dir, Path):
-                output_dir = Path(output_dir)
-            if not isinstance(templates_dir, Path):
-                templates_dir = Path(templates_dir)
-
-            if output_dir.exists():
-                import shutil
-                print(f"Removing old output directory: {output_dir}")
-                shutil.rmtree(output_dir)
-                output_dir.mkdir(parents=True)
-                print("Output directory recreated")
-
-            # Полностью переинициализируем сайт
-            self.engine.initialize(source_dir, output_dir, templates_dir)
-
-            # Перестраиваем сайт
             self.engine.build()
-            
-            content_count = len(list(source_dir.rglob("*.md")))
-            pages_generated = len(list(output_dir.rglob("*.html")))
-            
-            print(f"Site rebuilt successfully! Content files: {content_count}, Pages generated: {pages_generated}")
-            
             return True
         except Exception as e:
             print(f"Error rebuilding site: {e}")
@@ -702,4 +689,7 @@ class AdminPanel:
             
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
-        web.run_app(self.app, host=host, port=port) 
+        web.run_app(self.app, host=host, port=port)
+
+# Экспортируем AdminPanel для доступа из других модулей
+__all__ = ['AdminPanel'] 
