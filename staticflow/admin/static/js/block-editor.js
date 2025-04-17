@@ -1,6 +1,6 @@
 /**
- * StaticFlow Block Editor
- * A modern block-based editor for static site content
+ * StaticFlow Block Editor v2.0
+ * Notion-style block-based editor for static site content
  */
 
 class BlockEditor {
@@ -11,7 +11,7 @@ class BlockEditor {
         
         if (!this.container) {
             console.error("Container not found:", container);
-            return; // Выходим, чтобы избежать ошибок, если контейнер не найден
+            return;
         }
         
         console.log("Container found:", this.container);
@@ -24,56 +24,258 @@ class BlockEditor {
         this.editorContainer.className = 'sf-block-editor';
         this.container.appendChild(this.editorContainer);
         
-        // Create toolbar
-        this.toolbar = document.createElement('div');
-        this.toolbar.className = 'sf-block-toolbar';
-        this.container.insertBefore(this.toolbar, this.editorContainer);
-        
         // Initialize blocks from content or add empty paragraph
         if (initialContent) {
             console.log("Deserializing initial content...");
             this.deserializeContent(initialContent);
         }
         
-        // Если после десериализации блоков нет, создаем параграф
+        // If no blocks after deserialization, create a paragraph
         if (this.blocks.length === 0) {
             console.log("No blocks after deserialization, adding default paragraph");
             this.addBlock('paragraph');
         }
         
-        this.setupToolbar();
         this.render();
+        this.setupEventListeners();
         
         console.log("BlockEditor initialized with", this.blocks.length, "blocks");
     }
     
-    setupToolbar() {
-        // Add block buttons
-        console.log("Setting up toolbar");
-        const blockTypes = [
-            { type: 'heading1', icon: 'H1', label: 'Heading 1' },
-            { type: 'heading2', icon: 'H2', label: 'Heading 2' },
-            { type: 'heading3', icon: 'H3', label: 'Heading 3' },
-            { type: 'paragraph', icon: '¶', label: 'Paragraph' },
-            { type: 'code', icon: '</>', label: 'Code Block' },
-            { type: 'math', icon: '∑', label: 'Math Formula' },
-            { type: 'diagram', icon: '◊', label: 'Diagram' }
-        ];
+    // Настраиваем обработчики событий
+    setupEventListeners() {
+        // Делегирование событий для добавления новых блоков и взаимодействия с ними
+        this.editorContainer.addEventListener('click', (e) => {
+            // Обработка клика по плюсику для добавления блока
+            if (e.target.closest('.add-block-button')) {
+                const button = e.target.closest('.add-block-button');
+                const blockId = button.dataset.blockId;
+                this.showBlockTypeMenu(button, blockId);
+            }
+            
+            // Обработка клика по меню выбора типа блока
+            if (e.target.closest('.block-type-option')) {
+                const option = e.target.closest('.block-type-option');
+                const blockType = option.dataset.type;
+                const position = parseInt(option.closest('.block-type-menu').dataset.position);
+                
+                this.addBlock(blockType, '', position);
+                this.hideBlockTypeMenu();
+            }
+            
+            // Обработка клика по блоку для его выбора
+            const blockElement = e.target.closest('.sf-block');
+            if (blockElement && !e.target.closest('.sf-block-controls button') && 
+                !e.target.closest('.add-block-button') && 
+                !e.target.closest('.block-type-menu')) {
+                const blockId = blockElement.dataset.blockId;
+                this.selectBlock(blockId);
+            }
+            
+            // Клик по кнопке удаления блока
+            if (e.target.closest('.delete-block-button')) {
+                const button = e.target.closest('.delete-block-button');
+                const blockId = button.closest('.sf-block').dataset.blockId;
+                this.removeBlock(blockId);
+            }
+            
+            // Клик по кнопке перемещения блока вверх
+            if (e.target.closest('.move-up-button')) {
+                const button = e.target.closest('.move-up-button');
+                const blockId = button.closest('.sf-block').dataset.blockId;
+                this.moveBlock(blockId, 'up');
+            }
+            
+            // Клик по кнопке перемещения блока вниз
+            if (e.target.closest('.move-down-button')) {
+                const button = e.target.closest('.move-down-button');
+                const blockId = button.closest('.sf-block').dataset.blockId;
+                this.moveBlock(blockId, 'down');
+            }
+        });
         
-        blockTypes.forEach(blockType => {
-            const button = document.createElement('button');
-            button.className = 'sf-block-button';
-            button.innerHTML = blockType.icon;
-            button.title = blockType.label;
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log(`Adding block of type: ${blockType.type}`);
-                this.addBlock(blockType.type);
-            });
-            this.toolbar.appendChild(button);
+        // Закрываем меню выбора типа блока при клике в другом месте
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.block-type-menu') && !e.target.closest('.add-block-button')) {
+                this.hideBlockTypeMenu();
+            }
+        });
+        
+        // Обработка клавиатурных событий для всего редактора
+        this.editorContainer.addEventListener('keydown', (e) => {
+            // Обработка Enter для создания нового блока
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const activeElement = document.activeElement;
+                // Игнорируем Enter в многострочных элементах (textarea)
+                if (activeElement.tagName === 'TEXTAREA' && 
+                    !activeElement.classList.contains('sf-single-line')) {
+                    return;
+                }
+                
+                if (activeElement.closest('.sf-block')) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение
+                    const block = activeElement.closest('.sf-block');
+                    const blockId = block.dataset.blockId;
+                    const blockIndex = this.blocks.findIndex(b => b.id === blockId);
+                    
+                    // Добавляем новый блок после текущего
+                    this.addBlock('paragraph', '', blockIndex + 1);
+                }
+            }
+            
+            // Обработка Backspace для объединения или удаления блоков
+            if (e.key === 'Backspace') {
+                const activeElement = document.activeElement;
+                if (activeElement.closest('.sf-block')) {
+                    const block = activeElement.closest('.sf-block');
+                    const blockId = block.dataset.blockId;
+                    const currentBlock = this.blocks.find(b => b.id === blockId);
+                    
+                    // Если текст пуст и это не первый блок, удаляем его
+                    if (currentBlock && currentBlock.content === '' && 
+                        this.blocks.indexOf(currentBlock) > 0) {
+                        e.preventDefault();
+                        this.removeBlock(blockId);
+                        
+                        // Выбираем предыдущий блок
+                        const prevBlockIndex = Math.max(0, this.blocks.indexOf(currentBlock) - 1);
+                        if (prevBlockIndex >= 0 && this.blocks[prevBlockIndex]) {
+                            this.selectBlock(this.blocks[prevBlockIndex].id);
+                        }
+                    }
+                }
+            }
         });
     }
     
+    // Показать меню выбора типа блока
+    showBlockTypeMenu(button, blockId) {
+        // Закрываем предыдущее меню, если оно открыто
+        this.hideBlockTypeMenu();
+        
+        const blockIndex = this.blocks.findIndex(block => block.id === blockId);
+        const position = blockIndex + 1; // Позиция для вставки нового блока
+        
+        const menu = document.createElement('div');
+        menu.className = 'block-type-menu';
+        menu.dataset.position = position;
+        
+        // Группы блоков с соответствующими иконками и описаниями
+        const blockGroups = [
+            {
+                title: 'Базовые',
+                types: [
+                    { type: 'paragraph', icon: '¶', label: 'Обычный текст' },
+                    { type: 'heading1', icon: 'H1', label: 'Заголовок 1' },
+                    { type: 'heading2', icon: 'H2', label: 'Заголовок 2' },
+                    { type: 'heading3', icon: 'H3', label: 'Заголовок 3' }
+                ]
+            },
+            {
+                title: 'Списки',
+                types: [
+                    { type: 'bullet-list', icon: '•', label: 'Маркированный список' },
+                    { type: 'numbered-list', icon: '1.', label: 'Нумерованный список' }
+                ]
+            },
+            {
+                title: 'Специальные',
+                types: [
+                    { type: 'quote', icon: '"', label: 'Цитата' },
+                    { type: 'code', icon: '</>', label: 'Блок кода' },
+                    { type: 'math', icon: '∑', label: 'Математическая формула' },
+                    { type: 'diagram', icon: '◊', label: 'Диаграмма' }
+                ]
+            },
+            {
+                title: 'Медиа',
+                types: [
+                    { type: 'image', icon: '🖼️', label: 'Изображение' },
+                    { type: 'audio', icon: '🔊', label: 'Аудио' },
+                    { type: 'video', icon: '🎥', label: 'Видео' }
+                ]
+            },
+            {
+                title: 'Информационные блоки',
+                types: [
+                    { type: 'info', icon: 'ℹ️', label: 'Информация' },
+                    { type: 'warning', icon: '⚠️', label: 'Предупреждение' },
+                    { type: 'danger', icon: '⛔', label: 'Опасность' }
+                ]
+            }
+        ];
+        
+        // Создаем разделы меню
+        blockGroups.forEach(group => {
+            const groupElement = document.createElement('div');
+            groupElement.className = 'block-type-group';
+            
+            const groupTitle = document.createElement('div');
+            groupTitle.className = 'block-type-group-title';
+            groupTitle.textContent = group.title;
+            groupElement.appendChild(groupTitle);
+            
+            // Добавляем варианты блоков
+            group.types.forEach(blockType => {
+                const option = document.createElement('div');
+                option.className = 'block-type-option';
+                option.dataset.type = blockType.type;
+                
+                const icon = document.createElement('span');
+                icon.className = 'block-type-icon';
+                icon.textContent = blockType.icon;
+                
+                const label = document.createElement('span');
+                label.className = 'block-type-label';
+                label.textContent = blockType.label;
+                
+                option.appendChild(icon);
+                option.appendChild(label);
+                
+                groupElement.appendChild(option);
+            });
+            
+            menu.appendChild(groupElement);
+        });
+        
+        // Размещаем меню рядом с кнопкой
+        const rect = button.getBoundingClientRect();
+        menu.style.position = 'absolute';
+        menu.style.top = `${rect.bottom + window.scrollY}px`;
+        menu.style.left = `${rect.left + window.scrollX}px`;
+        
+        document.body.appendChild(menu);
+    }
+    
+    // Скрыть меню выбора типа блока
+    hideBlockTypeMenu() {
+        const menu = document.querySelector('.block-type-menu');
+        if (menu) {
+            menu.remove();
+        }
+    }
+    
+    // Выбрать блок (установить фокус)
+    selectBlock(blockId) {
+        this.selectedBlock = blockId;
+        
+        // Обновляем классы выбранных блоков
+        document.querySelectorAll('.sf-block').forEach(block => {
+            if (block.dataset.blockId === blockId) {
+                block.classList.add('sf-block-selected');
+                
+                // Устанавливаем фокус на элемент ввода внутри блока
+                const input = block.querySelector('input, textarea');
+                if (input) {
+                    input.focus();
+                }
+            } else {
+                block.classList.remove('sf-block-selected');
+            }
+        });
+    }
+    
+    // Добавить новый блок
     addBlock(type, content = '', position = this.blocks.length) {
         const newBlock = {
             id: Date.now().toString(),
@@ -84,37 +286,68 @@ class BlockEditor {
         this.blocks.splice(position, 0, newBlock);
         this.selectedBlock = newBlock.id;
         this.render();
+        
+        // Устанавливаем фокус на новый блок
+        setTimeout(() => {
+            const blockElement = document.querySelector(`.sf-block[data-block-id="${newBlock.id}"]`);
+            if (blockElement) {
+                const input = blockElement.querySelector('input, textarea');
+                if (input) {
+                    input.focus();
+                }
+            }
+        }, 0);
+        
         return newBlock;
     }
     
+    // Удалить блок
     removeBlock(blockId) {
         const index = this.blocks.findIndex(block => block.id === blockId);
         if (index !== -1) {
             this.blocks.splice(index, 1);
             
-            // If we removed the selected block, select another one
+            // Если удалили последний блок, добавляем пустой параграф
+            if (this.blocks.length === 0) {
+                this.addBlock('paragraph');
+                return;
+            }
+            
+            // Выбираем следующий или предыдущий блок
             if (this.selectedBlock === blockId) {
                 const newIndex = Math.min(index, this.blocks.length - 1);
                 this.selectedBlock = newIndex >= 0 ? this.blocks[newIndex].id : null;
             }
             
             this.render();
+            
+            // Фокусируемся на выбранном блоке
+            if (this.selectedBlock) {
+                this.selectBlock(this.selectedBlock);
+            }
         }
     }
     
+    // Переместить блок вверх или вниз
     moveBlock(blockId, direction) {
         const index = this.blocks.findIndex(block => block.id === blockId);
         if (index === -1) return;
         
-        const newIndex = direction === 'up' ? Math.max(0, index - 1) : Math.min(this.blocks.length - 1, index + 1);
+        const newIndex = direction === 'up' ? 
+                        Math.max(0, index - 1) : 
+                        Math.min(this.blocks.length - 1, index + 1);
+                        
         if (newIndex === index) return;
         
         const block = this.blocks[index];
         this.blocks.splice(index, 1);
         this.blocks.splice(newIndex, 0, block);
+        
         this.render();
+        this.selectBlock(blockId);
     }
     
+    // Обновить содержимое блока
     updateBlockContent(blockId, content) {
         const block = this.blocks.find(block => block.id === blockId);
         if (block) {
@@ -122,68 +355,70 @@ class BlockEditor {
         }
     }
     
+    // Отрисовать блоки
     render() {
         console.log("Rendering blocks:", this.blocks.length);
-        // Clear the editor container
+        // Очищаем содержимое редактора
         this.editorContainer.innerHTML = '';
         
         if (this.blocks.length === 0) {
             console.log("No blocks to render, showing placeholder");
             const placeholder = document.createElement('div');
             placeholder.className = 'sf-empty-editor';
-            placeholder.innerHTML = 'Click a button in the toolbar to add content';
+            placeholder.innerHTML = 'Добавьте свой первый блок, нажав кнопку +';
             this.editorContainer.appendChild(placeholder);
             return;
         }
         
-        // Render each block
+        // Отрисовываем каждый блок
         this.blocks.forEach((block, index) => {
             console.log(`Rendering block ${index}:`, block.type);
-            const blockElement = this.createBlockElement(block);
+            const blockElement = this.createBlockElement(block, index);
             this.editorContainer.appendChild(blockElement);
         });
     }
     
-    createBlockElement(block) {
+    // Создать элемент блока
+    createBlockElement(block, index) {
         const blockContainer = document.createElement('div');
         blockContainer.className = 'sf-block';
         blockContainer.dataset.blockId = block.id;
+        blockContainer.dataset.blockType = block.type;
         
         if (this.selectedBlock === block.id) {
             blockContainer.classList.add('sf-block-selected');
         }
         
-        // Create block controls
+        // Добавляем кнопки управления блоком
         const blockControls = document.createElement('div');
         blockControls.className = 'sf-block-controls';
         
         const moveUpButton = document.createElement('button');
+        moveUpButton.className = 'move-up-button';
         moveUpButton.innerHTML = '↑';
-        moveUpButton.title = 'Move Up';
-        moveUpButton.addEventListener('click', () => this.moveBlock(block.id, 'up'));
+        moveUpButton.title = 'Переместить вверх';
+        blockControls.appendChild(moveUpButton);
         
         const moveDownButton = document.createElement('button');
+        moveDownButton.className = 'move-down-button';
         moveDownButton.innerHTML = '↓';
-        moveDownButton.title = 'Move Down';
-        moveDownButton.addEventListener('click', () => this.moveBlock(block.id, 'down'));
-        
-        const removeButton = document.createElement('button');
-        removeButton.innerHTML = '×';
-        removeButton.title = 'Remove Block';
-        removeButton.addEventListener('click', () => this.removeBlock(block.id));
-        
-        blockControls.appendChild(moveUpButton);
+        moveDownButton.title = 'Переместить вниз';
         blockControls.appendChild(moveDownButton);
-        blockControls.appendChild(removeButton);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-block-button';
+        deleteButton.innerHTML = '×';
+        deleteButton.title = 'Удалить блок';
+        blockControls.appendChild(deleteButton);
         
         blockContainer.appendChild(blockControls);
         
-        // Create block content
+        // Создаем содержимое блока
         const blockContent = document.createElement('div');
         blockContent.className = 'sf-block-content';
         blockContainer.appendChild(blockContent);
         
-        // Add appropriate editor based on block type
+        // Создаем специфичное для типа блока содержимое
         switch (block.type) {
             case 'heading1':
             case 'heading2':
@@ -192,6 +427,15 @@ class BlockEditor {
                 break;
             case 'paragraph':
                 this.createParagraphBlock(blockContent, block);
+                break;
+            case 'bullet-list':
+                this.createBulletListBlock(blockContent, block);
+                break;
+            case 'numbered-list':
+                this.createNumberedListBlock(blockContent, block);
+                break;
+            case 'quote':
+                this.createQuoteBlock(blockContent, block);
                 break;
             case 'code':
                 this.createCodeBlock(blockContent, block);
@@ -202,25 +446,43 @@ class BlockEditor {
             case 'diagram':
                 this.createDiagramBlock(blockContent, block);
                 break;
+            case 'image':
+                this.createImageBlock(blockContent, block);
+                break;
+            case 'audio':
+                this.createAudioBlock(blockContent, block);
+                break;
+            case 'video':
+                this.createVideoBlock(blockContent, block);
+                break;
+            case 'info':
+            case 'warning': 
+            case 'danger':
+                this.createInfoBlock(blockContent, block);
+                break;
+            default:
+                // Для неизвестных типов создаем параграф
+                this.createParagraphBlock(blockContent, block);
         }
         
-        // Make the block selectable
-        blockContainer.addEventListener('click', (e) => {
-            if (!e.target.matches('button, input, textarea')) {
-                this.selectedBlock = block.id;
-                this.render();
-            }
-        });
+        // Добавляем кнопку "+" для добавления нового блока после текущего
+        const addBlockButton = document.createElement('button');
+        addBlockButton.className = 'add-block-button';
+        addBlockButton.dataset.blockId = block.id;
+        addBlockButton.innerHTML = '+';
+        addBlockButton.title = 'Добавить новый блок';
+        blockContainer.appendChild(addBlockButton);
         
         return blockContainer;
     }
     
+    // Создать блок заголовка
     createHeadingBlock(container, block) {
         const level = block.type.replace('heading', '');
         const input = document.createElement('input');
-        input.className = 'sf-heading-input sf-heading' + level;
+        input.className = `sf-heading-input sf-heading${level} sf-single-line`;
         input.value = block.content;
-        input.placeholder = 'Heading ' + level;
+        input.placeholder = `Заголовок ${level}`;
         
         input.addEventListener('input', () => {
             this.updateBlockContent(block.id, input.value);
@@ -229,20 +491,21 @@ class BlockEditor {
         container.appendChild(input);
     }
     
+    // Создать блок параграфа
     createParagraphBlock(container, block) {
         const textarea = document.createElement('textarea');
         textarea.className = 'sf-paragraph-input';
         textarea.value = block.content;
-        textarea.placeholder = 'Type paragraph text here...';
+        textarea.placeholder = 'Введите текст...';
         
         textarea.addEventListener('input', () => {
             this.updateBlockContent(block.id, textarea.value);
-            // Auto-resize the textarea
+            // Автоматически изменяем размер textarea
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
         });
         
-        // Trigger a resize on initial render
+        // Устанавливаем начальный размер
         setTimeout(() => {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
@@ -251,278 +514,822 @@ class BlockEditor {
         container.appendChild(textarea);
     }
     
-    createCodeBlock(container, block) {
-        // Create a simple container with a textarea for now
-        // In a real implementation, this would use a code editor like Monaco/CodeMirror
+    // Создать блок маркированного списка
+    createBulletListBlock(container, block) {
         const textarea = document.createElement('textarea');
-        textarea.className = 'sf-code-input';
+        textarea.className = 'sf-list-input sf-bullet-list';
         textarea.value = block.content;
-        textarea.placeholder = 'Enter code here...';
+        textarea.placeholder = '• Пункт списка (каждая строка - отдельный пункт)';
         
         textarea.addEventListener('input', () => {
             this.updateBlockContent(block.id, textarea.value);
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
         });
+        
+        // Устанавливаем начальный размер
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }, 0);
         
         container.appendChild(textarea);
-        
-        // Language selector
-        const langSelect = document.createElement('select');
-        langSelect.className = 'sf-code-language';
-        ['python', 'javascript', 'html', 'css', 'markdown'].forEach(lang => {
-            const option = document.createElement('option');
-            option.value = lang;
-            option.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
-            
-            // Выбираем язык, если он сохранен в блоке
-            if (block.language === lang) {
-                option.selected = true;
-            }
-            
-            langSelect.appendChild(option);
-        });
-        
-        // Устанавливаем начальное значение языка, если его еще нет
-        if (!block.language) {
-            block.language = 'python';
-        }
-        
-        // Добавляем обработчик события изменения языка
-        langSelect.addEventListener('change', (event) => {
-            block.language = event.target.value;
-            console.log(`Language changed to: ${block.language}`);
-            // Предотвращаем всплытие события, чтобы оно не вызвало перерисовку всего блока
-            event.stopPropagation();
-        });
-        
-        container.appendChild(langSelect);
     }
     
-    createMathBlock(container, block) {
-        const input = document.createElement('textarea');
-        input.className = 'sf-math-input';
-        input.value = block.content;
-        input.placeholder = 'Enter LaTeX math formula...';
+    // Создать блок нумерованного списка
+    createNumberedListBlock(container, block) {
+        const textarea = document.createElement('textarea');
+        textarea.className = 'sf-list-input sf-numbered-list';
+        textarea.value = block.content;
+        textarea.placeholder = '1. Пункт списка (каждая строка - отдельный пункт)';
         
-        input.addEventListener('input', () => {
-            this.updateBlockContent(block.id, input.value);
-            // Here you would update the preview with rendered math
+        textarea.addEventListener('input', () => {
+            this.updateBlockContent(block.id, textarea.value);
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
         });
+        
+        // Устанавливаем начальный размер
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }, 0);
+        
+        container.appendChild(textarea);
+    }
+    
+    // Создать блок цитаты
+    createQuoteBlock(container, block) {
+        const textarea = document.createElement('textarea');
+        textarea.className = 'sf-quote-input';
+        textarea.value = block.content;
+        textarea.placeholder = 'Введите цитату...';
+        
+        textarea.addEventListener('input', () => {
+            this.updateBlockContent(block.id, textarea.value);
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+        
+        // Устанавливаем начальный размер
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }, 0);
+        
+        container.appendChild(textarea);
+    }
+    
+    // Создать блок кода
+    createCodeBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-code-block-wrapper';
+        
+        // Поле выбора языка программирования
+        const languageSelect = document.createElement('select');
+        languageSelect.className = 'sf-code-language';
+        
+        const languages = [
+            { value: '', label: 'Обычный текст' },
+            { value: 'python', label: 'Python' },
+            { value: 'javascript', label: 'JavaScript' },
+            { value: 'html', label: 'HTML' },
+            { value: 'css', label: 'CSS' },
+            { value: 'markdown', label: 'Markdown' },
+            { value: 'bash', label: 'Bash' },
+            { value: 'sql', label: 'SQL' },
+            { value: 'json', label: 'JSON' },
+            { value: 'yaml', label: 'YAML' }
+        ];
+        
+        // Парсим содержимое - первая строка может содержать информацию о языке
+        let codeContent = block.content;
+        let language = '';
+        
+        if (block.content.startsWith('```')) {
+            const firstLineEnd = block.content.indexOf('\n');
+            if (firstLineEnd > 3) {
+                language = block.content.substring(3, firstLineEnd).trim();
+                codeContent = block.content.substring(firstLineEnd + 1);
+                
+                // Удаляем закрывающие ``` если они есть
+                if (codeContent.endsWith('```')) {
+                    codeContent = codeContent.substring(0, codeContent.length - 3).trim();
+                }
+            }
+        }
+        
+        // Заполняем select языками
+        languages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.value;
+            option.textContent = lang.label;
+            if (lang.value === language) {
+                option.selected = true;
+            }
+            languageSelect.appendChild(option);
+        });
+        
+        const textarea = document.createElement('textarea');
+        textarea.className = 'sf-code-input';
+        textarea.value = codeContent;
+        textarea.placeholder = 'Введите код...';
+        
+        // Обновляем содержимое при изменении
+        const updateCodeBlock = () => {
+            const lang = languageSelect.value;
+            let content = textarea.value;
+            
+            // Форматируем содержимое с маркерами markdown
+            if (lang) {
+                this.updateBlockContent(block.id, '```' + lang + '\n' + content + '\n```');
+            } else {
+                this.updateBlockContent(block.id, '```\n' + content + '\n```');
+            }
+            
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        
+        textarea.addEventListener('input', updateCodeBlock);
+        languageSelect.addEventListener('change', updateCodeBlock);
+        
+        // Устанавливаем начальный размер
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }, 0);
+        
+        wrapper.appendChild(languageSelect);
+        wrapper.appendChild(textarea);
+        container.appendChild(wrapper);
+    }
+    
+    // Создать блок математической формулы
+    createMathBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-math-block-wrapper';
+        
+        const textarea = document.createElement('textarea');
+        textarea.className = 'sf-math-input';
+        textarea.value = block.content.replace(/^\$\$|\$\$$/g, ''); // Удаляем $$ в начале и конце если есть
+        textarea.placeholder = 'Введите математическую формулу в формате LaTeX...';
         
         const preview = document.createElement('div');
         preview.className = 'sf-math-preview';
-        preview.innerHTML = 'Math preview will appear here';
+        preview.innerHTML = '<div class="sf-preview-label">Предпросмотр:</div>';
         
-        container.appendChild(input);
-        container.appendChild(preview);
+        const formulaDisplay = document.createElement('div');
+        formulaDisplay.className = 'sf-math-formula';
+        preview.appendChild(formulaDisplay);
         
-        // In a real implementation, you would render the math using KaTeX or MathJax
+        textarea.addEventListener('input', () => {
+            const formula = textarea.value;
+            this.updateBlockContent(block.id, '$$' + formula + '$$');
+            
+            // Обновляем предпросмотр если доступен KaTeX
+            if (window.katex) {
+                try {
+                    katex.render(formula, formulaDisplay, {
+                        throwOnError: false,
+                        displayMode: true
+                    });
+                } catch (e) {
+                    formulaDisplay.innerHTML = '<span style="color: red;">Ошибка рендеринга: ' + e.message + '</span>';
+                }
+            } else {
+                formulaDisplay.textContent = formula;
+            }
+            
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+        
+        // Устанавливаем начальный размер и вызываем обработчик для инициализации предпросмотра
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.dispatchEvent(new Event('input'));
+        }, 0);
+        
+        wrapper.appendChild(textarea);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
     }
     
+    // Создать блок диаграммы
     createDiagramBlock(container, block) {
-        const input = document.createElement('textarea');
-        input.className = 'sf-diagram-input';
-        input.value = block.content;
-        input.placeholder = 'Enter diagram code (e.g., Mermaid syntax)';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-diagram-block-wrapper';
         
-        input.addEventListener('input', () => {
-            this.updateBlockContent(block.id, input.value);
-            // Here you would update the preview with rendered diagram
-        });
+        const textarea = document.createElement('textarea');
+        textarea.className = 'sf-diagram-input';
+        
+        // Извлекаем содержимое диаграммы без тегов ```mermaid
+        let diagramContent = block.content;
+        if (block.content.startsWith('```mermaid')) {
+            diagramContent = block.content.replace(/^```mermaid\n|```$/g, '');
+        }
+        
+        textarea.value = diagramContent;
+        textarea.placeholder = 'Введите код диаграммы Mermaid...';
         
         const preview = document.createElement('div');
         preview.className = 'sf-diagram-preview';
-        preview.innerHTML = 'Diagram preview will appear here';
+        preview.innerHTML = '<div class="sf-preview-label">Предпросмотр:</div>';
         
-        container.appendChild(input);
-        container.appendChild(preview);
+        const diagramDisplay = document.createElement('div');
+        diagramDisplay.className = 'mermaid';
+        preview.appendChild(diagramDisplay);
         
-        // In a real implementation, you would render the diagram using Mermaid.js or similar
+        textarea.addEventListener('input', () => {
+            const diagram = textarea.value;
+            this.updateBlockContent(block.id, '```mermaid\n' + diagram + '\n```');
+            
+            // Обновляем предпросмотр диаграммы, если доступен Mermaid
+            diagramDisplay.textContent = diagram; // Сначала устанавливаем текст
+            
+            if (window.mermaid) {
+                try {
+                    // Уникальный ID для диаграммы
+                    const id = 'mermaid-' + block.id;
+                    diagramDisplay.id = id;
+                    
+                    // Очищаем предыдущую диаграмму
+                    diagramDisplay.innerHTML = diagram;
+                    
+                    // Рендерим новую диаграмму
+                    window.mermaid.init(undefined, diagramDisplay);
+                } catch (e) {
+                    diagramDisplay.innerHTML = '<span style="color: red;">Ошибка рендеринга: ' + e.message + '</span>';
+                }
+            }
+            
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+        
+        // Устанавливаем начальный размер и вызываем обработчик для инициализации предпросмотра
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.dispatchEvent(new Event('input'));
+        }, 0);
+        
+        wrapper.appendChild(textarea);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
     }
     
-    serialize() {
-        // This would convert blocks to markdown or HTML with frontmatter
-        let output = '';
+    // Создать блок изображения
+    createImageBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-image-block-wrapper';
         
-        // Генерируем frontmatter с базовыми полями, если нужно
-        // Но в реальном использовании этот frontmatter будет заменен на тот,
-        // который пользователь настроил в интерфейсе
-        output += '---\n';
-        output += 'title: \n';
-        output += 'date: ' + new Date().toISOString() + '\n';
-        output += '---\n\n';
+        // Извлекаем URL и alt текст из markdown
+        let imageUrl = '';
+        let altText = '';
         
-        // Convert blocks to markdown
-        this.blocks.forEach(block => {
-            try {
-                switch (block.type) {
-                    case 'heading1':
-                        output += `# ${block.content}\n\n`;
-                        break;
-                    case 'heading2':
-                        output += `## ${block.content}\n\n`;
-                        break;
-                    case 'heading3':
-                        output += `### ${block.content}\n\n`;
-                        break;
-                    case 'paragraph':
-                        output += `${block.content}\n\n`;
-                        break;
-                    case 'code':
-                        // Добавляем язык программирования в блок кода
-                        const lang = block.language || 'python';
-                        output += '```' + lang + '\n' + block.content + '\n```\n\n';
-                        break;
-                    case 'math':
-                        output += '$$\n' + block.content + '\n$$\n\n';
-                        break;
-                    case 'diagram':
-                        output += '```mermaid\n' + block.content + '\n```\n\n';
-                        break;
+        const mdMatch = block.content.match(/!\[(.*?)\]\((.*?)\)/);
+        if (mdMatch) {
+            altText = mdMatch[1] || '';
+            imageUrl = mdMatch[2] || '';
+        }
+        
+        // Поле для URL
+        const urlInput = document.createElement('input');
+        urlInput.className = 'sf-image-url-input';
+        urlInput.placeholder = 'URL изображения';
+        urlInput.value = imageUrl;
+        
+        // Поле для альтернативного текста
+        const altInput = document.createElement('input');
+        altInput.className = 'sf-image-alt-input';
+        altInput.placeholder = 'Альтернативный текст';
+        altInput.value = altText;
+        
+        // Предпросмотр изображения
+        const preview = document.createElement('div');
+        preview.className = 'sf-image-preview';
+        
+        // Обновляем блок и предпросмотр
+        const updateImageBlock = () => {
+            const url = urlInput.value.trim();
+            const alt = altInput.value.trim();
+            
+            this.updateBlockContent(block.id, `![${alt}](${url})`);
+            
+            // Обновляем предпросмотр
+            if (url) {
+                preview.innerHTML = `<img src="${url}" alt="${alt}" style="max-width: 100%;">`;
+            } else {
+                preview.innerHTML = '<div class="sf-empty-preview">Предпросмотр изображения</div>';
+            }
+        };
+        
+        urlInput.addEventListener('input', updateImageBlock);
+        altInput.addEventListener('input', updateImageBlock);
+        
+        // Кнопка для загрузки изображения (просто заглушка)
+        const uploadButton = document.createElement('button');
+        uploadButton.className = 'sf-upload-button';
+        uploadButton.textContent = 'Загрузить';
+        uploadButton.addEventListener('click', () => {
+            alert('Функция загрузки изображений будет доступна в следующем обновлении.');
+        });
+        
+        // Инициализируем предпросмотр
+        updateImageBlock();
+        
+        // Поля ввода группируем в контейнер
+        const inputsContainer = document.createElement('div');
+        inputsContainer.className = 'sf-image-inputs';
+        inputsContainer.appendChild(urlInput);
+        inputsContainer.appendChild(altInput);
+        inputsContainer.appendChild(uploadButton);
+        
+        wrapper.appendChild(inputsContainer);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
+    }
+    
+    // Создать блок аудио
+    createAudioBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-audio-block-wrapper';
+        
+        // Извлекаем URL и описание
+        let audioUrl = '';
+        let description = '';
+        
+        // Проверяем формат: [description](url)
+        const mdMatch = block.content.match(/\[(.*?)\]\((.*?)\)/);
+        if (mdMatch) {
+            description = mdMatch[1] || '';
+            audioUrl = mdMatch[2] || '';
+        }
+        
+        // Поле для URL
+        const urlInput = document.createElement('input');
+        urlInput.className = 'sf-audio-url-input';
+        urlInput.placeholder = 'URL аудио файла';
+        urlInput.value = audioUrl;
+        
+        // Поле для описания
+        const descInput = document.createElement('input');
+        descInput.className = 'sf-audio-desc-input';
+        descInput.placeholder = 'Описание';
+        descInput.value = description;
+        
+        // Предпросмотр аудио
+        const preview = document.createElement('div');
+        preview.className = 'sf-audio-preview';
+        
+        // Обновляем блок и предпросмотр
+        const updateAudioBlock = () => {
+            const url = urlInput.value.trim();
+            const desc = descInput.value.trim();
+            
+            this.updateBlockContent(block.id, `[${desc}](${url}) {.audio}`);
+            
+            // Обновляем предпросмотр
+            if (url) {
+                preview.innerHTML = `
+                    <audio controls style="width: 100%;">
+                        <source src="${url}" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудио элемент.
+                    </audio>
+                    <div class="sf-audio-desc">${desc}</div>
+                `;
+            } else {
+                preview.innerHTML = '<div class="sf-empty-preview">Предпросмотр аудио</div>';
+            }
+        };
+        
+        urlInput.addEventListener('input', updateAudioBlock);
+        descInput.addEventListener('input', updateAudioBlock);
+        
+        // Инициализируем предпросмотр
+        updateAudioBlock();
+        
+        // Поля ввода группируем в контейнер
+        const inputsContainer = document.createElement('div');
+        inputsContainer.className = 'sf-audio-inputs';
+        inputsContainer.appendChild(urlInput);
+        inputsContainer.appendChild(descInput);
+        
+        wrapper.appendChild(inputsContainer);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
+    }
+    
+    // Создать блок видео
+    createVideoBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sf-video-block-wrapper';
+        
+        // Извлекаем URL и описание
+        let videoUrl = '';
+        let description = '';
+        
+        // Проверяем формат: [description](url)
+        const mdMatch = block.content.match(/\[(.*?)\]\((.*?)\)/);
+        if (mdMatch) {
+            description = mdMatch[1] || '';
+            videoUrl = mdMatch[2] || '';
+        }
+        
+        // Поле для URL
+        const urlInput = document.createElement('input');
+        urlInput.className = 'sf-video-url-input';
+        urlInput.placeholder = 'URL видео или YouTube/Vimeo ID';
+        urlInput.value = videoUrl;
+        
+        // Поле для описания
+        const descInput = document.createElement('input');
+        descInput.className = 'sf-video-desc-input';
+        descInput.placeholder = 'Описание';
+        descInput.value = description;
+        
+        // Предпросмотр видео
+        const preview = document.createElement('div');
+        preview.className = 'sf-video-preview';
+        
+        // Обновляем блок и предпросмотр
+        const updateVideoBlock = () => {
+            const url = urlInput.value.trim();
+            const desc = descInput.value.trim();
+            
+            this.updateBlockContent(block.id, `[${desc}](${url}) {.video}`);
+            
+            // Обновляем предпросмотр
+            if (url) {
+                // Проверяем тип URL (YouTube, Vimeo или обычное видео)
+                if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                    // Извлекаем ID видео из YouTube URL
+                    let videoId = url;
+                    if (url.includes('youtube.com/watch?v=')) {
+                        videoId = url.split('v=')[1].split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                        videoId = url.split('youtu.be/')[1];
+                    }
+                    
+                    preview.innerHTML = `
+                        <iframe width="100%" height="315" 
+                                src="https://www.youtube.com/embed/${videoId}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen></iframe>
+                        <div class="sf-video-desc">${desc}</div>
+                    `;
+                } else if (url.includes('vimeo.com')) {
+                    // Извлекаем ID видео из Vimeo URL
+                    let videoId = url;
+                    if (url.includes('vimeo.com/')) {
+                        videoId = url.split('vimeo.com/')[1];
+                    }
+                    
+                    preview.innerHTML = `
+                        <iframe src="https://player.vimeo.com/video/${videoId}" 
+                                width="100%" height="315" 
+                                frameborder="0" 
+                                allow="autoplay; fullscreen; picture-in-picture" 
+                                allowfullscreen></iframe>
+                        <div class="sf-video-desc">${desc}</div>
+                    `;
+                } else {
+                    // Обычное видео
+                    preview.innerHTML = `
+                        <video controls style="width: 100%;">
+                            <source src="${url}" type="video/mp4">
+                            Ваш браузер не поддерживает видео элемент.
+                        </video>
+                        <div class="sf-video-desc">${desc}</div>
+                    `;
                 }
-            } catch (e) {
-                console.error("Error serializing block:", e, block);
+            } else {
+                preview.innerHTML = '<div class="sf-empty-preview">Предпросмотр видео</div>';
+            }
+        };
+        
+        urlInput.addEventListener('input', updateVideoBlock);
+        descInput.addEventListener('input', updateVideoBlock);
+        
+        // Инициализируем предпросмотр
+        updateVideoBlock();
+        
+        // Поля ввода группируем в контейнер
+        const inputsContainer = document.createElement('div');
+        inputsContainer.className = 'sf-video-inputs';
+        inputsContainer.appendChild(urlInput);
+        inputsContainer.appendChild(descInput);
+        
+        wrapper.appendChild(inputsContainer);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
+    }
+    
+    // Создать информационный/предупреждающий блок
+    createInfoBlock(container, block) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `sf-${block.type}-block-wrapper`;
+        
+        // Получаем содержимое блока без обертки :::
+        let content = block.content;
+        const typeLabel = {
+            'info': 'Информация',
+            'warning': 'Предупреждение',
+            'danger': 'Опасность'
+        };
+        
+        // Проверяем формат: :::type title\ncontent:::
+        const regex = new RegExp(`:::${block.type}(.*?):::`);
+        const match = content.match(regex);
+        if (match) {
+            content = match[1];
+        }
+        
+        // Создаем поле для заголовка
+        const titleInput = document.createElement('input');
+        titleInput.className = `sf-${block.type}-title-input`;
+        titleInput.placeholder = `Заголовок (${typeLabel[block.type]})`;
+        
+        // Создаем текстовое поле для содержимого
+        const textarea = document.createElement('textarea');
+        textarea.className = `sf-${block.type}-input`;
+        textarea.placeholder = 'Содержимое блока...';
+        
+        // Разделяем заголовок и содержимое
+        const firstLineBreak = content.indexOf('\n');
+        if (firstLineBreak > 0) {
+            titleInput.value = content.substring(0, firstLineBreak).trim();
+            textarea.value = content.substring(firstLineBreak + 1).trim();
+        } else {
+            textarea.value = content.trim();
+        }
+        
+        // Обновляем блок
+        const updateInfoBlock = () => {
+            const title = titleInput.value.trim();
+            const text = textarea.value.trim();
+            
+            let updatedContent;
+            if (title) {
+                updatedContent = `:::${block.type} ${title}\n${text}:::`;
+            } else {
+                updatedContent = `:::${block.type}\n${text}:::`;
+            }
+            
+            this.updateBlockContent(block.id, updatedContent);
+            
+            // Автоматически изменяем размер textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        
+        titleInput.addEventListener('input', updateInfoBlock);
+        textarea.addEventListener('input', updateInfoBlock);
+        
+        // Устанавливаем начальный размер
+        setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }, 0);
+        
+        // Предпросмотр блока
+        const preview = document.createElement('div');
+        preview.className = 'sf-info-preview';
+        preview.innerHTML = `<div class="sf-preview-${block.type}">
+            <div class="sf-preview-title">${typeLabel[block.type]}</div>
+            <div class="sf-preview-content">${textarea.value}</div>
+        </div>`;
+        
+        wrapper.appendChild(titleInput);
+        wrapper.appendChild(textarea);
+        wrapper.appendChild(preview);
+        container.appendChild(wrapper);
+    }
+    
+    // Сериализовать содержимое
+    serialize() {
+        let markdown = '';
+        
+        this.blocks.forEach(block => {
+            switch (block.type) {
+                case 'heading1':
+                    markdown += `# ${block.content}\n\n`;
+                    break;
+                case 'heading2':
+                    markdown += `## ${block.content}\n\n`;
+                    break;
+                case 'heading3':
+                    markdown += `### ${block.content}\n\n`;
+                    break;
+                case 'paragraph':
+                    markdown += `${block.content}\n\n`;
+                    break;
+                case 'bullet-list':
+                    // Обрабатываем каждую строку как отдельный пункт списка
+                    {
+                        const lines = block.content.split('\n');
+                        lines.forEach(line => {
+                            if (line.trim()) {
+                                markdown += `* ${line.trim()}\n`;
+                            }
+                        });
+                        markdown += '\n';
+                    }
+                    break;
+                case 'numbered-list':
+                    // Обрабатываем каждую строку как отдельный пункт списка
+                    {
+                        const lines = block.content.split('\n');
+                        lines.forEach((line, index) => {
+                            if (line.trim()) {
+                                markdown += `${index + 1}. ${line.trim()}\n`;
+                            }
+                        });
+                        markdown += '\n';
+                    }
+                    break;
+                case 'quote':
+                    // Добавляем символ > к каждой строке цитаты
+                    {
+                        const lines = block.content.split('\n');
+                        lines.forEach(line => {
+                            markdown += `> ${line}\n`;
+                        });
+                        markdown += '\n';
+                    }
+                    break;
+                case 'code':
+                case 'math':
+                case 'diagram':
+                    // Для блоков кода, мат. формул и диаграмм сохраняем как есть
+                    markdown += `${block.content}\n\n`;
+                    break;
+                case 'image':
+                case 'audio':
+                case 'video':
+                    // Для медиа блоков сохраняем markdown разметку
+                    markdown += `${block.content}\n\n`;
+                    break;
+                case 'info':
+                case 'warning':
+                case 'danger':
+                    // Для инфо-блоков сохраняем с обертками :::
+                    markdown += `${block.content}\n\n`;
+                    break;
+                default:
+                    // Для неизвестных типов сохраняем как текст
+                    markdown += `${block.content}\n\n`;
             }
         });
         
-        return output;
+        return markdown.trim();
     }
     
+    // Десериализовать содержимое
     deserializeContent(content) {
-        // Simple parsing of markdown to blocks
-        // In a real implementation, you would use a proper markdown parser
-        if (!content) return;
-        
-        console.log("Deserializing content:", content);
-        
-        try {
-            // Extract frontmatter
-            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-            const contentWithoutFrontmatter = frontmatterMatch 
-                ? content.slice(frontmatterMatch[0].length).trim() 
-                : content.trim();
-            
-            // Split content into lines
-            const lines = contentWithoutFrontmatter.split('\n');
-            let currentBlock = null;
-            let inCodeBlock = false;
-            let inMathBlock = false;
-            let codeBlockContent = '';
-            let codeBlockLanguage = 'python'; // Язык по умолчанию
-            let paragraphContent = '';
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
-                // Check for code block start/end
-                if (line.startsWith('```')) {
-                    if (inCodeBlock) {
-                        // End of code block
-                        if (inCodeBlock === 'diagram') {
-                            this.addBlock('diagram', codeBlockContent.trim());
-                        } else {
-                            // Создаем блок кода с указанным языком
-                            const newBlock = this.addBlock('code', codeBlockContent.trim());
-                            newBlock.language = codeBlockLanguage;
-                        }
-                        codeBlockContent = '';
-                        inCodeBlock = false;
-                    } else {
-                        // Start of code block
-                        // Flush any paragraph content
-                        if (paragraphContent) {
-                            this.addBlock('paragraph', paragraphContent.trim());
-                            paragraphContent = '';
-                        }
-                        
-                        inCodeBlock = true;
-                        
-                        // Извлекаем язык из маркера начала блока кода
-                        const langMatch = line.match(/```(\w+)/);
-                        if (langMatch && langMatch[1]) {
-                            codeBlockLanguage = langMatch[1];
-                            // Если это mermaid, то это диаграмма
-                            if (langMatch[1] === 'mermaid') {
-                                inCodeBlock = 'diagram';
-                            }
-                        } else {
-                            codeBlockLanguage = 'python'; // Язык по умолчанию
-                        }
-                    }
-                    continue;
-                }
-                
-                // Check for math block start/end
-                if (line.startsWith('$$')) {
-                    if (inMathBlock) {
-                        // End of math block
-                        this.addBlock('math', codeBlockContent.trim());
-                        codeBlockContent = '';
-                        inMathBlock = false;
-                    } else {
-                        // Start of math block
-                        // Flush any paragraph content
-                        if (paragraphContent) {
-                            this.addBlock('paragraph', paragraphContent.trim());
-                            paragraphContent = '';
-                        }
-                        
-                        inMathBlock = true;
-                    }
-                    continue;
-                }
-                
-                // Collect content if in a special block
-                if (inCodeBlock || inMathBlock) {
-                    codeBlockContent += line + '\n';
-                    continue;
-                }
-                
-                // Parse headings
-                if (line.startsWith('# ')) {
-                    // Flush any paragraph content
-                    if (paragraphContent) {
-                        this.addBlock('paragraph', paragraphContent.trim());
-                        paragraphContent = '';
-                    }
-                    
-                    this.addBlock('heading1', line.slice(2).trim());
-                } else if (line.startsWith('## ')) {
-                    // Flush any paragraph content
-                    if (paragraphContent) {
-                        this.addBlock('paragraph', paragraphContent.trim());
-                        paragraphContent = '';
-                    }
-                    
-                    this.addBlock('heading2', line.slice(3).trim());
-                } else if (line.startsWith('### ')) {
-                    // Flush any paragraph content
-                    if (paragraphContent) {
-                        this.addBlock('paragraph', paragraphContent.trim());
-                        paragraphContent = '';
-                    }
-                    
-                    this.addBlock('heading3', line.slice(4).trim());
-                } else if (line.trim() !== '') {
-                    // Add to paragraph content
-                    paragraphContent += (paragraphContent ? '\n' : '') + line;
-                } else if (line.trim() === '' && paragraphContent) {
-                    // Empty line after paragraph content - flush paragraph
-                    this.addBlock('paragraph', paragraphContent.trim());
-                    paragraphContent = '';
-                }
-            }
-            
-            // Add any remaining paragraph content
-            if (paragraphContent) {
-                this.addBlock('paragraph', paragraphContent.trim());
-            }
-        } catch (error) {
-            console.error("Error deserializing content:", error);
-            // Fallback - just add content as a single paragraph
-            this.addBlock('paragraph', content);
+        console.log("Deserializing content...");
+        if (!content) {
+            console.log("Content is empty, nothing to deserialize");
+            return;
         }
+        
+        // Регулярные выражения для поиска блоков в markdown
+        const patterns = [
+            { type: 'heading1', pattern: /^# (.+)$/gm },
+            { type: 'heading2', pattern: /^## (.+)$/gm },
+            { type: 'heading3', pattern: /^### (.+)$/gm },
+            { type: 'quote', pattern: /^>(.+)(?:\n>(.+))*$/gm },
+            { type: 'bullet-list', pattern: /^[*+-](.+)(?:\n[*+-](.+))*$/gm },
+            { type: 'numbered-list', pattern: /^(\d+\.|\d+\))(.+)(?:\n(\d+\.|\d+\))(.+))*$/gm },
+            { type: 'code', pattern: /^```[\s\S]*?^```$/gm },
+            { type: 'math', pattern: /^\$\$([\s\S]*?)\$\$$/gm },
+            { type: 'diagram', pattern: /^```mermaid[\s\S]*?^```$/gm },
+            { type: 'image', pattern: /^!\[.*?\]\(.*?\)$/gm },
+            { type: 'info', pattern: /^:::info[\s\S]*?^:::$/gm },
+            { type: 'warning', pattern: /^:::warning[\s\S]*?^:::$/gm },
+            { type: 'danger', pattern: /^:::danger[\s\S]*?^:::$/gm },
+            { type: 'audio', pattern: /^\[.*?\]\(.*?\) \{\.audio\}$/gm },
+            { type: 'video', pattern: /^\[.*?\]\(.*?\) \{\.video\}$/gm }
+        ];
+        
+        // Заменяем переносы строк на единый формат
+        content = content.replace(/\r\n/g, '\n');
+        
+        // Сначала проходим по контенту и помечаем блоки
+        const blocks = [];
+        let remainingContent = content;
+        
+        // Функция для обработки блока
+        const processBlock = (match, type, position) => {
+            blocks.push({
+                type: type,
+                content: match[0],
+                position: position
+            });
+            
+            // Заменяем найденный блок на плейсхолдер
+            const placeholder = `___BLOCK_${blocks.length - 1}___`;
+            remainingContent = remainingContent.replace(match[0], placeholder);
+        };
+        
+        // Проходим по всем паттернам и ищем блоки
+        let anyMatchFound = true;
+        while (anyMatchFound) {
+            anyMatchFound = false;
+            
+            for (const { type, pattern } of patterns) {
+                pattern.lastIndex = 0; // Сбрасываем индекс поиска
+                
+                const match = pattern.exec(remainingContent);
+                if (match) {
+                    const position = match.index;
+                    processBlock(match, type, position);
+                    anyMatchFound = true;
+                    break; // После нахождения одного блока начинаем поиск заново
+                }
+            }
+        }
+        
+        // Разбиваем оставшийся контент на параграфы
+        const paragraphs = remainingContent
+            .split(/___BLOCK_\d+___/)
+            .filter(p => p.trim())
+            .map(p => p.trim())
+            .reduce((acc, p) => {
+                // Разбиваем на параграфы по двойным переносам строк
+                const paragraphSplit = p.split(/\n\s*\n/);
+                return acc.concat(paragraphSplit);
+            }, [])
+            .filter(p => p.trim());
+        
+        // Добавляем параграфы в список блоков
+        paragraphs.forEach(p => {
+            blocks.push({
+                type: 'paragraph',
+                content: p,
+                position: content.indexOf(p)
+            });
+        });
+        
+        // Сортируем блоки по их позиции в исходном тексте
+        blocks.sort((a, b) => a.position - b.position);
+        
+        // Создаем блоки редактора
+        this.blocks = [];
+        
+        blocks.forEach(block => {
+            // Создаем блок соответствующего типа
+            const newBlock = {
+                id: Date.now().toString() + Math.floor(Math.random() * 1000),
+                type: block.type,
+                content: block.content
+            };
+            
+            // Обрабатываем содержимое блока
+            switch (block.type) {
+                case 'heading1':
+                case 'heading2':
+                case 'heading3':
+                    newBlock.content = block.content.replace(/^#+\s*/, '');
+                    break;
+                case 'bullet-list':
+                    newBlock.content = block.content
+                        .split('\n')
+                        .map(line => line.replace(/^[*+-]\s*/, ''))
+                        .join('\n');
+                    break;
+                case 'numbered-list':
+                    newBlock.content = block.content
+                        .split('\n')
+                        .map(line => line.replace(/^\d+\.|\d+\)\s*/, ''))
+                        .join('\n');
+                    break;
+                case 'quote':
+                    newBlock.content = block.content
+                        .split('\n')
+                        .map(line => line.replace(/^>\s*/, ''))
+                        .join('\n');
+                    break;
+                // Для остальных типов оставляем как есть
+            }
+            
+            this.blocks.push(newBlock);
+        });
+        
+        console.log(`Deserialized ${this.blocks.length} blocks`);
     }
     
+    // Получить содержимое редактора
     getContent() {
         return this.serialize();
     }
