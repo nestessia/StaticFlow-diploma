@@ -9,40 +9,40 @@
     <div class="deploy-form-container">
         <div class="deploy-config">
             <h3>GitHub Pages Configuration</h3>
-            <form id="github-pages-form" class="settings-form">
+            <form id="github-pages-form" class="settings-form" autocomplete="off">
                 <div class="form-group">
                     <label for="repo-url">Repository URL</label>
-                    <input type="text" id="repo-url" name="repo_url" placeholder="https://github.com/username/repo" value="{{ config.repo_url }}">
+                    <input type="text" id="repo-url" name="repo_url" placeholder="https://github.com/username/repo" value="{{ config.repo_url }}" autocomplete="off">
                     <small>GitHub repository URL (HTTPS or SSH)</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="branch">Branch</label>
-                    <input type="text" id="branch" name="branch" placeholder="gh-pages" value="{{ config.branch }}">
+                    <input type="text" id="branch" name="branch" placeholder="gh-pages" value="{{ config.branch }}" autocomplete="off">
                     <small>The branch where your site will be deployed</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="username">GitHub Username</label>
-                    <input type="text" id="username" name="username" placeholder="Your GitHub username" value="{{ config.username }}">
+                    <input type="text" id="username" name="username" placeholder="Your GitHub username" value="{{ config.username }}" autocomplete="off">
                     <small>Your GitHub username for commits</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="email">Git Email</label>
-                    <input type="email" id="email" name="email" placeholder="your.email@example.com" value="{{ config.email }}">
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" value="{{ config.email }}" autocomplete="off">
                     <small>Email associated with your GitHub account</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="token">GitHub Token (Personal Access Token)</label>
-                    <input type="password" id="token" name="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="{{ 'STORED_TOKEN' if config.has_token else '' }}">
+                    <input type="password" id="token" name="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="{{ 'STORED_TOKEN' if config.has_token else '' }}" autocomplete="new-password">
                     <small>Personal access token with repo scope (stored securely)</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="cname">Custom Domain (CNAME)</label>
-                    <input type="text" id="cname" name="cname" placeholder="example.com" value="{{ config.cname }}">
+                    <input type="text" id="cname" name="cname" placeholder="example.com" value="{{ config.cname }}" autocomplete="off">
                     <small>Custom domain for your GitHub Pages site (optional)</small>
                 </div>
                 <div class="form-actions">
