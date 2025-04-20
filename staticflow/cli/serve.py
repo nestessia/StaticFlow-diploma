@@ -3,6 +3,10 @@ from pathlib import Path
 from rich.console import Console
 from ..core.config import Config
 from ..core.server import Server
+from ..utils.logging import get_logger
+
+# Получаем логгер для этого модуля
+logger = get_logger("cli.serve")
 
 console = Console()
 
@@ -18,12 +22,12 @@ def serve(port: int, host: str, config: str):
     try:
         config_path = Path(config)
         if not config_path.exists():
-            console.print(
-                f"[red]Error:[/red] Config file not found: {config}. "
-                "Check your directory."
-            )
+            error_message = f"Config file not found: {config}. Check your directory."
+            logger.error(error_message)
+            console.print(f"[red]Error:[/red] {error_message}")
             return
 
+        logger.info(f"Starting development server at {host}:{port} with config {config}")
         server = Server(
             config=Config(config_path),
             host=host,
@@ -34,4 +38,6 @@ def serve(port: int, host: str, config: str):
         server.run()
 
     except Exception as e:
+        error_message = f"Error starting server: {str(e)}"
+        logger.error(error_message)
         console.print(f"[red]Error starting server:[/red] {str(e)}") 

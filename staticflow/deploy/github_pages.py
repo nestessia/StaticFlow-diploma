@@ -8,12 +8,17 @@ import os
 import json
 import shutil
 import subprocess
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 import base64
 from cryptography.fernet import Fernet
+import datetime
 
+from ..utils.logging import get_logger
+
+# Получение логгера для данного модуля из централизованного модуля
+logger = get_logger("deploy.github_pages")
 
 class GitHubPagesDeployer:
     """
@@ -160,7 +165,7 @@ class GitHubPagesDeployer:
                     
                 return config
         except json.JSONDecodeError:
-            print(f"Error parsing config file {self.config_path}, using defaults")
+            logger.error(f"Error parsing config file {self.config_path}, using defaults")
             return {
                 "repo_url": "",
                 "branch": "gh-pages",
@@ -274,13 +279,16 @@ class GitHubPagesDeployer:
         Returns:
             Tuple of (success, message)
         """
+        logger.info("Starting GitHub Pages deployment process")
         # Validate configuration
         is_valid, errors, warnings = self.validate_config()
         if not is_valid:
+            logger.error(f"Deployment aborted: Invalid configuration - {errors}")
             return False, f"Invalid configuration: {', '.join(errors)}"
         
         # Check if site exists
         if not self.site_path.exists() or not self.site_path.is_dir():
+            logger.error(f"Deployment aborted: Site directory not found at {self.site_path}")
             return False, f"Site directory not found at {self.site_path}"
         
         # Extract config values
@@ -290,9 +298,13 @@ class GitHubPagesDeployer:
         email = self.config["email"]
         cname = self.config.get("cname", "")
         
+        logger.info(f"Deploying to repository: {repo_url} (branch: {branch})")
+        logger.info(f"Using git identity: {username} <{email}>")
+        
         # Create a temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
+            logger.info(f"Created temporary directory for deployment: {temp_dir}")
             
             # Set up git environment
             git_env = os.environ.copy()
@@ -302,7 +314,10 @@ class GitHubPagesDeployer:
             git_env["GIT_COMMITTER_EMAIL"] = email
             
             # If we have a token, use HTTPS with credentials
+            has_token = False
             if self.config.get("token"):
+                logger.info("Found GitHub token, will use for authentication")
+                has_token = True
                 # Decrypt the token if it's encrypted
                 token = self.config["token"]
                 if self.config.get("token_encrypted", False):
@@ -315,26 +330,34 @@ class GitHubPagesDeployer:
                 elif repo_url.startswith("https://github.com/"):
                     repo_path = repo_url.split("https://github.com/")[1]
                     repo_url = f"https://{username}:{token}@github.com/{repo_path}"
+            else:
+                logger.info("No GitHub token provided, using standard authentication")
             
             # Initialize git repo
+            logger.info("Initializing git repository")
             code, out, err = self._run_command(
                 ["git", "init"],
                 cwd=temp_dir,
                 env=git_env
             )
             if code != 0:
+                logger.error(f"Failed to initialize git repository: {err}")
                 return False, f"Failed to initialize git repository: {err}"
             
             # Set remote
+            log_url = repo_url.replace(token, '***') if has_token else repo_url
+            logger.info(f"Setting remote origin to: {log_url}")
             code, out, err = self._run_command(
                 ["git", "remote", "add", "origin", repo_url],
                 cwd=temp_dir,
                 env=git_env
             )
             if code != 0:
+                logger.error(f"Failed to set git remote: {err}")
                 return False, f"Failed to set git remote: {err}"
                 
             # Configure git
+            logger.info("Configuring git identity")
             self._run_command(
                 ["git", "config", "user.name", username],
                 cwd=temp_dir,
@@ -348,6 +371,7 @@ class GitHubPagesDeployer:
             )
             
             # Try to fetch the branch if it exists
+            logger.info(f"Checking if branch '{branch}' exists")
             branch_exists = False
             code, out, err = self._run_command(
                 ["git", "fetch", "origin", branch],
@@ -356,6 +380,7 @@ class GitHubPagesDeployer:
             )
             if code == 0:
                 # Branch exists, check it out
+                logger.info(f"Branch '{branch}' exists, checking it out")
                 code, out, err = self._run_command(
                     ["git", "checkout", "-b", branch, f"origin/{branch}"],
                     cwd=temp_dir,
@@ -366,6 +391,7 @@ class GitHubPagesDeployer:
             
             if not branch_exists:
                 # Create a new branch
+                logger.info(f"Creating new branch '{branch}'")
                 self._run_command(
                     ["git", "checkout", "--orphan", branch],
                     cwd=temp_dir,
@@ -373,6 +399,7 @@ class GitHubPagesDeployer:
                 )
             
             # Clean the working directory
+            logger.info("Cleaning working directory")
             for item in temp_path.iterdir():
                 if item.name == ".git":
                     continue
@@ -383,6 +410,7 @@ class GitHubPagesDeployer:
                     item.unlink()
             
             # Copy site content to the repo
+            logger.info(f"Copying site content from {self.site_path} to the repository")
             for item in self.site_path.iterdir():
                 if item.is_dir():
                     shutil.copytree(
@@ -395,20 +423,24 @@ class GitHubPagesDeployer:
             
             # Create CNAME file if specified
             if cname:
+                logger.info(f"Creating CNAME file with domain: {cname}")
                 cname_path = temp_path / "CNAME"
                 with open(cname_path, "w") as f:
                     f.write(cname)
             
             # Add all files
+            logger.info("Adding files to git")
             code, out, err = self._run_command(
                 ["git", "add", "."],
                 cwd=temp_dir,
                 env=git_env
             )
             if code != 0:
+                logger.error(f"Failed to add files to git: {err}")
                 return False, f"Failed to add files to git: {err}"
             
             # Check if there are changes
+            logger.info("Checking for changes")
             code, out, err = self._run_command(
                 ["git", "status", "--porcelain"],
                 cwd=temp_dir,
@@ -417,34 +449,39 @@ class GitHubPagesDeployer:
             
             if not out.strip():
                 # No changes to commit
+                logger.info("No changes to deploy, skipping")
                 return True, "No changes to deploy"
             
             # Commit changes
-            import datetime
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             # Use custom commit message if provided, otherwise use default
             if not commit_message:
                 commit_message = f"Deployed at {timestamp}"
                 
+            logger.info(f"Committing changes with message: '{commit_message}'")
             code, out, err = self._run_command(
                 ["git", "commit", "-m", commit_message],
                 cwd=temp_dir,
                 env=git_env
             )
             if code != 0:
+                logger.error(f"Failed to commit changes: {err}")
                 return False, f"Failed to commit changes: {err}"
             
             # Push to remote
+            logger.info(f"Pushing to GitHub (branch: {branch})")
             code, out, err = self._run_command(
                 ["git", "push", "-u", "origin", branch],
                 cwd=temp_dir,
                 env=git_env
             )
             if code != 0:
+                logger.error(f"Failed to push to GitHub: {err}")
                 return False, f"Failed to push to GitHub: {err}"
             
             # Update deployment history
+            logger.info("Updating deployment history")
             self.config.setdefault("history", [])
             self.config["history"].insert(0, {
                 "timestamp": datetime.datetime.now().isoformat(),
@@ -458,6 +495,7 @@ class GitHubPagesDeployer:
             self.config["last_deployment"] = datetime.datetime.now().isoformat()
             self.save_config()
             
+            logger.info("GitHub Pages deployment completed successfully")
             return True, "Successfully deployed to GitHub Pages"
     
     def get_deployment_status(self) -> Dict[str, Any]:

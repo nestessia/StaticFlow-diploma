@@ -8,6 +8,10 @@ from watchdog.events import FileSystemEventHandler
 from ..core.engine import Engine
 from ..admin import AdminPanel
 from ..plugins import initialize_plugins
+from ..utils.logging import get_logger
+
+# Получаем логгер для данного модуля
+logger = get_logger("core.server")
 
 console = Console()
 
@@ -100,34 +104,37 @@ class Server:
             errors, warnings = validate_project_structure()
             
             if errors:
+                error_msg = "\n".join([
+                    "Critical errors found:",
+                    *[f"• {error}" for error in errors],
+                    "\nPlease fix these issues before starting the server:",
+                    "1. Make sure you're in the correct project directory",
+                    "2. Check if all required directories and files exist",
+                    "3. Verify file and directory permissions",
+                    "\nProject structure should be:",
+                    "project_name/",
+                    "├── content/",
+                    "├── templates/",
+                    "├── static/",
+                    "├── public/",
+                    "└── config.toml"
+                ])
+                logger.error(error_msg)
                 console.print(Panel(
-                    "\n".join([
-                        "[red]Critical errors found:[/red]",
-                        *[f"• {error}" for error in errors],
-                        "\n[yellow]Please fix these issues before starting "
-                        "the server:[/yellow]",
-                        "1. Make sure you're in the correct project directory",
-                        "2. Check if all required directories and files exist",
-                        "3. Verify file and directory permissions",
-                        "\nProject structure should be:",
-                        "project_name/",
-                        "├── content/",
-                        "├── templates/",
-                        "├── static/",
-                        "├── public/",
-                        "└── config.toml"
-                    ]),
+                    error_msg,
                     title="[red]Project Structure Errors[/red]",
                     border_style="red"
                 ))
                 raise SystemExit(1)
             
             if warnings:
+                warning_msg = "\n".join([
+                    "Warnings:",
+                    *[f"• {warning}" for warning in warnings]
+                ])
+                logger.warning(warning_msg)
                 console.print(Panel(
-                    "\n".join([
-                        "[yellow]Warnings:[/yellow]",
-                        *[f"• {warning}" for warning in warnings]
-                    ]),
+                    warning_msg,
                     title="[yellow]Project Structure Warnings[/yellow]",
                     border_style="yellow"
                 ))
@@ -136,9 +143,12 @@ class Server:
             with console.status("[bold blue]Building site..."):
                 try:
                     self.engine.build()
+                    logger.info("Site built successfully!")
                     console.print("[green]Site built successfully![/green]")
                 except Exception as e:
-                    console.print(f"[red]Error building site:[/red] {str(e)}")
+                    error_msg = f"Error building site: {str(e)}"
+                    logger.error(error_msg)
+                    console.print(f"[red]{error_msg}[/red]")
                     raise SystemExit(1)
                 
         # Setup routes and templates
@@ -232,10 +242,11 @@ class Server:
     def run(self):
         """Run the server."""
         if self.dev_mode:
+            server_url = f"http://{self.host}:{self.port}"
+            logger.info(f"Server running at {server_url}")
             console.print(
                 Panel.fit(
-                    f"[green]Server running at[/green] "
-                    f"http://{self.host}:{self.port}\n"
+                    f"[green]Server running at[/green] {server_url}\n"
                     "[dim]Press CTRL+C to stop[/dim]",
                     title="StaticFlow Dev Server"
                 )
@@ -248,6 +259,8 @@ class Server:
                 print=None
             )
         else:
+            server_url = f"http://{self.host}:{self.port}"
+            logger.info(f"Production server running at {server_url}")
             web.run_app(self.app, host=self.host, port=self.port)
 
 

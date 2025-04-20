@@ -8,6 +8,10 @@ import json
 import shutil
 from datetime import datetime
 import re
+from ..utils.logging import get_logger
+
+# Получаем логгер для данного модуля
+logger = get_logger("admin")
 
 
 class AdminPanel:
@@ -51,11 +55,11 @@ class AdminPanel:
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel."""
         template_path = Path(__file__).parent / 'templates'
-        print(f"Template path: {template_path} (exists: {template_path.exists()})")
+        logger.info(f"Template path: {template_path} (exists: {template_path.exists()})")
         
         if not template_path.exists():
             template_path.mkdir(parents=True)
-            print(f"Created template directory: {template_path}")
+            logger.info(f"Created template directory: {template_path}")
             
         aiohttp_jinja2.setup(
             self.app,
@@ -84,11 +88,11 @@ class AdminPanel:
         
         # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
-        print(f"Static path: {static_path} (exists: {static_path.exists()})")
+        logger.info(f"Static path: {static_path} (exists: {static_path.exists()})")
         
         if not static_path.exists():
             static_path.mkdir(parents=True)
-            print(f"Created static directory: {static_path}")
+            logger.info(f"Created static directory: {static_path}")
         
         # Проверяем наличие кэшированной статики в public
         cached_static_path = Path('public/admin/static')
@@ -104,14 +108,14 @@ class AdminPanel:
         
     async def handle_request(self, request):
         """Handle admin panel request."""
-        print(f"Admin request: {request.path}, method: {request.method}")
+        logger.info(f"Admin request: {request.path}, method: {request.method}")
         
         # Remove /admin prefix from path
         path = request.path.replace('/admin', '', 1)
         if not path:
             path = '/'
             
-        print(f"Modified path: {path}")
+        logger.info(f"Modified path: {path}")
         
         # Прямое перенаправление для API запросов без клонирования
         if path.startswith('/api/'):
@@ -148,10 +152,10 @@ class AdminPanel:
             response = await self.app._handle(subrequest)
             return response
         except web.HTTPNotFound:
-            print(f"Admin page not found: {path}")
+            logger.info(f"Admin page not found: {path}")
             return web.Response(status=404, text="Admin page not found")
         except Exception as e:
-            print(f"Error handling admin request: {e}")
+            logger.error(f"Error handling admin request: {e}")
             import traceback
             traceback.print_exc()
             return web.Response(status=500, text=str(e))
@@ -214,7 +218,7 @@ class AdminPanel:
         
         if path:
             content_path = Path('content') / path
-            print(f"Attempting to load page from: {content_path}")
+            logger.info(f"Attempting to load page from: {content_path}")
             if content_path.exists():
                 try:
                     # Создаем объект Page из существующего файла
@@ -229,10 +233,10 @@ class AdminPanel:
                         page.modified = content_path.stat().st_mtime
                     # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
-                    print(f"Successfully loaded page: {path}")
+                    logger.info(f"Successfully loaded page: {path}")
                 
                 except Exception as e:
-                    print(f"Error loading page: {e}")
+                    logger.error(f"Error loading page: {e}")
                     import traceback
                     traceback.print_exc()
         
@@ -276,7 +280,7 @@ class AdminPanel:
                 
                 # Set path to new file in content directory
                 path = f"{filename}.md"
-                print(f"Creating new page at: {path}")
+                logger.info(f"Creating new page at: {path}")
             
             # Normalize path to be relative to content directory
             if path.startswith('/'):
@@ -311,13 +315,13 @@ class AdminPanel:
             })
             
         except json.JSONDecodeError as e:
-            print(f"Content JSON parse error: {e}")
+            logger.error(f"Content JSON parse error: {e}")
             return web.json_response({
                 'success': False,
                 'error': f"Invalid JSON: {e}"
             }, status=400)
         except Exception as e:
-            print(f"Unexpected error in api_content_handler: {e}")
+            logger.error(f"Unexpected error in api_content_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -533,13 +537,13 @@ class AdminPanel:
                 content_type='text/html'
             )
         except json.JSONDecodeError as e:
-            print(f"Preview JSON parse error: {e}")
+            logger.error(f"Preview JSON parse error: {e}")
             return web.json_response({
                 'success': False,
                 'error': f"Invalid JSON: {e}"
             }, status=400)
         except Exception as e:
-            print(f"Unexpected error in api_preview_handler: {e}")
+            logger.error(f"Unexpected error in api_preview_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -560,13 +564,13 @@ class AdminPanel:
             
             return web.json_response({'status': 'ok'})
         except json.JSONDecodeError as e:
-            print(f"Settings JSON parse error: {e}")
+            logger.error(f"Settings JSON parse error: {e}")
             return web.json_response({
                 'success': False,
                 'error': f"Invalid JSON: {e}"
             }, status=400)
         except Exception as e:
-            print(f"Unexpected error in api_settings_handler: {e}")
+            logger.error(f"Unexpected error in api_settings_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -590,7 +594,7 @@ class AdminPanel:
                 'config': status['config']
             })
         except Exception as e:
-            print(f"Error in api_deploy_config_get_handler: {e}")
+            logger.error(f"Error in api_deploy_config_get_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -620,13 +624,13 @@ class AdminPanel:
                 'warnings': warnings
             })
         except json.JSONDecodeError as e:
-            print(f"Deploy config JSON parse error: {e}")
+            logger.error(f"Deploy config JSON parse error: {e}")
             return web.json_response({
                 'success': False,
                 'error': f"Invalid JSON: {e}"
             }, status=400)
         except Exception as e:
-            print(f"Unexpected error in api_deploy_config_handler: {e}")
+            logger.error(f"Unexpected error in api_deploy_config_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -637,44 +641,58 @@ class AdminPanel:
             
     async def api_deploy_start_handler(self, request):
         """Handle deploy start API requests."""
+        logger.info("=== Starting deployment process ===")
         try:
             # Получаем данные из запроса
             data = {}
             try:
                 data = await request.json()
+                logger.info(f"Received deployment data: {data}")
             except json.JSONDecodeError:
                 # Если JSON не предоставлен, используем пустой словарь
+                logger.info("No JSON data provided in request")
                 pass
                 
             # Получаем коммит-сообщение, если предоставлено
             commit_message = data.get('commit_message')
+            logger.info(f"Using commit message: {commit_message or 'default'}")
             
             # Инициализируем GitHub Pages deployer
             from ..deploy.github_pages import GitHubPagesDeployer
+            logger.info("Initializing GitHubPagesDeployer")
             deployer = GitHubPagesDeployer()
             
             # Проверяем, валидна ли конфигурация
+            logger.info("Validating deployment configuration")
             is_valid, errors, warnings = deployer.validate_config()
             if not is_valid:
+                logger.error(f"Invalid configuration: {errors}")
                 return web.json_response({
                     'success': False,
                     'message': f"Invalid configuration: {', '.join(errors)}"
                 }, status=400)
                 
             # Сначала перестраиваем сайт
+            logger.info("Rebuilding site before deployment")
             rebuild_success = self.rebuild_site()
             if not rebuild_success:
+                logger.error("Failed to build site")
                 return web.json_response({
                     'success': False,
                     'message': 'Failed to build site'
                 }, status=500)
+            
+            logger.info("Site successfully rebuilt, starting deployment")
                 
             # Деплоим сайт
+            logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
             success, message = deployer.deploy(commit_message=commit_message)
+            logger.info(f"Deployment result: success={success}, message={message}")
             
             # Получаем обновленный статус
             status = deployer.get_deployment_status()
             
+            logger.info("=== Deployment process completed ===")
             return web.json_response({
                 'success': success,
                 'message': message,
@@ -683,7 +701,7 @@ class AdminPanel:
                 'warnings': warnings
             })
         except Exception as e:
-            print(f"Unexpected error in api_deploy_start_handler: {e}")
+            logger.error(f"Critical error in api_deploy_start_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
@@ -695,7 +713,7 @@ class AdminPanel:
         """Копирует статические файлы админки в папку public для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
         if not source_static_path.exists():
-            print("Исходная директория статики не существует, нечего копировать")
+            logger.info("Исходная директория статики не существует, нечего копировать")
             return
             
         dest_static_path = Path('public/admin/static')
@@ -707,9 +725,9 @@ class AdminPanel:
         if dest_static_path.exists():
             shutil.rmtree(dest_static_path)
             
-        print(f"Копирование статики админки из {source_static_path} в {dest_static_path}")
+        logger.info(f"Копирование статики админки из {source_static_path} в {dest_static_path}")
         shutil.copytree(source_static_path, dest_static_path)
-        print("Статика админки успешно скопирована в public")
+        logger.info("Статика админки успешно скопирована в public")
     
     def rebuild_site(self):
         """Rebuild the site using the engine."""
@@ -720,7 +738,7 @@ class AdminPanel:
             self.engine.build()
             return True
         except Exception as e:
-            print(f"Error rebuilding site: {e}")
+            logger.error(f"Error rebuilding site: {e}")
             import traceback
             traceback.print_exc()
             return False
