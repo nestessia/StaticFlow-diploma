@@ -579,12 +579,13 @@ class AdminPanel:
             deployer.update_config(**data)
             
             # Проверяем, валидна ли конфигурация
-            is_valid, errors = deployer.validate_config()
+            is_valid, errors, warnings = deployer.validate_config()
             
             return web.json_response({
                 'success': True,
                 'is_valid': is_valid,
-                'errors': errors if not is_valid else []
+                'errors': errors if not is_valid else [],
+                'warnings': warnings
             })
         except json.JSONDecodeError as e:
             print(f"Deploy config JSON parse error: {e}")
@@ -605,12 +606,23 @@ class AdminPanel:
     async def api_deploy_start_handler(self, request):
         """Handle deploy start API requests."""
         try:
+            # Получаем данные из запроса
+            data = {}
+            try:
+                data = await request.json()
+            except json.JSONDecodeError:
+                # Если JSON не предоставлен, используем пустой словарь
+                pass
+                
+            # Получаем коммит-сообщение, если предоставлено
+            commit_message = data.get('commit_message')
+            
             # Инициализируем GitHub Pages deployer
             from ..deploy.github_pages import GitHubPagesDeployer
             deployer = GitHubPagesDeployer()
             
             # Проверяем, валидна ли конфигурация
-            is_valid, errors = deployer.validate_config()
+            is_valid, errors, warnings = deployer.validate_config()
             if not is_valid:
                 return web.json_response({
                     'success': False,
@@ -626,7 +638,7 @@ class AdminPanel:
                 }, status=500)
                 
             # Деплоим сайт
-            success, message = deployer.deploy()
+            success, message = deployer.deploy(commit_message=commit_message)
             
             # Получаем обновленный статус
             status = deployer.get_deployment_status()
@@ -635,7 +647,8 @@ class AdminPanel:
                 'success': success,
                 'message': message,
                 'timestamp': status.get('last_deployment'),
-                'history': status.get('history', [])
+                'history': status.get('history', []),
+                'warnings': warnings
             })
         except Exception as e:
             print(f"Unexpected error in api_deploy_start_handler: {e}")

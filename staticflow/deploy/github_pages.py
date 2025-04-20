@@ -11,6 +11,12 @@ import subprocess
 from pathlib import Path
 import tempfile
 from typing import Dict, Any, Optional, List, Tuple
+import base64
+import hashlib
+from cryptography.fernet import Fernet
+import datetime
+import time
+import re
 
 
 class GitHubPagesDeployer:
@@ -29,6 +35,144 @@ class GitHubPagesDeployer:
         self.config_path = Path("deploy/github_pages.json")
         self.config = self._load_config()
     
+    def _get_encryption_key(self) -> bytes:
+        """
+        Get or generate encryption key for token encryption
+        
+        Returns:
+            Bytes encryption key
+        """
+        key_file = Path("deploy/.key")
+        
+        # Check for environment variable first
+        env_key = os.environ.get("STATICFLOW_ENCRYPTION_KEY")
+        if env_key:
+            try:
+                return base64.urlsafe_b64decode(env_key)
+            except Exception:
+                pass
+                
+        # Use existing key file if available
+        if key_file.exists():
+            try:
+                with open(key_file, 'rb') as f:
+                    return base64.urlsafe_b64decode(f.read())
+            except Exception:
+                pass
+        
+        # Generate new key
+        key = Fernet.generate_key()
+        
+        # Ensure directory exists
+        key_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save key to file
+        with open(key_file, 'wb') as f:
+            f.write(base64.urlsafe_b64encode(key))
+        
+        # Set permissions to owner-only read/write
+        try:
+            import stat
+            key_file.chmod(stat.S_IRUSR | stat.S_IWUSR)
+        except Exception:
+            pass
+            
+        return key
+    
+    def _encrypt_token(self, token: str) -> str:
+        """
+        Encrypt GitHub token
+        
+        Args:
+            token: Plain token string
+            
+        Returns:
+            Encrypted token string
+        """
+        if not token:
+            return ""
+            
+        key = self._get_encryption_key()
+        fernet = Fernet(key)
+        return fernet.encrypt(token.encode()).decode()
+    
+    def _decrypt_token(self, encrypted_token: str) -> str:
+        """
+        Decrypt GitHub token
+        
+        Args:
+            encrypted_token: Encrypted token string
+            
+        Returns:
+            Plain token string
+        """
+        if not encrypted_token:
+            return ""
+            
+        # Check for token in environment variables first
+        env_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("STATICFLOW_GITHUB_TOKEN")
+        if env_token:
+            return env_token
+            
+        try:
+            key = self._get_encryption_key()
+            fernet = Fernet(key)
+            return fernet.decrypt(encrypted_token.encode()).decode()
+        except Exception:
+            # If decryption fails, return empty string
+            return ""
+            
+    def _check_token_expiration(self, token: str) -> Tuple[bool, Optional[datetime.datetime]]:
+        """
+        Check if a GitHub token is expired or about to expire
+        
+        Args:
+            token: GitHub token
+            
+        Returns:
+            Tuple of (is_expiring_soon, expiration_date)
+        """
+        if not token:
+            return False, None
+            
+        # Regular expression to extract expiration from JWT tokens
+        # Note: GitHub tokens aren't always JWT, so this is best-effort
+        expiration_match = re.search(r'\.([A-Za-z0-9_-]+)\.', token)
+        if not expiration_match:
+            # Can't determine expiration
+            return False, None
+            
+        try:
+            # Try to decode the middle part as JWT payload
+            payload_b64 = expiration_match.group(1)
+            # Add padding if needed
+            padding = 4 - (len(payload_b64) % 4)
+            if padding < 4:
+                payload_b64 += "=" * padding
+                
+            payload_bytes = base64.urlsafe_b64decode(payload_b64)
+            payload_str = payload_bytes.decode('utf-8')
+            
+            # Try to parse JSON
+            import json
+            payload = json.loads(payload_str)
+            
+            # Check for expiration claim
+            if 'exp' in payload:
+                exp_timestamp = payload['exp']
+                exp_date = datetime.datetime.fromtimestamp(exp_timestamp)
+                
+                # Check if token expires within 7 days
+                now = datetime.datetime.now()
+                seven_days = datetime.timedelta(days=7)
+                
+                return (exp_date - now) < seven_days, exp_date
+        except Exception:
+            # Any error in parsing, we can't determine
+            pass
+            
+        return False, None
+    
     def _load_config(self) -> Dict[str, Any]:
         """
         Load deployment configuration from file
@@ -45,6 +189,8 @@ class GitHubPagesDeployer:
                 "username": "",
                 "email": "",
                 "token": "",
+                "token_encrypted": False,
+                "token_expiration": None,
                 "last_deployment": None,
                 "history": []
             }
@@ -61,7 +207,14 @@ class GitHubPagesDeployer:
         # Load existing config
         try:
             with open(self.config_path, 'r') as f:
-                return json.load(f)
+                config = json.load(f)
+                
+                # Handle token encryption if not already encrypted
+                if config.get("token") and not config.get("token_encrypted", False):
+                    config["token"] = self._encrypt_token(config["token"])
+                    config["token_encrypted"] = True
+                    
+                return config
         except json.JSONDecodeError:
             print(f"Error parsing config file {self.config_path}, using defaults")
             return {
@@ -71,6 +224,8 @@ class GitHubPagesDeployer:
                 "username": "",
                 "email": "",
                 "token": "",
+                "token_encrypted": False,
+                "token_expiration": None,
                 "last_deployment": None,
                 "history": []
             }
@@ -88,6 +243,11 @@ class GitHubPagesDeployer:
         # Ensure directory exists
         self.config_path.parent.mkdir(parents=True, exist_ok=True)
         
+        # Encrypt token if it's not encrypted
+        if self.config.get("token") and not self.config.get("token_encrypted", False):
+            self.config["token"] = self._encrypt_token(self.config["token"])
+            self.config["token_encrypted"] = True
+            
         # Save configuration
         with open(self.config_path, 'w') as f:
             json.dump(self.config, f, indent=2)
@@ -99,6 +259,17 @@ class GitHubPagesDeployer:
         Args:
             **kwargs: Key-value pairs to update in the configuration
         """
+        # Handle token specifically for encryption
+        if "token" in kwargs and kwargs["token"]:
+            # Encrypt the token
+            kwargs["token"] = self._encrypt_token(kwargs["token"])
+            kwargs["token_encrypted"] = True
+            
+            # Try to determine expiration
+            is_expiring_soon, exp_date = self._check_token_expiration(kwargs["token"])
+            if exp_date:
+                kwargs["token_expiration"] = exp_date.isoformat()
+        
         self.config.update(kwargs)
         self.save_config()
     
@@ -110,6 +281,7 @@ class GitHubPagesDeployer:
             Tuple of (is_valid, error_messages)
         """
         errors = []
+        warnings = []
         
         # Check required fields
         if not self.config.get("repo_url"):
@@ -127,7 +299,17 @@ class GitHubPagesDeployer:
                               repo_url.startswith("git@github.com:")):
             errors.append("Repository URL must be a valid GitHub URL")
             
-        return (len(errors) == 0, errors)
+        # Check token expiration if available
+        if self.config.get("token"):
+            token = self.config["token"]
+            if self.config.get("token_encrypted", False):
+                token = self._decrypt_token(token)
+                
+            is_expiring_soon, exp_date = self._check_token_expiration(token)
+            if is_expiring_soon and exp_date:
+                warnings.append(f"GitHub token will expire soon (on {exp_date.strftime('%Y-%m-%d')}). Consider generating a new token.")
+                
+        return (len(errors) == 0, errors, warnings)
     
     def _run_command(self, command: List[str], cwd: Optional[str] = None,
                      env: Optional[Dict[str, str]] = None) -> Tuple[int, str, str]:
@@ -154,15 +336,18 @@ class GitHubPagesDeployer:
         stdout, stderr = process.communicate()
         return process.returncode, stdout, stderr
     
-    def deploy(self) -> Tuple[bool, str]:
+    def deploy(self, commit_message: str = None) -> Tuple[bool, str]:
         """
         Deploy the site to GitHub Pages
         
+        Args:
+            commit_message: Optional custom commit message
+            
         Returns:
             Tuple of (success, message)
         """
         # Validate configuration
-        is_valid, errors = self.validate_config()
+        is_valid, errors, warnings = self.validate_config()
         if not is_valid:
             return False, f"Invalid configuration: {', '.join(errors)}"
         
@@ -190,7 +375,11 @@ class GitHubPagesDeployer:
             
             # If we have a token, use HTTPS with credentials
             if self.config.get("token"):
+                # Decrypt the token if it's encrypted
                 token = self.config["token"]
+                if self.config.get("token_encrypted", False):
+                    token = self._decrypt_token(token)
+                
                 # Convert SSH URL to HTTPS with token if needed
                 if repo_url.startswith("git@github.com:"):
                     repo_path = repo_url.split("git@github.com:")[1]
@@ -305,8 +494,13 @@ class GitHubPagesDeployer:
             # Commit changes
             import datetime
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Use custom commit message if provided, otherwise use default
+            if not commit_message:
+                commit_message = f"Deployed at {timestamp}"
+                
             code, out, err = self._run_command(
-                ["git", "commit", "-m", f"Deployed at {timestamp}"],
+                ["git", "commit", "-m", commit_message],
                 cwd=temp_dir,
                 env=git_env
             )
@@ -323,7 +517,6 @@ class GitHubPagesDeployer:
                 return False, f"Failed to push to GitHub: {err}"
             
             # Update deployment history
-            import datetime
             self.config.setdefault("history", [])
             self.config["history"].insert(0, {
                 "timestamp": datetime.datetime.now().isoformat(),
@@ -346,10 +539,26 @@ class GitHubPagesDeployer:
         Returns:
             Dictionary with deployment status
         """
+        # Check token expiration
+        token_expiration = None
+        token_expiring_soon = False
+        
+        if self.config.get("token"):
+            token = self.config["token"]
+            if self.config.get("token_encrypted", False):
+                token = self._decrypt_token(token)
+                
+            is_expiring_soon, exp_date = self._check_token_expiration(token)
+            if exp_date:
+                token_expiration = exp_date.isoformat()
+                token_expiring_soon = is_expiring_soon
+        
         return {
             "configured": bool(self.config.get("repo_url")),
             "last_deployment": self.config.get("last_deployment"),
             "history": self.config.get("history", []),
+            "token_expiration": token_expiration,
+            "token_expiring_soon": token_expiring_soon,
             "config": {
                 "repo_url": self.config.get("repo_url", ""),
                 "branch": self.config.get("branch", "gh-pages"),

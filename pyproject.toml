@@ -27,6 +27,7 @@ csscompressor = "^0.9.5"
 jsmin = "^3.0.1"
 geocoder = "^1.38.1"
 pycountry = "^24.6.1"
+cryptography = "^36.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

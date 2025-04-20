@@ -38,6 +38,11 @@
                     <label for="token">GitHub Token (Personal Access Token)</label>
                     <input type="password" id="token" name="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="{{ 'STORED_TOKEN' if config.has_token else '' }}">
                     <small>Personal access token with repo scope (stored securely)</small>
+                    {% if status.token_expiring_soon %}
+                    <div class="warning-notice">
+                        <i class="fas fa-exclamation-triangle"></i> Your token will expire soon (on {{ status.token_expiration }}). Consider generating a new token.
+                    </div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-group">
@@ -45,14 +50,6 @@
                     <input type="text" id="cname" name="cname" placeholder="example.com" value="{{ config.cname }}">
                     <small>Custom domain for your GitHub Pages site (optional)</small>
                 </div>
-                
-                <div class="form-group">
-                    <div class="deployment-info">
-                        <p><strong>Deployment Mode:</strong> Full Content</p>
-                        <small>This will deploy both static files and source content to GitHub Pages</small>
-                    </div>
-                </div>
-                
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Configuration</button>
                 </div>
@@ -74,6 +71,12 @@
                 {% else %}
                 <p><strong>Status:</strong> <span id="deploy-status-msg">Not configured</span></p>
                 {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="commit-message">Commit Message (optional)</label>
+                <input type="text" id="commit-message" name="commit_message" placeholder="Deploy website update">
+                <small>Custom commit message for this deployment</small>
             </div>
             
             <button id="deploy-btn" class="btn btn-success" {% if not status.configured %}disabled{% endif %}>Deploy to GitHub Pages</button>
@@ -221,6 +224,15 @@
         color: #856404;
     }
     
+    .warning-notice {
+        margin-top: 5px;
+        padding: 8px;
+        background-color: #fff3cd;
+        border-radius: 4px;
+        color: #856404;
+        font-size: 13px;
+    }
+    
     @media (max-width: 768px) {
         .deploy-form-container {
             grid-template-columns: 1fr;
@@ -253,6 +265,7 @@
         const statusMsg = document.getElementById('deploy-status-msg');
         const lastDeploymentTime = document.getElementById('last-deployment-time');
         const historyTable = document.getElementById('history-table').querySelector('tbody');
+        const commitMessageInput = document.getElementById('commit-message');
         
         // Format date for display
         function formatDate(dateString) {
@@ -320,6 +333,11 @@
                         } else {
                             statusMsg.textContent = 'Configuration incomplete';
                         }
+                        
+                        // Check for warnings
+                        if (data.warnings && data.warnings.length > 0) {
+                            alert('Warning: ' + data.warnings.join('\n'));
+                        }
                     } else {
                         alert('Error saving configuration: ' + (data.message || 'Unknown error'));
                     }
@@ -337,6 +355,9 @@
         // Handle deploy button click
         if (deployBtn) {
             deployBtn.addEventListener('click', async function() {
+                // Get commit message if provided
+                const commitMessage = commitMessageInput.value.trim();
+                
                 // Change button to loading state
                 const originalBtnText = deployBtn.textContent;
                 deployBtn.innerHTML = '<span class="spinner"></span> Deploying...';
@@ -345,7 +366,13 @@
                 
                 try {
                     const response = await fetch('/admin/api/deploy/start', {
-                        method: 'POST'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            commit_message: commitMessage
+                        })
                     });
                     
                     const data = await response.json();
@@ -376,6 +403,9 @@
                             
                             historyTable.insertBefore(newRow, historyTable.firstChild);
                         }
+                        
+                        // Clear commit message field
+                        commitMessageInput.value = '';
                         
                         alert('Site deployed successfully!');
                     } else {
