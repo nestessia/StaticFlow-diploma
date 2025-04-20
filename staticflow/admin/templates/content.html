@@ -8,26 +8,63 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-manager">
-    <h1>Content Management</h1>
-    
-    <div class="content-list">
-        {% for file in files %}
-        <div class="content-item">
-            <div class="content-info">
-                <h3>{{ file.path }}</h3>
-                <p>Last modified: <script>document.write(new Date({{ file.modified }} * 1000).toLocaleString())</script></p>
-            </div>
-            <div class="content-actions">
-                <a href="/admin/block-editor/{{ file.path }}" class="btn btn-primary">Edit</a>
-                <button onclick="deleteContent('{{ file.path }}')" class="danger">Delete</button>
-            </div>
-        </div>
-        {% endfor %}
+<div class="content-manager" x-data="contentManager()">
+    <div class="content-header">
+        <h1>Content Management</h1>
+        <a href="/admin/block-editor" class="create-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Create new page
+        </a>
     </div>
     
-    <div class="content-actions-global">
-        <a href="/admin/block-editor" class="create-btn block-btn">Create new page</a>
+    <div class="search-filter-container">
+        <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search content..."
+            x-model="searchQuery"
+        >
+        <select class="filter-select" x-model="filterType">
+            <option value="all">All files</option>
+            <option value=".md">Markdown</option>
+            <option value=".html">HTML</option>
+        </select>
+    </div>
+    
+    <div class="content-list">
+        <template x-if="filteredFiles.length === 0">
+            <div class="empty-state">
+                <div class="empty-state-icon">📄</div>
+                <h3>No content found</h3>
+                <p class="empty-state-text">Start by creating your first page or adjust your search criteria.</p>
+                <a href="/admin/block-editor" class="create-btn">Create new page</a>
+            </div>
+        </template>
+        
+        <template x-for="file in filteredFiles" :key="file.path">
+            <div class="content-item">
+                <div class="content-info">
+                    <h3>
+                        <span class="file-icon" x-text="file.path.endsWith('.md') ? '📄' : '🌐'"></span>
+                        <a :href="file.url || ('/' + file.path.replace('.md', '.html').replace('.html.html', '.html'))" 
+                           class="file-link" 
+                           target="_blank" 
+                           x-text="file.path"></a>
+                    </h3>
+                    <div class="file-meta">
+                        <span>Modified: <span x-text="formatDate(file.modified)"></span></span>
+                        <span x-if="file.size">Size: <span x-text="formatSize(file.size)"></span></span>
+                    </div>
+                </div>
+                <div class="content-actions">
+                    <a :href="'/admin/block-editor/' + file.path" class="btn btn-primary">Edit</a>
+                    <button @click="deleteFile(file)" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </template>
     </div>
 </div>
 {% endblock %}
@@ -109,6 +146,7 @@ function contentManager() {
         },
         
         formatSize(bytes) {
+            if (!bytes) return '';
             const units = ['B', 'KB', 'MB', 'GB'];
             let size = bytes;
             let unit = 0;
@@ -119,79 +157,6 @@ function contentManager() {
             }
             
             return `${size.toFixed(1)} ${units[unit]}`;
-        },
-        
-        async createFile() {
-            try {
-                const response = await fetch('/api/content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'create',
-                        path: this.newFile.path,
-                        content: this.createEditor.getValue()
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    window.dispatchEvent(new CustomEvent('notification', {
-                        detail: 'File created successfully!'
-                    }));
-                    window.location.reload();
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: `Error: ${error.message}`
-                }));
-            }
-        },
-        
-        async editFile(file) {
-            try {
-                const response = await fetch(`/api/content?path=${file.path}`);
-                const data = await response.json();
-                
-                this.currentFile = {
-                    ...file,
-                    content: data.content
-                };
-                this.showEditModal = true;
-            } catch (error) {
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: `Error: ${error.message}`
-                }));
-            }
-        },
-        
-        async saveFile() {
-            try {
-                const response = await fetch('/api/content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'update',
-                        path: this.currentFile.path,
-                        content: this.editEditor.getValue()
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    window.dispatchEvent(new CustomEvent('notification', {
-                        detail: 'File saved successfully!'
-                    }));
-                    window.location.reload();
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: `Error: ${error.message}`
-                }));
-            }
         },
         
         async deleteFile(file) {
@@ -211,20 +176,40 @@ function contentManager() {
                 
                 const data = await response.json();
                 if (data.status === 'ok') {
-                    window.dispatchEvent(new CustomEvent('notification', {
-                        detail: 'File deleted successfully!'
-                    }));
+                    alert('File deleted successfully!');
                     window.location.reload();
                 } else {
                     throw new Error(data.message);
                 }
             } catch (error) {
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: `Error: ${error.message}`
-                }));
+                alert(`Error: ${error.message}`);
             }
         }
     };
+}
+
+function deleteContent(path) {
+    if (confirm(`Are you sure you want to delete ${path}?`)) {
+        fetch('/admin/api/content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete',
+                path: path
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
 }
 </script>
 {% endblock %} 

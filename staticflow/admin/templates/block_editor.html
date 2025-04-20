@@ -6,11 +6,39 @@
 
 {% block head %}
 <link rel="stylesheet" href="/admin/static/css/block-editor.css">
+<style>
+    .filename-input-container {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    
+    #filename-input {
+        flex-grow: 1;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        font-size: 14px;
+    }
+    
+    #file-extension {
+        width: auto;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 0 4px 4px 0;
+        background-color: #f5f5f5;
+        font-size: 14px;
+    }
+</style>
 <!-- KaTeX для математических формул -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 <!-- Mermaid для диаграмм -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js"></script>
+<!-- Highlight.js для подсветки кода -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" crossorigin="anonymous" type="text/javascript"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -23,6 +51,21 @@
                 placeholder="Page Title" 
                 value="{{ page.title if page else 'Untitled Page' }}"
             >
+            {% if not page %}
+            <div class="filename-input-container">
+                <input 
+                    type="text" 
+                    id="filename-input" 
+                    placeholder="Имя файла (например: my-page)" 
+                    value=""
+                >
+                <select id="file-extension">
+                    <option value=".md" selected>Markdown (.md)</option>
+                    <option value=".rst">reStructuredText (.rst)</option>
+                    <option value=".adoc">AsciiDoc (.adoc)</option>
+                </select>
+            </div>
+            {% endif %}
             <div class="file-path">{{ page.source_path if page else 'New Page' }}</div>
             {% if page and page.modified %}
             <div class="file-modified">Last modified: <script>document.write(new Date({{ page.modified }} * 1000).toLocaleString())</script></div>
@@ -54,6 +97,18 @@
                 <label for="meta-tags">Tags (comma separated)</label>
                 <input type="text" id="meta-tags" value="{{ ','.join(page.metadata.tags) if page and page.metadata and page.metadata.tags else '' }}">
             </div>
+            <div class="metadata-field">
+                <label for="meta-format">Output Format</label>
+                <select id="meta-format">
+                    <option value="markdown" {% if page and page.metadata and page.metadata.format == "markdown" %}selected{% endif %}>Markdown (.md)</option>
+                    <option value="rst" {% if page and page.metadata and page.metadata.format == "rst" %}selected{% endif %}>reStructuredText (.rst)</option>
+                    <option value="asciidoc" {% if page and page.metadata and page.metadata.format == "asciidoc" %}selected{% endif %}>AsciiDoc (.adoc)</option>
+                </select>
+            </div>
+            <div class="metadata-field">
+                <label for="meta-draft">Draft</label>
+                <input type="checkbox" id="meta-draft" {% if page and page.metadata and page.metadata.draft %}checked{% endif %}>
+            </div>
         </div>
     </div>
 </div>
@@ -62,8 +117,8 @@
 {% block scripts %}
 <script src="/admin/static/js/block-editor.js"></script>
 <script>
-// Отладочная информация
-console.log("Initializing block editor...");
+// Инициализируем mermaid для диаграмм
+mermaid.initialize({ startOnLoad: true });
 
 // Сохраняем данные страницы
 var pageData = {
@@ -75,31 +130,243 @@ var pageData = {
         date: {% if safe_metadata and safe_metadata.date %}{{ safe_metadata.date|tojson }}{% else %}""{% endif %},
         author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
         tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
+        format: {% if safe_metadata and safe_metadata.format %}{{ safe_metadata.format|tojson }}{% else %}"markdown"{% endif %},
         draft: {% if safe_metadata and safe_metadata.draft %}true{% else %}false{% endif %}
     }
 };
 
-// Простая инициализация без AlpineJS
+// Инициализация редактора
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация редактора
-    var editor = new BlockEditor('#block-editor', pageData.content);
-    
-    // Добавляем обработчики событий для кнопок
-    document.getElementById('save-btn').addEventListener('click', function() {
-        savePage(editor);
-    });
-    
-    document.getElementById('preview-btn').addEventListener('click', function() {
-        previewPage(editor);
+    // Wait for block editor scripts to be fully loaded before initializing
+    document.addEventListener('blockEditorLoaded', function() {
+        try {
+            // Инициализация редактора
+            var editor = new BlockEditor('#block-editor', pageData.content);
+            
+            // Make editor variable accessible to the editor instance
+            editor.editor = editor.editorContainer;
+            
+            // Initialize highlight.js if available
+            if (window.hljs) {
+                console.log("Initializing highlight.js...");
+                try {
+                    hljs.configure({
+                        languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java', 'csharp', 'php', 'ruby', 'go', 'rust', 'swift']
+                    });
+                    hljs.highlightAll();
+                    console.log("highlight.js initialized successfully.");
+                } catch (e) {
+                    console.error("Error initializing highlight.js:", e);
+                }
+            } else {
+                console.warn("highlight.js is not available! Make sure to include the library in the page.");
+                console.info("Attempting to load highlight.js dynamically...");
+                // Add script dynamically if needed
+                loadHighlightJs();
+            }
+            
+            // Добавляем обработчики событий для кнопок
+            document.getElementById('save-btn').addEventListener('click', function() {
+                savePage(editor);
+            });
+            
+            document.getElementById('preview-btn').addEventListener('click', function() {
+                previewPage(editor);
+            });
+            
+            // Установка начального формата из метаданных
+            if (pageData.metadata.format) {
+                document.getElementById('meta-format').value = pageData.metadata.format;
+            }
+            
+            // Обработка клавиатурных сокращений
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S или Cmd+S для сохранения
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    savePage(editor);
+                }
+                
+                // Ctrl+P или Cmd+P для предпросмотра
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    previewPage(editor);
+                }
+            });
+            
+            // Синхронизация выбора формата вывода с расширением файла
+            const formatSelector = document.getElementById('meta-format');
+            const fileExtension = document.getElementById('file-extension');
+            
+            // Обновить расширение файла при изменении формата
+            if (formatSelector && fileExtension) {
+                formatSelector.addEventListener('change', function() {
+                    switch(this.value) {
+                        case 'markdown':
+                            fileExtension.value = '.md';
+                            break;
+                        case 'rst':
+                            fileExtension.value = '.rst';
+                            break;
+                        case 'asciidoc':
+                            fileExtension.value = '.adoc';
+                            break;
+                    }
+                });
+                
+                // Обновить формат при изменении расширения файла
+                fileExtension.addEventListener('change', function() {
+                    switch(this.value) {
+                        case '.md':
+                            formatSelector.value = 'markdown';
+                            break;
+                        case '.rst':
+                            formatSelector.value = 'rst';
+                            break;
+                        case '.adoc':
+                            formatSelector.value = 'asciidoc';
+                            break;
+                    }
+                });
+            }
+            
+            // Генерировать имя файла из заголовка страницы
+            const pageTitleInput = document.getElementById('page-title');
+            const filenameInput = document.getElementById('filename-input');
+            
+            if (pageTitleInput && filenameInput) {
+                pageTitleInput.addEventListener('blur', function() {
+                    // Если поле имени файла пустое, предложить имя на основе заголовка
+                    if (!filenameInput.value.trim()) {
+                        // Преобразуем заголовок в имя файла
+                        const title = pageTitleInput.value.trim();
+                        if (title) {
+                            const filename = title
+                                .toLowerCase()
+                                .replace(/[^a-zA-Z0-9\s-]/g, '') // Удаляем спецсимволы
+                                .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
+                                .replace(/-+/g, '-'); // Убираем дублирующиеся дефисы
+                            
+                            filenameInput.value = filename;
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Error initializing editor:", error);
+        }
     });
 });
+
+// Function to dynamically load highlight.js
+function loadHighlightJs() {
+    // Check if highlight.js is already being loaded or exists
+    if (window.hljs || document.querySelector('script[src*="highlight.js"]')) {
+        console.log("highlight.js is already loaded or being loaded");
+        return;
+    }
+    
+    console.log("Attempting to load highlight.js dynamically...");
+    
+    try {
+        // Create and add the main script
+        const script = document.createElement('script');
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js";
+        script.crossOrigin = "anonymous";
+        script.type = "text/javascript";
+        script.onload = function() {
+            console.log("highlight.js loaded successfully");
+            
+            // Initialize after loading
+            if (window.hljs) {
+                try {
+                    hljs.configure({
+                        languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java']
+                    });
+                    hljs.highlightAll();
+                    
+                    // Apply highlighting to any code blocks that may already exist
+                    const codeBlocks = document.querySelectorAll('pre code');
+                    if (codeBlocks.length > 0) {
+                        console.log(`Applying highlighting to ${codeBlocks.length} existing code blocks`);
+                        codeBlocks.forEach(block => {
+                            try {
+                                hljs.highlightElement(block);
+                            } catch (e) {
+                                console.warn("Failed to highlight code block:", e);
+                            }
+                        });
+                    }
+                    
+                    // Success message
+                    console.info("highlight.js is now available!");
+                } catch (e) {
+                    console.error("Error initializing highlight.js after loading:", e);
+                }
+            } else {
+                console.warn("highlight.js still not available after loading script!");
+            }
+        };
+        script.onerror = function(e) {
+            console.error("Failed to load highlight.js:", e);
+        };
+        
+        // Create and add the CSS
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css";
+        link.crossOrigin = "anonymous";
+        
+        // Append to document
+        document.head.appendChild(link);
+        document.head.appendChild(script);
+    } catch (e) {
+        console.error("Error during dynamic loading of highlight.js:", e);
+    }
+}
+
+// Format the date in ISO format compatible with datetime-local input
+function formatDateForISO(dateValue) {
+    let formattedDate;
+    if (dateValue) {
+        // Parse the date and ensure correct ISO format with 'T' separator
+        const date = new Date(dateValue);
+        formattedDate = date.toISOString().split('.')[0];  // Remove milliseconds
+    } else {
+        // Create a new date in the correct format
+        formattedDate = new Date().toISOString().split('.')[0];  // Remove milliseconds
+    }
+    return formattedDate;
+}
 
 // Функция сохранения страницы
 function savePage(editor) {
     try {
         const content = editor.getContent();
         const title = document.getElementById('page-title').value;
-        const path = document.querySelector('.file-path').textContent;
+        let path = document.querySelector('.file-path').textContent;
+        const format = document.getElementById('meta-format').value;
+        
+        // Если это новая страница, используем пользовательское имя файла
+        if (path === 'New Page') {
+            const filename = document.getElementById('filename-input').value.trim();
+            const extension = document.getElementById('file-extension').value;
+            
+            if (!filename) {
+                alert("Пожалуйста, укажите имя файла для сохранения страницы");
+                document.getElementById('filename-input').focus();
+                return;
+            }
+            
+            // Валидация имени файла (только буквы, цифры, дефисы и подчеркивания)
+            if (!/^[a-zA-Z0-9\-_]+$/.test(filename)) {
+                alert("Имя файла может содержать только буквы, цифры, дефисы и знаки подчеркивания");
+                document.getElementById('filename-input').focus();
+                return;
+            }
+            
+            path = filename + extension;
+        }
         
         if (!content) {
             console.error("Content is empty");
@@ -113,13 +380,18 @@ function savePage(editor) {
             return;
         }
         
+        // Format the date using our helper function
+        const dateValue = document.getElementById('meta-date').value;
+        const formattedDate = formatDateForISO(dateValue);
+        
         const metadata = {
             title: title || "Untitled",
-            date: document.getElementById('meta-date').value || new Date().toISOString(),
+            date: formattedDate,
             author: document.getElementById('meta-author').value || "",
             tags: document.getElementById('meta-tags').value
                   ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
                   : [],
+            format: format || "markdown",
             draft: document.getElementById('meta-draft').checked
         };
         
@@ -136,10 +408,6 @@ function savePage(editor) {
         console.log("Saving page with path:", path);
         console.log("Content length:", content.length, "bytes");
         console.log("Metadata:", metadata);
-        console.log("Request JSON length:", jsonData.length, "bytes");
-        console.log("JSON data preview:", jsonData.substring(0, 200) + "...");
-        console.log("Request URL:", '/admin/api/content');
-        console.log("Request method:", 'POST');
         
         // Отправляем через fetch
         fetch('/admin/api/content', {
@@ -151,9 +419,6 @@ function savePage(editor) {
             body: jsonData
         })
         .then(response => {
-            console.log("Response status:", response.status, response.statusText);
-            console.log("Response headers:", [...response.headers.entries()]);
-            
             if (!response.ok) {
                 return response.text().then(text => {
                     console.error("Response error text:", text);
@@ -175,21 +440,7 @@ function savePage(editor) {
         })
         .catch(error => {
             console.error('Error saving page:', error);
-            // Используем полный текст ошибки
-            const errorText = error.toString();
-            alert('Error saving page: ' + errorText);
-            
-            // Добавляем дополнительную диагностику
-            const diagElement = document.createElement('div');
-            diagElement.style.display = 'none';
-            diagElement.id = 'save-error-diag';
-            diagElement.innerText = JSON.stringify({
-                error: errorText,
-                path: path,
-                contentLength: content.length,
-                metadataStr: JSON.stringify(metadata)
-            }, null, 2);
-            document.body.appendChild(diagElement);
+            alert('Error saving page: ' + error.toString());
         });
     } catch (error) {
         console.error('Error in savePage function:', error);
@@ -202,14 +453,20 @@ function previewPage(editor) {
     try {
         const content = editor.getContent();
         const title = document.getElementById('page-title').value;
+        const format = document.getElementById('meta-format').value;
+        
+        // Format the date using our helper function
+        const dateValue = document.getElementById('meta-date').value;
+        const formattedDate = formatDateForISO(dateValue);
         
         const metadata = {
             title: title || "Untitled",
-            date: document.getElementById('meta-date').value || new Date().toISOString(),
+            date: formattedDate,
             author: document.getElementById('meta-author').value || "",
             tags: document.getElementById('meta-tags').value
                   ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
                   : [],
+            format: format || "markdown",
             draft: document.getElementById('meta-draft').checked
         };
         

@@ -1,25 +1,27 @@
-/* StaticFlow Block Editor Styles v2.0 */
+/* StaticFlow Block Editor Styles v2.0 - Notion-inspired */
 
 .sf-block-editor {
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
     padding: 20px 10px;
-    min-height: 300px;
+    min-height: 400px;
     background-color: #fff;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     position: relative;
+    transition: all 0.2s ease;
 }
 
 /* Общие стили для всех блоков */
 .sf-block {
     position: relative;
-    margin: 0.8em auto;
-    padding: 8px 16px;
-    border-radius: 4px;
+    margin: 0.25em auto;
+    padding: 4px 12px;
+    border-radius: 3px;
     max-width: 800px;
-    min-height: 36px;
+    min-height: 32px;
     border: 1px solid transparent;
     transition: all 0.2s ease;
+    cursor: text;
 }
 
 .sf-block:hover {
@@ -28,22 +30,97 @@
 }
 
 .sf-block-selected {
-    border-color: #4dabf7;
-    background-color: #f8f9fa;
-    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+    border-color: rgba(35, 131, 226, 0.28);
+    background-color: rgba(35, 131, 226, 0.05);
+}
+
+/* Контейнер для левых элементов управления */
+.sf-block-left-controls {
+    position: absolute;
+    left: -40px;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+}
+
+/* Drag handle for blocks */
+.sf-block-drag-handle {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    z-index: 10;
+    margin-bottom: 10px;
+}
+
+.sf-block:hover .sf-block-drag-handle {
+    opacity: 1;
+    color: #2383e2;
+}
+
+.sf-block-drag-handle:hover {
+    background-color: #e0e0e0;
+    opacity: 1;
+    color: #2383e2;
+}
+
+.sf-block-drag-handle:active {
+    cursor: grabbing;
+    background-color: #d5e9ff;
+}
+
+.sf-block-dragging {
+    opacity: 0.8 !important;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(35, 131, 226, 0.5);
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+    transition: transform 0.05s ease-out;
+    background-color: white;
+}
+
+.sf-block-drop-indicator {
+    height: 3px;
+    background-color: #2383e2;
+    margin: 0 auto;
+    max-width: 800px;
+    border-radius: 3px;
+    display: none;
+    animation: pulse 1.5s infinite;
+    z-index: 100;
+    box-shadow: 0 0 5px rgba(35, 131, 226, 0.3);
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 /* Контролы блока (удаление, перемещение) */
 .sf-block-controls {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 4px;
+    right: 4px;
     display: none;
     background-color: white;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     border-radius: 4px;
     padding: 2px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     z-index: 10;
 }
 
@@ -73,215 +150,399 @@
 }
 
 .sf-block-content {
-    padding: 4px;
+    padding: 2px;
 }
 
 /* Кнопка добавления нового блока */
 .add-block-button {
-    position: absolute;
-    left: -32px;
-    top: 50%;
-    transform: translateY(-50%);
     width: 24px;
     height: 24px;
     border-radius: 50%;
     background-color: white;
-    border: 1px solid #ddd;
-    color: #999;
+    border: 1px solid #e0e0e0;
+    color: #2383e2;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
     z-index: 5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    line-height: 1;
+    margin-top: auto;
 }
 
-.sf-block:hover .add-block-button {
+.sf-block:hover .add-block-button,
+.sf-block-selected .add-block-button {
     opacity: 1;
 }
 
+.add-block-button:focus {
+    opacity: 1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.3);
+}
+
+/* Для мобильных устройств делаем кнопки более компактными */
+@media (max-width: 768px) {
+    .sf-block-left-controls {
+        left: -34px;
+        width: 26px;
+        padding: 4px 0;
+    }
+    
+    .add-block-button {
+        width: 22px;
+        height: 22px;
+        font-size: 14px;
+        opacity: 0.7;
+    }
+    
+    .sf-block-drag-handle {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .sf-block:hover .add-block-button,
+    .sf-block-selected .add-block-button {
+        opacity: 1;
+    }
+}
+
 .add-block-button:hover {
-    background-color: #4dabf7;
+    background-color: #2383e2;
     color: white;
-    border-color: #4dabf7;
+    border-color: #2383e2;
+    transform: scale(1.1);
+    box-shadow: 0 2px 5px rgba(35, 131, 226, 0.3);
+    border-radius: 50%;
 }
 
 /* Меню выбора типа блока */
 .block-type-menu {
     position: absolute;
     background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: 280px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: min(320px, 95vw);
     max-height: 500px;
     overflow-y: auto;
+    overflow-x: hidden;
     z-index: 1000;
-    padding: 8px;
+    padding: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transform-origin: center top;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-sizing: border-box;
+    scrollbar-width: thin; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.block-type-menu-positioned {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Поисковое поле */
+.block-type-search {
+    margin-bottom: 16px;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    padding: 4px 0;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.block-type-search-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+
+.block-type-search-input:focus {
+    border-color: #2383e2;
+    background-color: white;
+    box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1);
+}
+
+.block-type-search-input::placeholder {
+    color: #aaa;
+}
+
+/* Контейнер групп */
+.block-type-groups-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .block-type-group {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .block-type-group-title {
-    font-size: 12px;
-    color: #666;
+    font-size: 13px;
+    color: #505050;
+    font-weight: 600;
     text-transform: uppercase;
-    margin-bottom: 8px;
-    padding-left: 8px;
+    margin-bottom: 10px;
+    padding-left: 12px;
+    letter-spacing: 0.5px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .block-type-option {
     display: flex;
     align-items: center;
-    padding: 8px;
+    padding: 10px 12px;
     cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .block-type-option:hover {
-    background-color: #f5f5f5;
+    background-color: #f0f7ff;
+    color: #2383e2;
+    transform: translateX(2px);
+}
+
+.block-type-option:focus {
+    background-color: #e6f2ff;
+    outline: 2px solid #2383e2;
 }
 
 .block-type-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin-right: 8px;
-    border-radius: 4px;
-    background-color: #f0f0f0;
-    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    margin-right: 12px;
+    font-size: 16px;
+    color: #444;
+    flex-shrink: 0;
+}
+
+.block-type-option:hover .block-type-icon {
+    background-color: #e6f2ff;
+    color: #2383e2;
 }
 
 .block-type-label {
-    font-size: 14px;
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    flex-grow: 1;
+    word-break: break-word;
+    max-width: calc(100% - 44px); /* 32px icon + 12px margin */
+}
+
+/* Стили для пустого состояния (placeholder) */
+.block-type-menu::after {
+    content: "";
+    display: block;
+    height: 8px;
+}
+
+/* Полоса прокрутки */
+.block-type-menu::-webkit-scrollbar {
+    width: 8px;
+    height: 0; /* Prevents horizontal scrollbar */
+}
+
+.block-type-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.block-type-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.block-type-menu::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Style for the scrollbar bottom area */
+.block-type-menu::after {
+    content: "";
+    display: block;
+    height: 12px; /* Space at the bottom */
+    width: 100%;
+    margin-top: 8px;
+    background: transparent;
+}
+
+/* Preview mode styling - общие стили */
+.sf-block-preview-mode {
+    margin: 0.7em auto;
+    padding: 8px 12px;
+    border-radius: 4px;
+    max-width: 800px;
+    background-color: #fcfcfc;
+    border-left: 3px solid #2383e2;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sf-block-preview-mode:hover {
+    background-color: #f7f9fd;
+    box-shadow: 0 1px 3px rgba(35, 131, 226, 0.1);
+}
+
+.sf-block-preview-mode::after {
+    content: '⋮';
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    color: #bbb;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sf-block-preview-mode:hover::after {
+    opacity: 1;
+}
+
+/* Специальные стили для разных типов блоков в режиме предпросмотра */
+
+/* Заголовки */
+.sf-block-heading1.sf-block-preview-mode h1 {
+    font-size: 2em;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
     color: #333;
 }
 
-/* Стили для разных типов блоков */
-/* Заголовки */
-.sf-heading-input {
-    width: 100%;
-    border: none;
-    background-color: transparent;
-    font-family: inherit;
-    padding: 4px;
-    border-radius: 2px;
-    resize: none;
-    outline: none;
-}
-
-.sf-heading1 {
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1.2;
-}
-
-.sf-heading2 {
-    font-size: 24px;
-    font-weight: bold;
+.sf-block-heading2.sf-block-preview-mode h2 {
+    font-size: 1.5em;
+    font-weight: 600;
     line-height: 1.3;
+    margin: 0;
+    color: #333;
 }
 
-.sf-heading3 {
-    font-size: 20px;
-    font-weight: bold;
+.sf-block-heading3.sf-block-preview-mode h3 {
+    font-size: 1.25em;
+    font-weight: 600;
     line-height: 1.4;
+    margin: 0;
+    color: #333;
 }
 
 /* Параграф */
-.sf-paragraph-input {
-    width: 100%;
-    min-height: 24px;
-    border: none;
-    background-color: transparent;
-    font-family: inherit;
-    padding: 4px;
-    border-radius: 2px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.5;
+.sf-block-paragraph.sf-block-preview-mode p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
 }
 
 /* Списки */
-.sf-list-input {
-    width: 100%;
-    min-height: 24px;
-    border: none;
-    background-color: transparent;
-    font-family: inherit;
-    padding: 4px;
-    border-radius: 2px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.5;
-}
-
-.sf-bullet-list {
-    padding-left: 20px;
-    position: relative;
-}
-
-.sf-bullet-list::before {
-    content: '•';
-    position: absolute;
-    left: 8px;
-    top: 4px;
-}
-
-.sf-numbered-list {
+.sf-block-bullet-list.sf-block-preview-mode ul,
+.sf-block-numbered-list.sf-block-preview-mode ol {
+    margin: 0;
     padding-left: 24px;
-    position: relative;
 }
 
-.sf-numbered-list::before {
-    content: '1.';
-    position: absolute;
-    left: 4px;
-    top: 4px;
+.sf-block-bullet-list.sf-block-preview-mode li,
+.sf-block-numbered-list.sf-block-preview-mode li {
+    margin: 4px 0;
+    line-height: 1.5;
 }
 
 /* Цитата */
-.sf-quote-input {
-    width: 100%;
-    min-height: 24px;
-    border: none;
-    background-color: #f9f9f9;
-    font-family: inherit;
-    padding: 8px 12px;
-    border-radius: 2px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.5;
-    border-left: 4px solid #ddd;
+.sf-block-quote.sf-block-preview-mode blockquote {
+    margin: 0;
+    padding-left: 12px;
+    border-left: 3px solid #ddd;
     font-style: italic;
+    color: #555;
+}
+
+/* Код (preview mode) */
+.sf-block-code.sf-block-preview-mode pre {
+    margin: 0;
+    padding: 12px;
+    background-color: #f7f6f3;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, Monaco, 'Andale Mono', monospace;
+    white-space: pre-wrap;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.5;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+
+.sf-block-code.sf-block-preview-mode code {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    background-color: transparent !important; /* Override hljs background */
 }
 
 /* Код */
 .sf-code-block-wrapper {
     width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .sf-code-language {
     width: 100%;
-    background-color: #f1f3f5;
+    background-color: #f7f6f3;
     border: none;
     padding: 4px 8px;
     border-radius: 4px 4px 0 0;
     font-size: 12px;
     outline: none;
+    box-sizing: border-box;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    font-weight: 500;
+    color: #555;
 }
 
 .sf-code-input {
     width: 100%;
     min-height: 120px;
-    background-color: #f1f3f5;
+    background-color: #f7f6f3;
     border: none;
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
     padding: 12px;
@@ -290,12 +551,18 @@
     outline: none;
     line-height: 1.5;
     font-size: 14px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    border: 1px solid #e0e0e0;
 }
 
 /* Математические формулы */
 .sf-math-block-wrapper,
 .sf-diagram-block-wrapper {
     width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .sf-math-input,
@@ -312,6 +579,8 @@
     line-height: 1.5;
     font-size: 14px;
     margin-bottom: 10px;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .sf-math-preview,
@@ -321,6 +590,8 @@
     border-radius: 4px;
     background-color: #f9f9f9;
     min-height: 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .sf-preview-label {
@@ -610,4 +881,78 @@
 .btn-secondary {
     background-color: #e9ecef;
     color: #495057;
+}
+
+/* Transition for block edits */
+.sf-block-transition {
+    transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Placeholder text */
+.sf-block [contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    font-style: italic;
+}
+
+@media (max-width: 400px) {
+    .block-type-option {
+        padding: 8px 10px;
+    }
+    
+    .block-type-icon {
+        width: 28px;
+        height: 28px;
+        margin-right: 8px;
+        font-size: 14px;
+    }
+    
+    .block-type-label {
+        font-size: 14px;
+    }
+    
+    .block-type-group-title {
+        font-size: 12px;
+        padding-left: 10px;
+    }
+}
+
+/* Code header with language label (Notion-style) */
+.sf-code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: #f7f6f3;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    height: 32px;
+}
+
+.sf-code-language-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    padding: 2px 6px;
+    background-color: #e9e8e3;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    position: relative;
+    top: 1px;
+}
+
+/* When code block is selected */
+.sf-block-selected .sf-code-header {
+    border-color: rgba(35, 131, 226, 0.28);
+    background-color: rgba(35, 131, 226, 0.03);
+}
+
+.sf-block-selected.sf-block-code.sf-block-preview-mode pre {
+    border-color: rgba(35, 131, 226, 0.28);
+    background-color: rgba(35, 131, 226, 0.03);
 } 
