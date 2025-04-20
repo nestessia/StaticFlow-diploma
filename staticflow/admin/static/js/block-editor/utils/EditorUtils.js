@@ -272,6 +272,32 @@
                 
                 currentBlock = null;
             }
+            // Проверяем случай однострочного $ на отдельной строке (начало блочной формулы)
+            else if (line.trim() === '$') {
+                let mathContent = '';
+                let j = i + 1;
+                
+                // Собираем контент до закрывающего $
+                while (j < lines.length && lines[j].trim() !== '$') {
+                    mathContent += (j > i + 1 ? '\n' : '') + lines[j];
+                    j++;
+                }
+                
+                // Пропускаем закрывающий $
+                if (j < lines.length) {
+                    j++;
+                }
+                
+                this.blocks.push({
+                    id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                    type: 'math',
+                    content: mathContent,
+                    meta: {}
+                });
+                
+                currentBlock = null;
+                i = j;
+            }
             // Info, Warning, Danger blocks
             else if (line.startsWith(':::')) {
                 const blockMatch = line.match(/^:::(\w+)(?:\s+"(.*?)")?/);

@@ -9,6 +9,13 @@
         const mathWrapper = document.createElement('div');
         mathWrapper.className = 'sf-math-block-wrapper';
         
+        // Функция для преобразования экранированных слешей в LaTeX
+        const prepareLatexContent = (content) => {
+            if (!content) return '';
+            // Заменяем двойные обратные слеши на одинарные для корректного отображения в LaTeX
+            return content.replace(/\\{2}/g, '\\');
+        };
+        
         if (block.isPreview) {
             // Create a styled preview of the math formula
             const previewLabel = document.createElement('div');
@@ -21,7 +28,8 @@
             // Render the formula if KaTeX is available
             if (window.katex) {
                 try {
-                    window.katex.render(block.content || 'e = mc^2', mathPreview, {
+                    const processedContent = prepareLatexContent(block.content) || 'e = mc^2';
+                    window.katex.render(processedContent, mathPreview, {
                         throwOnError: false,
                         displayMode: true
                     });
@@ -53,7 +61,8 @@
                 
                 if (window.katex && formula) {
                     try {
-                        window.katex.render(formula, mathPreview, {
+                        const processedFormula = prepareLatexContent(formula);
+                        window.katex.render(processedFormula, mathPreview, {
                             throwOnError: false,
                             displayMode: true
                         });
