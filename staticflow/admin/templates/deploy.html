@@ -2,290 +2,14 @@
 
 {% block title %}Deploy to GitHub Pages{% endblock %}
 
-{% block head %}
-<style>
-    .deploy-container {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-    
-    .deploy-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-    
-    .deploy-header h1 {
-        margin: 0;
-        font-size: 1.75rem;
-        color: var(--text-color);
-    }
-    
-    .deploy-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-    }
-    
-    .card {
-        background: var(--card-bg);
-        border-radius: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        padding: 1.5rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .card:hover {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-    
-    .card-header h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        color: var(--text-color);
-    }
-    
-    .form-group {
-        margin-bottom: 1.25rem;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--text-color);
-    }
-    
-    .form-group input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-        background-color: var(--card-bg);
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    
-    .form-group input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    }
-    
-    .form-group small {
-        display: block;
-        color: #6b7280;
-        margin-top: 0.5rem;
-        font-size: 0.75rem;
-    }
-    
-    .form-actions {
-        margin-top: 1.5rem;
-        display: flex;
-        justify-content: flex-end;
-    }
-    
-    .status-card {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 1rem 0;
-        background-color: var(--hover-bg);
-        display: flex;
-        align-items: center;
-    }
-    
-    .status-card .status-icon {
-        margin-right: 0.75rem;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-    
-    .status-card .status-content {
-        flex: 1;
-    }
-    
-    .status-card .status-content p {
-        margin: 0.25rem 0;
-    }
-    
-    .status-configured {
-        background-color: rgba(16, 185, 129, 0.1);
-        border-left: 4px solid var(--success-color);
-    }
-    
-    .status-not-configured {
-        background-color: rgba(239, 68, 68, 0.1);
-        border-left: 4px solid var(--danger-color);
-    }
-    
-    .history-table-container {
-        max-height: 300px;
-        overflow-y: auto;
-        margin-top: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-color);
-    }
-    
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .table th, .table td {
-        padding: 0.75rem 1rem;
-        text-align: left;
-    }
-    
-    .table th {
-        background-color: var(--hover-bg);
-        font-weight: 500;
-        color: var(--text-color);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    
-    .table tr {
-        border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.2s;
-    }
-    
-    .table tr:last-child {
-        border-bottom: none;
-    }
-    
-    .table tr:hover {
-        background-color: var(--hover-bg);
-    }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: capitalize;
-    }
-    
-    .status-success {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-    }
-    
-    .status-failed {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: var(--danger-color);
-    }
-    
-    .status-pending {
-        background-color: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
-    }
-    
-    .btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-    }
-    
-    .btn-primary {
-        background: var(--primary-color);
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background: #2563eb;
-    }
-    
-    .btn-success {
-        background: var(--success-color);
-        color: white;
-    }
-    
-    .btn-success:hover {
-        background: #059669;
-    }
-    
-    .btn-success:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
-    
-    .btn-lg {
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-    }
-    
-    /* Loading spinner */
-    .spinner {
-        display: inline-block;
-        width: 1.25rem;
-        height: 1.25rem;
-        border: 0.2rem solid rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .empty-history {
-        text-align: center;
-        padding: 2rem;
-        color: #6b7280;
-    }
-    
-    @media (max-width: 768px) {
-        .deploy-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .deploy-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-    }
-</style>
-{% endblock %}
+{% block page_title %}Deploy to GitHub Pages{% endblock %}
 
 {% block content %}
 <div class="deploy-container">
-    <div class="deploy-header">
-        <h1>Deploy to GitHub Pages</h1>
-    </div>
-    
-    <div class="deploy-grid">
-        <div class="card">
-            <div class="card-header">
-                <h2>GitHub Pages Configuration</h2>
-            </div>
-            <form id="github-pages-form" autocomplete="off">
+    <div class="deploy-form-container">
+        <div class="deploy-config">
+            <h3>GitHub Pages Configuration</h3>
+            <form id="github-pages-form" class="settings-form" autocomplete="off">
                 <div class="form-group">
                     <label for="repo-url">Repository URL</label>
                     <input type="text" id="repo-url" name="repo_url" placeholder="https://github.com/username/repo" value="{{ config.repo_url }}" autocomplete="off">
@@ -327,29 +51,22 @@
             </form>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h2>Deploy Site</h2>
-            </div>
+        <div class="deploy-action">
+            <h3>Deploy Site</h3>
             <p>Build your site and deploy it to GitHub Pages.</p>
             
-            {% if status.configured %}
-            <div class="status-card status-configured">
-                <div class="status-icon">✅</div>
-                <div class="status-content">
-                    <p><strong>Status:</strong> <span id="deploy-status-msg">Configuration ready</span></p>
-                    <p><strong>Last deployment:</strong> <span id="last-deployment-time">{{ status.last_deployment if status.last_deployment else 'Never' }}</span></p>
-                </div>
+            <div class="deploy-status">
+                {% if status.configured %}
+                <p><strong>Status:</strong> <span id="deploy-status-msg">Configuration ready</span></p>
+                {% if status.last_deployment %}
+                <p><strong>Last deployment:</strong> <span id="last-deployment-time">{{ status.last_deployment }}</span></p>
+                {% else %}
+                <p><strong>Last deployment:</strong> <span id="last-deployment-time">Never</span></p>
+                {% endif %}
+                {% else %}
+                <p><strong>Status:</strong> <span id="deploy-status-msg">Not configured</span></p>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="status-card status-not-configured">
-                <div class="status-icon">⚠️</div>
-                <div class="status-content">
-                    <p><strong>Status:</strong> <span id="deploy-status-msg">Not configured</span></p>
-                    <p>Please complete the GitHub Pages configuration before deploying.</p>
-                </div>
-            </div>
-            {% endif %}
             
             <div class="form-group">
                 <label for="commit-message">Commit Message (optional)</label>
@@ -357,23 +74,12 @@
                 <small>Custom commit message for this deployment</small>
             </div>
             
-            <div class="form-actions">
-                <button id="deploy-btn" class="btn btn-success btn-lg" {% if not status.configured %}disabled{% endif %}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Deploy to GitHub Pages
-                </button>
-            </div>
+            <button id="deploy-btn" class="btn btn-success" {% if not status.configured %}disabled{% endif %}>Deploy to GitHub Pages</button>
         </div>
     </div>
     
-    <div class="card">
-        <div class="card-header">
-            <h2>Deployment History</h2>
-        </div>
+    <div class="deployment-history">
+        <h3>Deployment History</h3>
         <div class="history-table-container">
             <table id="history-table" class="table">
                 <thead>
@@ -383,19 +89,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if status.history and status.history|length > 0 %}
-                        {% for item in status.history %}
-                        <tr>
-                            <td>{{ item.timestamp }}</td>
-                            <td><span class="status-badge status-{{ item.status }}">{{ item.status }}</span></td>
-                        </tr>
-                        {% endfor %}
+                    {% if status.history %}
+                    {% for item in status.history %}
+                    <tr>
+                        <td>{{ item.timestamp }}</td>
+                        <td><span class="status-badge status-{{ item.status }}">{{ item.status }}</span></td>
+                    </tr>
+                    {% endfor %}
                     {% else %}
-                        <tr>
-                            <td colspan="2" class="empty-history">
-                                <p>No deployment history available</p>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="2">No deployment history available</td>
+                    </tr>
                     {% endif %}
                 </tbody>
             </table>
@@ -404,150 +108,316 @@
 </div>
 {% endblock %}
 
+{% block head %}
+<style>
+    .deploy-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .deploy-form-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .deploy-config, .deploy-action, .deployment-history {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .form-group small {
+        display: block;
+        color: #666;
+        margin-top: 5px;
+        font-size: 12px;
+    }
+    
+    .deployment-info {
+        background-color: #e8f4ff;
+        border-radius: 4px;
+        padding: 12px;
+        border-left: 4px solid #0366d6;
+    }
+    
+    .deployment-info p {
+        margin: 0 0 5px 0;
+    }
+    
+    .form-actions {
+        margin-top: 20px;
+    }
+    
+    .deploy-status {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .history-table-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table th, .table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-transform: capitalize;
+    }
+    
+    .status-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .warning-notice {
+        margin-top: 5px;
+        padding: 8px;
+        background-color: #fff3cd;
+        border-radius: 4px;
+        color: #856404;
+        font-size: 13px;
+    }
+    
+    @media (max-width: 768px) {
+        .deploy-form-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Loading spinner */
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top-color: #2b96f1;
+        animation: spin 1s linear infinite;
+        margin-right: 5px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('github-pages-form');
         const deployBtn = document.getElementById('deploy-btn');
+        const deployForm = document.getElementById('github-pages-form');
         const statusMsg = document.getElementById('deploy-status-msg');
         const lastDeploymentTime = document.getElementById('last-deployment-time');
+        const historyTable = document.getElementById('history-table').querySelector('tbody');
+        const commitMessageInput = document.getElementById('commit-message');
+        
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+        
+        // Initial date formatting
+        if (lastDeploymentTime) {
+            lastDeploymentTime.textContent = formatDate(lastDeploymentTime.textContent);
+        }
+        
+        document.querySelectorAll('#history-table tbody td:first-child').forEach(cell => {
+            cell.textContent = formatDate(cell.textContent);
+        });
         
         // Handle form submission
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            const jsonData = {};
-            
-            for (const [key, value] of formData.entries()) {
-                jsonData[key] = value;
-            }
-            
-            // Show loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
-            submitBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/admin/api/deploy/config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(jsonData)
+        if (deployForm) {
+            deployForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(deployForm);
+                const configData = {};
+                
+                formData.forEach((value, key) => {
+                    // Don't send empty token (keep existing)
+                    if (key === 'token' && value === 'STORED_TOKEN') {
+                        return;
+                    }
+                    // Don't send empty token (keep existing)
+                    if (key === 'token' && !value) {
+                        return;
+                    }
+                    configData[key] = value;
                 });
                 
-                const data = await response.json();
+                // Ensure deploy_mode is set to full
+                configData.deploy_mode = 'full';
                 
-                if (data.status === 'success') {
-                    alert('Configuration saved successfully');
-                    location.reload();
-                } else {
-                    throw new Error(data.message || 'Failed to save configuration');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                // Reset button
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            }
-        });
-        
-        // Handle deploy button
-        deployBtn.addEventListener('click', async function() {
-            if (deployBtn.disabled) return;
-            
-            const commitMessage = document.getElementById('commit-message').value || 'Deploy website update';
-            
-            // Show loading state
-            const originalBtnText = deployBtn.innerHTML;
-            deployBtn.innerHTML = '<span class="spinner"></span> Deploying...';
-            deployBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/admin/api/deploy', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        commit_message: commitMessage
-                    })
-                });
+                // Show saving status
+                const submitBtn = deployForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+                submitBtn.disabled = true;
                 
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    statusMsg.textContent = 'Deployment started';
+                try {
+                    const response = await fetch('/admin/api/deploy/config', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(configData)
+                    });
                     
-                    // Poll for deployment status
-                    const checkStatus = async () => {
-                        try {
-                            const statusResponse = await fetch('/admin/api/deploy/status');
-                            const statusData = await statusResponse.json();
-                            
-                            if (statusData.status === 'running') {
-                                statusMsg.textContent = 'Deployment in progress...';
-                                setTimeout(checkStatus, 2000);
-                            } else if (statusData.status === 'success') {
-                                statusMsg.textContent = 'Deployment successful';
-                                lastDeploymentTime.textContent = statusData.timestamp;
-                                
-                                // Add new deployment to history table
-                                const historyTable = document.querySelector('#history-table tbody');
-                                const emptyRow = historyTable.querySelector('.empty-history');
-                                
-                                if (emptyRow) {
-                                    historyTable.innerHTML = '';
-                                }
-                                
-                                const newRow = document.createElement('tr');
-                                newRow.innerHTML = `
-                                    <td>${statusData.timestamp}</td>
-                                    <td><span class="status-badge status-success">success</span></td>
-                                `;
-                                
-                                historyTable.insertBefore(newRow, historyTable.firstChild);
-                            } else {
-                                statusMsg.textContent = 'Deployment failed';
-                                
-                                // Add failed deployment to history
-                                const historyTable = document.querySelector('#history-table tbody');
-                                const emptyRow = historyTable.querySelector('.empty-history');
-                                
-                                if (emptyRow) {
-                                    historyTable.innerHTML = '';
-                                }
-                                
-                                const newRow = document.createElement('tr');
-                                newRow.innerHTML = `
-                                    <td>${statusData.timestamp || new Date().toLocaleString()}</td>
-                                    <td><span class="status-badge status-failed">failed</span></td>
-                                `;
-                                
-                                historyTable.insertBefore(newRow, historyTable.firstChild);
-                            }
-                        } catch (error) {
-                            console.error('Error checking deployment status:', error);
-                            statusMsg.textContent = 'Error checking status';
-                        } finally {
-                            deployBtn.innerHTML = originalBtnText;
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        alert('Configuration saved successfully');
+                        
+                        // Enable deploy button if config is valid
+                        if (data.is_valid) {
                             deployBtn.disabled = false;
+                            statusMsg.textContent = 'Configuration ready';
+                        } else {
+                            statusMsg.textContent = 'Configuration incomplete';
                         }
-                    };
-                    
-                    setTimeout(checkStatus, 2000);
-                } else {
-                    throw new Error(data.message || 'Failed to start deployment');
+                        
+                        // Check for warnings
+                        if (data.warnings && data.warnings.length > 0) {
+                            alert('Warning: ' + data.warnings.join('\n'));
+                        }
+                    } else {
+                        alert('Error saving configuration: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error saving configuration:', error);
+                    alert('Error saving configuration: ' + error.message);
+                } finally {
+                    // Restore button
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
                 }
-            } catch (error) {
-                alert('Error: ' + error.message);
-                deployBtn.innerHTML = originalBtnText;
-                deployBtn.disabled = false;
-            }
-        });
+            });
+        }
+        
+        // Handle deploy button click
+        if (deployBtn) {
+            deployBtn.addEventListener('click', async function() {
+                // Get commit message if provided
+                const commitMessage = commitMessageInput.value.trim();
+                
+                // Change button to loading state
+                const originalBtnText = deployBtn.textContent;
+                deployBtn.innerHTML = '<span class="spinner"></span> Deploying...';
+                deployBtn.disabled = true;
+                statusMsg.textContent = 'Deployment in progress...';
+                
+                try {
+                    const response = await fetch('/admin/api/deploy/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            commit_message: commitMessage
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        statusMsg.textContent = 'Deployment successful!';
+                        
+                        // Update last deployment time
+                        if (data.timestamp) {
+                            lastDeploymentTime.textContent = formatDate(data.timestamp);
+                        }
+                        
+                        // Add to history table
+                        if (data.history && data.history.length > 0) {
+                            const latestDeployment = data.history[0];
+                            
+                            // Clear "no history" row if present
+                            if (historyTable.querySelector('td[colspan="2"]')) {
+                                historyTable.innerHTML = '';
+                            }
+                            
+                            // Add new row to the top
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                                <td>${formatDate(latestDeployment.timestamp)}</td>
+                                <td><span class="status-badge status-${latestDeployment.status}">${latestDeployment.status}</span></td>
+                            `;
+                            
+                            historyTable.insertBefore(newRow, historyTable.firstChild);
+                        }
+                        
+                        // Clear commit message field
+                        commitMessageInput.value = '';
+                        
+                        alert('Site deployed successfully!');
+                    } else {
+                        statusMsg.textContent = 'Deployment failed';
+                        alert('Error deploying site: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error deploying site:', error);
+                    statusMsg.textContent = 'Deployment failed';
+                    alert('Error deploying site: ' + error.message);
+                } finally {
+                    // Restore button
+                    deployBtn.innerHTML = originalBtnText;
+                    deployBtn.disabled = false;
+                }
+            });
+        }
     });
 </script>
 {% endblock %} 
