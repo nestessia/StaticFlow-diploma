@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to StaticFlow</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: #49483e }
+.highlight .c { color: #959077 } /* Comment */
+.highlight .err { color: #ed007e; background-color: #1e0010 } /* Error */
+.highlight .esc { color: #f8f8f2 } /* Escape */
+.highlight .g { color: #f8f8f2 } /* Generic */
+.highlight .k { color: #66d9ef } /* Keyword */
+.highlight .l { color: #ae81ff } /* Literal */
+.highlight .n { color: #f8f8f2 } /* Name */
+.highlight .o { color: #ff4689 } /* Operator */
+.highlight .x { color: #f8f8f2 } /* Other */
+.highlight .p { color: #f8f8f2 } /* Punctuation */
+.highlight .ch { color: #959077 } /* Comment.Hashbang */
+.highlight .cm { color: #959077 } /* Comment.Multiline */
+.highlight .cp { color: #959077 } /* Comment.Preproc */
+.highlight .cpf { color: #959077 } /* Comment.PreprocFile */
+.highlight .c1 { color: #959077 } /* Comment.Single */
+.highlight .cs { color: #959077 } /* Comment.Special */
+.highlight .gd { color: #ff4689 } /* Generic.Deleted */
+.highlight .ge { color: #f8f8f2; font-style: italic } /* Generic.Emph */
+.highlight .ges { color: #f8f8f2; font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.highlight .gr { color: #f8f8f2 } /* Generic.Error */
+.highlight .gh { color: #f8f8f2 } /* Generic.Heading */
+.highlight .gi { color: #a6e22e } /* Generic.Inserted */
+.highlight .go { color: #66d9ef } /* Generic.Output */
+.highlight .gp { color: #ff4689; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { color: #f8f8f2; font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #959077 } /* Generic.Subheading */
+.highlight .gt { color: #f8f8f2 } /* Generic.Traceback */
+.highlight .kc { color: #66d9ef } /* Keyword.Constant */
+.highlight .kd { color: #66d9ef } /* Keyword.Declaration */
+.highlight .kn { color: #ff4689 } /* Keyword.Namespace */
+.highlight .kp { color: #66d9ef } /* Keyword.Pseudo */
+.highlight .kr { color: #66d9ef } /* Keyword.Reserved */
+.highlight .kt { color: #66d9ef } /* Keyword.Type */
+.highlight .ld { color: #e6db74 } /* Literal.Date */
+.highlight .m { color: #ae81ff } /* Literal.Number */
+.highlight .s { color: #e6db74 } /* Literal.String */
+.highlight .na { color: #a6e22e } /* Name.Attribute */
+.highlight .nb { color: #f8f8f2 } /* Name.Builtin */
+.highlight .nc { color: #a6e22e } /* Name.Class */
+.highlight .no { color: #66d9ef } /* Name.Constant */
+.highlight .nd { color: #a6e22e } /* Name.Decorator */
+.highlight .ni { color: #f8f8f2 } /* Name.Entity */
+.highlight .ne { color: #a6e22e } /* Name.Exception */
+.highlight .nf { color: #a6e22e } /* Name.Function */
+.highlight .nl { color: #f8f8f2 } /* Name.Label */
+.highlight .nn { color: #f8f8f2 } /* Name.Namespace */
+.highlight .nx { color: #a6e22e } /* Name.Other */
+.highlight .py { color: #f8f8f2 } /* Name.Property */
+.highlight .nt { color: #ff4689 } /* Name.Tag */
+.highlight .nv { color: #f8f8f2 } /* Name.Variable */
+.highlight .ow { color: #ff4689 } /* Operator.Word */
+.highlight .pm { color: #f8f8f2 } /* Punctuation.Marker */
+.highlight .w { color: #f8f8f2 } /* Text.Whitespace */
+.highlight .mb { color: #ae81ff } /* Literal.Number.Bin */
+.highlight .mf { color: #ae81ff } /* Literal.Number.Float */
+.highlight .mh { color: #ae81ff } /* Literal.Number.Hex */
+.highlight .mi { color: #ae81ff } /* Literal.Number.Integer */
+.highlight .mo { color: #ae81ff } /* Literal.Number.Oct */
+.highlight .sa { color: #e6db74 } /* Literal.String.Affix */
+.highlight .sb { color: #e6db74 } /* Literal.String.Backtick */
+.highlight .sc { color: #e6db74 } /* Literal.String.Char */
+.highlight .dl { color: #e6db74 } /* Literal.String.Delimiter */
+.highlight .sd { color: #e6db74 } /* Literal.String.Doc */
+.highlight .s2 { color: #e6db74 } /* Literal.String.Double */
+.highlight .se { color: #ae81ff } /* Literal.String.Escape */
+.highlight .sh { color: #e6db74 } /* Literal.String.Heredoc */
+.highlight .si { color: #e6db74 } /* Literal.String.Interpol */
+.highlight .sx { color: #e6db74 } /* Literal.String.Other */
+.highlight .sr { color: #e6db74 } /* Literal.String.Regex */
+.highlight .s1 { color: #e6db74 } /* Literal.String.Single */
+.highlight .ss { color: #e6db74 } /* Literal.String.Symbol */
+.highlight .bp { color: #f8f8f2 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #a6e22e } /* Name.Function.Magic */
+.highlight .vc { color: #f8f8f2 } /* Name.Variable.Class */
+.highlight .vg { color: #f8f8f2 } /* Name.Variable.Global */
+.highlight .vi { color: #f8f8f2 } /* Name.Variable.Instance */
+.highlight .vm { color: #f8f8f2 } /* Name.Variable.Magic */
+.highlight .il { color: #ae81ff } /* Literal.Number.Integer.Long */</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "\\[", right: "\\]", display: true},
+                            {left: "\\(", right: "\\)", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
+        
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js"></script>
+
+        <script>
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'default'
+            });
+            mermaid.run();
+        </script>
+        
+
+            <style>
+            .callout {
+                padding: 1.25rem;
+                margin: 1.5rem 0;
+                border-radius: 0.5rem;
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+                background: var(--bg-color, #ffffff);
+                border: 1px solid var(--border-color, #e5e7eb);
+            }
+            
+            .callout-icon {
+                font-size: 1.5rem;
+                line-height: 1;
+                flex-shrink: 0;
+            }
+            
+            .callout-content {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .callout.info {
+                --bg-color: #f1f5f9;
+                --border-color: #3b82f6;
+            }
+            
+            .callout.warning {
+                --bg-color: #fef3c7;
+                --border-color: #f59e0b;
+            }
+            
+            .callout.error {
+                --bg-color: #fee2e2;
+                --border-color: #ef4444;
+            }
+            
+            .toggle {
+                margin: 1rem 0;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                overflow: hidden;
+            }
+            
+            .toggle-header {
+                cursor: pointer;
+                padding: 1rem;
+                background: #f8fafc;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-weight: 500;
+            }
+            
+            .toggle-content {
+                padding: 1rem;
+                border-top: 1px solid #e5e7eb;
+                display: none;
+            }
+            
+            .toggle.open .toggle-content {
+                display: block;
+            }
+            
+            .todo-list {
+                list-style: none;
+                padding: 0;
+                margin: 1rem 0;
+            }
+            
+            .todo-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.5rem;
+                border-radius: 0.25rem;
+                transition: background-color 0.2s;
+            }
+            
+            .todo-item:hover {
+                background: #f8fafc;
+            }
+            
+            .todo-checkbox {
+                width: 1.25rem;
+                height: 1.25rem;
+                border: 2px solid #e5e7eb;
+                border-radius: 0.25rem;
+                cursor: pointer;
+            }
+            
+            .todo-item.completed {
+                color: #9ca3af;
+                text-decoration: line-through;
+            }
+            
+            .table-view {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 1.5rem 0;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                overflow: hidden;
+            }
+            
+            .table-view th,
+            .table-view td {
+                padding: 0.75rem 1rem;
+                border: 1px solid #e5e7eb;
+            }
+            
+            .table-view th {
+                background: #f8fafc;
+                font-weight: 600;
+                text-align: left;
+            }
+            
+            .table-view tr:hover {
+                background: #f8fafc;
+            }
+            </style>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Toggle blocks
+                document.querySelectorAll('.toggle-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const toggle = header.parentElement;
+                        const isOpen = toggle.classList.contains('open');
+                        toggle.classList.toggle('open');
+                        header.querySelector('.toggle-icon').textContent = 
+                            isOpen ? '▶' : '▼';
+                    });
+                });
+                
+                // Todo checkboxes
+                document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        checkbox.parentElement.classList.toggle('completed');
+                    });
+                });
+            });
+            </script>
+        
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Welcome to StaticFlow</h1>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h1>Добро пожаловать в StaticFlow!</h1><p>StaticFlow - это современный генератор статических сайтов с богатыми возможностями для создания контента.</p><h2>Возможности</h2><h3>1. Подсветка кода</h3><pre><code class="python">def hello_world(): print("Привет, StaticFlow!")
+</code></pre><h3>2. Математические формулы</h3><p>Inline формула: \(E = mc^2\)</p><p>Блочная формула:
+\(
+\int_0^\infty e^{-x} dx = 1
+\)</p><h3>3. Диаграммы</h3><pre><code class="mermaid">graph TD; A[Начало] --&gt; B[Создание контента]; B --&gt; C[Сборка сайта]; C --&gt; D[Публикация]; D --&gt; E[Конец];
+</code></pre><h3>4. Блоки в стиле Notion</h3><p><div class="callout info"><div class="callout-icon">ℹ️</div><div class="callout-content">Информация
+Это информационный блок. Используйте его для важных заметок.</div></div></p><p><div class="callout warning"><div class="callout-icon">⚠️</div><div class="callout-content">Предупреждение
+Это блок с предупреждением. Обратите особое внимание!</div></div></p><h2>Начало работы</h2><ol><li>Создание контента:</li><li>Добавьте Markdown файлы в директорию <code>content</code></li><li><p>Используйте front matter для метаданных</p></li><li><p>Настройка шаблонов:</p></li><li>Измените шаблоны в директории <code>templates</code></li><li><p>Добавьте свои стили в <code>static/css</code></p></li><li><p>Запуск сервера разработки:</p></li></ol><pre><code class="bash">staticflow serve
+</code></pre>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p>Powered by StaticFlow</p>
+        </div>
+    </footer>
+</body>
+</html> 
