@@ -95,16 +95,23 @@ pre {
     overflow: hidden;
 }
 
+/* Улучшенные стили для Mermaid диаграмм */
 .mermaid {
+    display: block;
     text-align: center;
     background: white;
     padding: 2rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     margin: 1.5rem 0;
+    /* Предотвращаем переполнение */
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 .mermaid svg {
     max-width: 100%;
-    height: auto;
-}
+    height: auto !important;
+    /* Центрируем диаграмму */
+    margin: 0 auto;
+} 

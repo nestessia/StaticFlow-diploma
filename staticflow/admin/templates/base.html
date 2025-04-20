@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StaticFlow Admin - {% block title %}{% endblock %}</title>
+    <title>{% block title %}StaticFlow Admin{% endblock %}</title>
     <link rel="stylesheet" href="/admin/static/css/admin.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
     <nav class="admin-nav">
-        <div class="nav-brand">StaticFlow Admin</div>
+        <div class="nav-header">
+            <h1>StaticFlow</h1>
+        </div>
         <ul class="nav-links">
             <li><a href="/admin/">Dashboard</a></li>
             <li><a href="/admin/content">Content</a></li>
-            <li><a href="/admin/block-editor">Block Editor</a></li>
             <li><a href="/admin/settings">Settings</a></li>
+            <li><a href="/admin/deploy">Deploy</a></li>
         </ul>
     </nav>
     
     <main class="admin-main">
-        <div class="container">
+        <div class="admin-content">
             {% block content %}{% endblock %}
         </div>
     </main>

@@ -34,13 +34,22 @@ class Page:
             if len(parts) >= 3:
                 try:
                     metadata = yaml.safe_load(parts[1])
-                    content = parts[2].strip()
+                    # Ensure parts[2] is a string before calling strip
+                    part = parts[2]
+                    if isinstance(part, Path):
+                        part = str(part)
+                    content = part.strip()
                 except yaml.YAMLError as e:
                     raise ValueError(f"Invalid front matter in {path}: {e}")
         else:
             content = raw_content
             
-        return cls(path, content, metadata)
+        page = cls(path, content, metadata)
+        
+        # Update modified timestamp from file stat
+        page.modified = path.stat().st_mtime
+        
+        return page
     
     @property
     def title(self) -> str:

@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import csscompressor
 import jsmin
-from ..core.base import Plugin, PluginMetadata, HookType
+from ..core.base import Plugin, PluginMetadata
 
 
 class MinifierPlugin(Plugin):
@@ -18,6 +18,19 @@ class MinifierPlugin(Plugin):
             author="StaticFlow",
             requires_config=False
         )
+    
+    def process_content(self, content: str) -> str:
+        """Обрабатывает и минифицирует HTML-контент."""
+        if not content:
+            return content
+            
+        # Минифицируем HTML
+        content = self._minify_html(content)
+        
+        # Минифицируем встроенные стили и скрипты
+        content = self._minify_inline_assets(content)
+        
+        return content
     
     def on_post_page(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Минифицирует HTML контент страницы."""

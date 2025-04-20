@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 import markdown
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from .config import Config
 from .site import Site
 from .page import Page
@@ -33,9 +33,11 @@ class Engine:
         )
         self.plugins: List[Plugin] = []
         
-    def add_plugin(self, plugin: Plugin) -> None:
-        """Add a plugin to the engine."""
+    def add_plugin(self, plugin: Plugin, config: Optional[Dict[str, Any]] = None) -> None:
+        """Add a plugin to the engine with optional configuration."""
         plugin.engine = self
+        if config:
+            plugin.config = config
         plugin.initialize()
         self.plugins.append(plugin)
         
@@ -45,29 +47,37 @@ class Engine:
         self.site.set_directories(source_dir, output_dir, templates_dir)
         
     def build(self) -> None:
-        """Build the static site."""
-        # Auto-initialize if not initialized
-        if not self.site.source_dir or not self.site.output_dir:
-            source_dir = Path(self.config.get("source_dir", "content"))
-            output_dir = Path(self.config.get("output_dir", "public"))
-            templates_dir = Path(self.config.get("template_dir", "templates"))
-            self.initialize(source_dir, output_dir, templates_dir)
+        """Build the site."""
+        # Create output directory if it doesn't exist
+        if self.site.output_dir:
+            self.site.output_dir.mkdir(parents=True, exist_ok=True)
         
-        if not self.site.source_dir or not self.site.output_dir:
-            raise ValueError("Source and output directories must be set")
+        # Execute pre-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'pre_build'):
+                plugin.pre_build(self.site)
             
-        # Clear output directory
-        if self.site.output_dir.exists():
-            shutil.rmtree(self.site.output_dir)
-        self.site.output_dir.mkdir(parents=True)
+        self.site.clear()
         
-        # Load all pages
+        # Load pages before processing them
         self.site.load_pages()
         
-        # Process pages
         self._process_pages()
         
-        # Copy static assets
+        # Execute post-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'post_build'):
+                plugin.post_build(self.site)
+            
+        # Копируем статику админки в папку public
+        try:
+            from ..admin import AdminPanel
+            admin = AdminPanel(self.config, self)
+            admin.copy_static_to_public()
+        except Exception as e:
+            print(f"Ошибка при копировании статики админки: {e}")
+            
+        # Copy static files
         self._copy_static_files()
         
     def _process_pages(self) -> None:
@@ -80,20 +90,28 @@ class Engine:
         if not self.site.source_dir or not self.site.output_dir:
             raise ValueError("Source and output directories must be set")
 
-        # Calculate output path
-        rel_path = page.source_path.relative_to(self.site.source_dir)
-        output_path = (
-            self.site.output_dir / rel_path.with_suffix(".html")
-        )
-        page.output_path = output_path
+        # Use the output path already set by router in the Site.load_pages method
+        if not page.output_path:
+            # If for some reason output_path is not set, generate it now
+            output_path = self.site.generate_page_output_path(page)
+            page.set_output_path(output_path)
+        else:
+            output_path = page.output_path
 
         # Create parent directories if they don't exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Use the template from config
-        template_path = Path(self.config.get("template_dir")) / page.metadata.get(
+        template_dir = self.config.get("template_dir", "templates")
+        # Преобразуем к Path только если это строка
+        if not isinstance(template_dir, Path):
+            template_dir = Path(template_dir)
+            
+        template_filename = page.metadata.get(
             "template", self.config.get("default_template")
         )
+        template_path = template_dir / template_filename
+        
         if not template_path.exists():
             raise ValueError(f"Template not found: {template_path}")
 
@@ -137,7 +155,11 @@ class Engine:
         if not self.site.output_dir:
             return
             
-        static_dir = Path(self.config.get("static_dir"))
+        static_dir = self.config.get("static_dir", "static")
+        # Преобразуем к Path только если это строка
+        if not isinstance(static_dir, Path):
+            static_dir = Path(static_dir)
+            
         if static_dir.exists():
             output_static = self.site.output_dir / "static"
             if output_static.exists():

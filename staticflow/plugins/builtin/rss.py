@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
 from xml.etree import ElementTree as ET
-from ..core.base import Plugin, PluginMetadata, HookType
+from ..core.base import Plugin, PluginMetadata
 
 
 class RSSPlugin(Plugin):
@@ -17,6 +17,11 @@ class RSSPlugin(Plugin):
             author="StaticFlow",
             requires_config=True
         )
+    
+    def process_content(self, content: str) -> str:
+        """Пустая реализация для совместимости с интерфейсом плагина.
+        RSS плагин не изменяет контент на этом этапе."""
+        return content
     
     def validate_config(self) -> bool:
         """Проверяет конфигурацию плагина."""
@@ -59,7 +64,10 @@ class RSSPlugin(Plugin):
         description.text = self.config['site_description']
         
         link = ET.SubElement(channel, 'link')
-        link.text = self.config['base_url']
+        base_url = self.config['base_url']
+        if isinstance(base_url, Path):
+            base_url = str(base_url)
+        link.text = base_url
         
         language = ET.SubElement(channel, 'language')
         language.text = self.config['language']
@@ -80,7 +88,23 @@ class RSSPlugin(Plugin):
             
             # Ссылка
             item_link = ET.SubElement(item, 'link')
-            item_link.text = f"{self.config['base_url'].rstrip('/')}/{page['url'].lstrip('/')}"
+            base_url = self.config['base_url']
+            if isinstance(base_url, Path):
+                base_url = str(base_url)
+            else:
+                base_url = str(base_url)  # Всегда преобразуем к строке
+                
+            # Ensure page['url'] is a string before calling lstrip
+            page_url = page['url']
+            if isinstance(page_url, Path):
+                page_url = str(page_url)
+            else:
+                page_url = str(page_url)  # Всегда преобразуем к строке
+                
+            # Теперь оба значения точно строки
+            base_url_str = base_url.rstrip('/')
+            page_url_str = page_url.lstrip('/')
+            item_link.text = f"{base_url_str}/{page_url_str}"
             
             # Описание
             item_desc = ET.SubElement(item, 'description')
@@ -91,9 +115,26 @@ class RSSPlugin(Plugin):
                 pub_date = ET.SubElement(item, 'pubDate')
                 pub_date.text = page['date'].strftime('%a, %d %b %Y %H:%M:%S %z')
             
-            # GUID
+            # Уникальный идентификатор для RSS-агрегаторов
             guid = ET.SubElement(item, 'guid')
-            guid.text = f"{self.config['base_url'].rstrip('/')}/{page['url'].lstrip('/')}"
+            guid.set('isPermaLink', 'true')
+            base_url = self.config['base_url']
+            if isinstance(base_url, Path):
+                base_url = str(base_url)
+            else:
+                base_url = str(base_url)  # Всегда преобразуем к строке
+                
+            # Ensure page['url'] is a string before calling lstrip
+            page_url = page['url']
+            if isinstance(page_url, Path):
+                page_url = str(page_url)
+            else:
+                page_url = str(page_url)  # Всегда преобразуем к строке
+                
+            # Теперь оба значения точно строки
+            base_url_str = base_url.rstrip('/')
+            page_url_str = page_url.lstrip('/')
+            guid.text = f"{base_url_str}/{page_url_str}"
             
             # Автор
             if 'author' in page:
@@ -110,7 +151,15 @@ class RSSPlugin(Plugin):
     
     def _save_rss(self, rss: ET.Element) -> None:
         """Сохраняет RSS-ленту."""
-        output_path = Path(self.config['output_path']) / 'feed.xml'
+        output_path_str = self.config['output_path']
+        
+        # Преобразуем к Path только если это строка
+        if not isinstance(output_path_str, Path):
+            output_dir = Path(output_path_str)
+        else:
+            output_dir = output_path_str
+            
+        output_path = output_dir / 'feed.xml'
         
         # Создаем директорию если её нет
         output_path.parent.mkdir(parents=True, exist_ok=True)
