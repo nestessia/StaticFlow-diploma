@@ -12,6 +12,107 @@ document.addEventListener('DOMContentLoaded', function() {
     const historyTable = historyTableElement ? historyTableElement.querySelector('tbody') : null;
     const commitMessageInput = document.getElementById('commit-message');
     
+    // Находим все поля формы, чтобы обновить их значения
+    const repoUrlInput = document.getElementById('repo-url');
+    const branchInput = document.getElementById('branch');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const tokenInput = document.getElementById('token');
+    const cnameInput = document.getElementById('cname');
+    
+    // Загружаем свежие данные при открытии страницы
+    loadFreshConfigData();
+    
+    /**
+     * Загружает свежие данные конфигурации с сервера
+     */
+    async function loadFreshConfigData() {
+        try {
+            const response = await fetch('/admin/api/deploy/config?' + new Date().getTime(), {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Обновляем поля формы с полученными данными
+            if (data.config) {
+                if (repoUrlInput) repoUrlInput.value = data.config.repo_url || '';
+                if (branchInput) branchInput.value = data.config.branch || '';
+                if (usernameInput) usernameInput.value = data.config.username || '';
+                if (emailInput) emailInput.value = data.config.email || '';
+                if (tokenInput) tokenInput.value = data.config.has_token ? 'STORED_TOKEN' : '';
+                if (cnameInput) cnameInput.value = data.config.cname || '';
+            }
+            
+            // Обновляем статус и историю развертывания
+            if (data.status) {
+                // Обновляем статус конфигурации
+                if (statusMsg) {
+                    statusMsg.textContent = data.status.configured ? 'Configuration ready' : 'Not configured';
+                }
+                
+                // Обновляем кнопку Deploy
+                if (deployBtn) {
+                    deployBtn.disabled = !data.status.configured;
+                }
+                
+                // Обновляем время последнего развертывания
+                if (lastDeploymentTime && data.status.last_deployment) {
+                    lastDeploymentTime.textContent = formatDate(data.status.last_deployment);
+                }
+                
+                // Обновляем историю развертывания
+                if (data.status.history && historyTable) {
+                    updateHistoryTableFull(data.status.history);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading fresh configuration data:', error);
+        }
+    }
+    
+    /**
+     * Полностью обновляет таблицу истории развертывания
+     * @param {Array} history - Полная история развертывания
+     */
+    function updateHistoryTableFull(history) {
+        if (!historyTable) return;
+        
+        try {
+            // Очищаем таблицу
+            historyTable.innerHTML = '';
+            
+            if (!history || history.length === 0) {
+                // Если история пуста, показываем сообщение
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="2">No deployment history available</td>';
+                historyTable.appendChild(row);
+                return;
+            }
+            
+            // Добавляем каждую запись из истории
+            history.forEach(deployment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(deployment.timestamp)}</td>
+                    <td><span class="status-badge status-${deployment.status}">${deployment.status}</span></td>
+                `;
+                historyTable.appendChild(row);
+            });
+        } catch (e) {
+            console.error('Error updating history table full:', e);
+        }
+    }
+    
     /**
      * Format date for display
      * @param {string} dateString - ISO date string
@@ -25,15 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             console.error('Error formatting date:', e);
             return dateString || 'Unknown';
-        }
-    }
-    
-    // Initial date formatting - с проверкой на существование
-    if (lastDeploymentTime) {
-        try {
-            lastDeploymentTime.textContent = formatDate(lastDeploymentTime.textContent);
-        } catch (e) {
-            console.error('Error updating last deployment time:', e);
         }
     }
     
@@ -95,7 +187,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch('/admin/api/deploy/config', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
                     },
                     body: JSON.stringify(configData)
                 });
@@ -121,6 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.warnings && data.warnings.length > 0) {
                         alert('Warning: ' + data.warnings.join('\n'));
                     }
+                    
+                    // Сразу загружаем свежие данные
+                    loadFreshConfigData();
                 } else {
                     alert('Error saving configuration: ' + (data.message || 'Unknown error'));
                 }
@@ -162,7 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch('/admin/api/deploy/start', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
                     },
                     body: JSON.stringify({
                         commit_message: commitMessage
@@ -195,6 +296,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     alert('Site deployed successfully!');
+                    
+                    // Сразу загружаем свежие данные
+                    loadFreshConfigData();
                 } else {
                     if (statusMsg) {
                         statusMsg.textContent = 'Deployment failed';
