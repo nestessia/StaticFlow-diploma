@@ -12,11 +12,7 @@ from pathlib import Path
 import tempfile
 from typing import Dict, Any, Optional, List, Tuple
 import base64
-import hashlib
 from cryptography.fernet import Fernet
-import datetime
-import time
-import re
 
 
 class GitHubPagesDeployer:
@@ -122,57 +118,6 @@ class GitHubPagesDeployer:
             # If decryption fails, return empty string
             return ""
             
-    def _check_token_expiration(self, token: str) -> Tuple[bool, Optional[datetime.datetime]]:
-        """
-        Check if a GitHub token is expired or about to expire
-        
-        Args:
-            token: GitHub token
-            
-        Returns:
-            Tuple of (is_expiring_soon, expiration_date)
-        """
-        if not token:
-            return False, None
-            
-        # Regular expression to extract expiration from JWT tokens
-        # Note: GitHub tokens aren't always JWT, so this is best-effort
-        expiration_match = re.search(r'\.([A-Za-z0-9_-]+)\.', token)
-        if not expiration_match:
-            # Can't determine expiration
-            return False, None
-            
-        try:
-            # Try to decode the middle part as JWT payload
-            payload_b64 = expiration_match.group(1)
-            # Add padding if needed
-            padding = 4 - (len(payload_b64) % 4)
-            if padding < 4:
-                payload_b64 += "=" * padding
-                
-            payload_bytes = base64.urlsafe_b64decode(payload_b64)
-            payload_str = payload_bytes.decode('utf-8')
-            
-            # Try to parse JSON
-            import json
-            payload = json.loads(payload_str)
-            
-            # Check for expiration claim
-            if 'exp' in payload:
-                exp_timestamp = payload['exp']
-                exp_date = datetime.datetime.fromtimestamp(exp_timestamp)
-                
-                # Check if token expires within 7 days
-                now = datetime.datetime.now()
-                seven_days = datetime.timedelta(days=7)
-                
-                return (exp_date - now) < seven_days, exp_date
-        except Exception:
-            # Any error in parsing, we can't determine
-            pass
-            
-        return False, None
-    
     def _load_config(self) -> Dict[str, Any]:
         """
         Load deployment configuration from file
@@ -190,7 +135,6 @@ class GitHubPagesDeployer:
                 "email": "",
                 "token": "",
                 "token_encrypted": False,
-                "token_expiration": None,
                 "last_deployment": None,
                 "history": []
             }
@@ -225,7 +169,6 @@ class GitHubPagesDeployer:
                 "email": "",
                 "token": "",
                 "token_encrypted": False,
-                "token_expiration": None,
                 "last_deployment": None,
                 "history": []
             }
@@ -265,20 +208,15 @@ class GitHubPagesDeployer:
             kwargs["token"] = self._encrypt_token(kwargs["token"])
             kwargs["token_encrypted"] = True
             
-            # Try to determine expiration
-            is_expiring_soon, exp_date = self._check_token_expiration(kwargs["token"])
-            if exp_date:
-                kwargs["token_expiration"] = exp_date.isoformat()
-        
         self.config.update(kwargs)
         self.save_config()
     
-    def validate_config(self) -> Tuple[bool, List[str]]:
+    def validate_config(self) -> Tuple[bool, List[str], List[str]]:
         """
         Validate the deployment configuration
         
         Returns:
-            Tuple of (is_valid, error_messages)
+            Tuple of (is_valid, error_messages, warning_messages)
         """
         errors = []
         warnings = []
@@ -299,16 +237,6 @@ class GitHubPagesDeployer:
                               repo_url.startswith("git@github.com:")):
             errors.append("Repository URL must be a valid GitHub URL")
             
-        # Check token expiration if available
-        if self.config.get("token"):
-            token = self.config["token"]
-            if self.config.get("token_encrypted", False):
-                token = self._decrypt_token(token)
-                
-            is_expiring_soon, exp_date = self._check_token_expiration(token)
-            if is_expiring_soon and exp_date:
-                warnings.append(f"GitHub token will expire soon (on {exp_date.strftime('%Y-%m-%d')}). Consider generating a new token.")
-                
         return (len(errors) == 0, errors, warnings)
     
     def _run_command(self, command: List[str], cwd: Optional[str] = None,
@@ -539,26 +467,10 @@ class GitHubPagesDeployer:
         Returns:
             Dictionary with deployment status
         """
-        # Check token expiration
-        token_expiration = None
-        token_expiring_soon = False
-        
-        if self.config.get("token"):
-            token = self.config["token"]
-            if self.config.get("token_encrypted", False):
-                token = self._decrypt_token(token)
-                
-            is_expiring_soon, exp_date = self._check_token_expiration(token)
-            if exp_date:
-                token_expiration = exp_date.isoformat()
-                token_expiring_soon = is_expiring_soon
-        
         return {
             "configured": bool(self.config.get("repo_url")),
             "last_deployment": self.config.get("last_deployment"),
             "history": self.config.get("history", []),
-            "token_expiration": token_expiration,
-            "token_expiring_soon": token_expiring_soon,
             "config": {
                 "repo_url": self.config.get("repo_url", ""),
                 "branch": self.config.get("branch", "gh-pages"),
