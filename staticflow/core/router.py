@@ -70,9 +70,6 @@ class Router:
     ) -> Path:
         """Get the full output path for a content item."""
         url = self.generate_url(content_type, metadata)
-        # Ensure base_dir is a Path object
-        if not isinstance(base_dir, Path):
-            base_dir = Path(str(base_dir))
         # Ensure url is a string
         url = str(url)
         return base_dir / url

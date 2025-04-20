@@ -21,8 +21,8 @@ class MermaidPreprocessor(Preprocessor):
                 is_mermaid = False
                 diagram_content = '\n'.join(diagram)
                 new_lines.append(
-                    '<pre class="mermaid" data-processed="false">'
-                    f'{diagram_content}</pre>'
+                    '<div class="mermaid">'
+                    f'{diagram_content}</div>'
                 )
                 diagram = []
                 continue
@@ -74,11 +74,17 @@ class MermaidPlugin(Plugin):
         )
         init_script = """
         <script>
-            mermaid.initialize({
-                startOnLoad: true,
-                theme: 'default'
+            document.addEventListener('DOMContentLoaded', function() {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+                
+                setTimeout(function() {
+                    mermaid.run();
+                }, 100);
             });
-            mermaid.run();
         </script>
         """
         return f'{mermaid_script}\n{init_script}'
