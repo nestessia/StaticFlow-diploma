@@ -141,81 +141,12 @@
         
         this.blocks = [];
         
-        // Special blocks (fenced)
-        const specialBlocks = [
-            // Code blocks
-            { regex: /```(\w*)\n([\s\S]*?)\n```/g, type: 'code', position: 1 },
-            // Math blocks
-            { regex: /\$\$([\s\S]*?)\$\$/g, type: 'math', position: 1 },
-            // Info blocks
-            { regex: /:::info(?:\s+"(.*)")?\n([\s\S]*?)\n:::/g, type: 'info', position: 2 },
-            // Warning blocks
-            { regex: /:::warning(?:\s+"(.*)")?\n([\s\S]*?)\n:::/g, type: 'warning', position: 2 },
-            // Danger blocks
-            { regex: /:::danger(?:\s+"(.*)")?\n([\s\S]*?)\n:::/g, type: 'danger', position: 2 }
-        ];
-        
-        // Process special blocks first
-        let remainingContent = content;
-        
-        // Helper function to process special blocks
-        const processBlock = (match, type, position) => {
-            if (type === 'code') {
-                const language = match[1] || 'text';
-                const codeContent = match[2];
-                
-                // Проверяем, является ли это диаграммой Mermaid
-                if (language === 'mermaid') {
-                    this.blocks.push({
-                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                        type: 'diagram',
-                        content: codeContent,
-                        meta: {}
-                    });
-                } else {
-                    this.blocks.push({
-                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                        type: 'code',
-                        content: codeContent,
-                        meta: { language }
-                    });
-                }
-            } else if (type === 'math') {
-                this.blocks.push({
-                    id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                    type: 'math',
-                    content: match[1],
-                    meta: {}
-                });
-            } else if (type === 'info' || type === 'warning' || type === 'danger') {
-                const title = match[1] || '';
-                const content = match[2];
-                
-                this.blocks.push({
-                    id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                    type,
-                    content,
-                    meta: { title }
-                });
-            }
-            
-            // Remove the processed block from remaining content
-            return '';
-        };
-        
-        // Process each special block type
-        for (const blockDef of specialBlocks) {
-            remainingContent = remainingContent.replace(blockDef.regex, (...args) => {
-                processBlock(args, blockDef.type, blockDef.position);
-                return '';
-            });
-        }
-        
-        // Process remaining content line by line
-        const lines = remainingContent.split('\n');
+        // Process content using a line-by-line approach that preserves the original order
+        const lines = content.split('\n');
+        let i = 0;
         let currentBlock = null;
         
-        for (let i = 0; i < lines.length; i++) {
+        while (i < lines.length) {
             const line = lines[i];
             
             // Headings
@@ -227,6 +158,7 @@
                     meta: { level: 'h1' }
                 });
                 currentBlock = null;
+                i++;
             } else if (line.startsWith('## ')) {
                 this.blocks.push({
                     id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -235,6 +167,7 @@
                     meta: { level: 'h2' }
                 });
                 currentBlock = null;
+                i++;
             } else if (line.startsWith('### ')) {
                 this.blocks.push({
                     id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -243,7 +176,143 @@
                     meta: { level: 'h3' }
                 });
                 currentBlock = null;
+                i++;
             } 
+            // Code blocks
+            else if (line.startsWith('```')) {
+                const language = line.substring(3);
+                let codeContent = '';
+                let j = i + 1;
+                
+                // Collect all lines until the closing ```
+                while (j < lines.length && !lines[j].startsWith('```')) {
+                    codeContent += (j > i + 1 ? '\n' : '') + lines[j];
+                    j++;
+                }
+                
+                // Skip the closing ``` if found
+                if (j < lines.length) {
+                    j++;
+                }
+                
+                // Determine if this is a Mermaid diagram
+                if (language.trim() === 'mermaid') {
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'diagram',
+                        content: codeContent,
+                        meta: {}
+                    });
+                } else {
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'code',
+                        content: codeContent,
+                        meta: { language: language.trim() }
+                    });
+                }
+                
+                currentBlock = null;
+                i = j; // Skip to after the closing ```
+            }
+            // Math blocks
+            else if (line.includes('$$')) {
+                // Check if it's a single-line math block
+                if (line.match(/\$\$(.*?)\$\$/)) {
+                    const mathContent = line.match(/\$\$(.*?)\$\$/)[1];
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'math',
+                        content: mathContent,
+                        meta: {}
+                    });
+                    i++;
+                } else {
+                    // Multi-line math block
+                    let mathContent = '';
+                    let j = i;
+                    
+                    // Skip opening $$
+                    if (line === '$$') {
+                        j = i + 1;
+                    } else {
+                        // Get content after $$ on the same line
+                        mathContent = line.substring(line.indexOf('$$') + 2);
+                        j = i + 1;
+                    }
+                    
+                    // Collect content until closing $$
+                    while (j < lines.length && !lines[j].includes('$$')) {
+                        mathContent += '\n' + lines[j];
+                        j++;
+                    }
+                    
+                    // Add content before closing $$ if there is any
+                    if (j < lines.length) {
+                        const closingLine = lines[j];
+                        if (closingLine.includes('$$')) {
+                            mathContent += '\n' + closingLine.substring(0, closingLine.indexOf('$$'));
+                        }
+                        j++;
+                    }
+                    
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'math',
+                        content: mathContent,
+                        meta: {}
+                    });
+                    
+                    i = j;
+                }
+                
+                currentBlock = null;
+            }
+            // Info, Warning, Danger blocks
+            else if (line.startsWith(':::')) {
+                const blockMatch = line.match(/^:::(\w+)(?:\s+"(.*?)")?/);
+                if (blockMatch) {
+                    const blockType = blockMatch[1]; // info, warning, or danger
+                    const title = blockMatch[2] || '';
+                    let blockContent = '';
+                    let j = i + 1;
+                    
+                    // Collect content until closing :::
+                    while (j < lines.length && !lines[j].startsWith(':::')) {
+                        blockContent += (j > i + 1 ? '\n' : '') + lines[j];
+                        j++;
+                    }
+                    
+                    // Skip the closing ::: if found
+                    if (j < lines.length) {
+                        j++;
+                    }
+                    
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: blockType,
+                        content: blockContent,
+                        meta: { title }
+                    });
+                    
+                    currentBlock = null;
+                    i = j;
+                } else {
+                    // Not a valid block start, treat as paragraph
+                    if (currentBlock && currentBlock.type === 'paragraph') {
+                        currentBlock.content += '\n' + line;
+                    } else {
+                        currentBlock = {
+                            id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                            type: 'paragraph',
+                            content: line,
+                            meta: {}
+                        };
+                        this.blocks.push(currentBlock);
+                    }
+                    i++;
+                }
+            }
             // List items
             else if (line.match(/^\s*[\*\-]\s+/)) {
                 const listContent = line.replace(/^\s*[\*\-]\s+/, '');
@@ -259,7 +328,9 @@
                     };
                     this.blocks.push(currentBlock);
                 }
-            } else if (line.match(/^\s*\d+\.\s+/)) {
+                i++;
+            }
+            else if (line.match(/^\s*\d+\.\s+/)) {
                 const listContent = line.replace(/^\s*\d+\.\s+/, '');
                 
                 if (currentBlock && currentBlock.type === 'numbered-list') {
@@ -273,7 +344,8 @@
                     };
                     this.blocks.push(currentBlock);
                 }
-            } 
+                i++;
+            }
             // Quote
             else if (line.startsWith('> ')) {
                 const quoteContent = line.substring(2);
@@ -289,7 +361,8 @@
                     };
                     this.blocks.push(currentBlock);
                 }
-            } 
+                i++;
+            }
             // Image
             else if (line.match(/!\[(.*?)\]\((.*?)\)/)) {
                 const match = line.match(/!\[(.*?)\]\((.*?)\)/);
@@ -300,10 +373,12 @@
                     meta: { alt: match[1] }
                 });
                 currentBlock = null;
+                i++;
             }
             // Empty line - reset current block
             else if (line.trim() === '') {
                 currentBlock = null;
+                i++;
             } 
             // Regular text (paragraph)
             else {
@@ -318,10 +393,11 @@
                     };
                     this.blocks.push(currentBlock);
                 }
+                i++;
             }
         }
         
-        console.log("Deserialized content into blocks:", this.blocks);
+        console.log("Deserialized content into blocks in original order:", this.blocks);
     }
     
     // Expose to global scope
