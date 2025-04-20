@@ -26,8 +26,6 @@ def serve(port: int, host: str, config: str):
             logger.error(error_message)
             console.print(f"[red]Error:[/red] {error_message}")
             return
-
-        logger.info(f"Starting development server at {host}:{port} with config {config}")
         server = Server(
             config=Config(config_path),
             host=host,

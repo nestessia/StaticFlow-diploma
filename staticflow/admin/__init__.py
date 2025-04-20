@@ -55,7 +55,6 @@ class AdminPanel:
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel."""
         template_path = Path(__file__).parent / 'templates'
-        logger.info(f"Template path: {template_path} (exists: {template_path.exists()})")
         
         if not template_path.exists():
             template_path.mkdir(parents=True)
@@ -88,11 +87,9 @@ class AdminPanel:
         
         # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
-        logger.info(f"Static path: {static_path} (exists: {static_path.exists()})")
         
         if not static_path.exists():
             static_path.mkdir(parents=True)
-            logger.info(f"Created static directory: {static_path}")
         
         # Проверяем наличие кэшированной статики в public
         cached_static_path = Path('public/admin/static')
@@ -724,10 +721,7 @@ class AdminPanel:
         # Копируем статические файлы
         if dest_static_path.exists():
             shutil.rmtree(dest_static_path)
-            
-        logger.info(f"Копирование статики админки из {source_static_path} в {dest_static_path}")
         shutil.copytree(source_static_path, dest_static_path)
-        logger.info("Статика админки успешно скопирована в public")
     
     def rebuild_site(self):
         """Rebuild the site using the engine."""

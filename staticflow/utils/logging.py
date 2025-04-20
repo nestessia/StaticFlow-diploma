@@ -13,8 +13,8 @@ import datetime
 # Базовый логгер для всего фреймворка
 logger = logging.getLogger("staticflow")
 
-# Форматирование: время | уровень | модуль | сообщение
-LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s"
+# Форматирование: время | уровень | сообщение
+LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # Уровни логирования
@@ -71,11 +71,10 @@ def setup_logging(level="info", log_file=None, console=True):
         file_handler.setFormatter(formatter)
         file_handler.setLevel(log_level)
         logger.addHandler(file_handler)
-    
-    # Логируем информацию о настройке
-    logger.info(f"Logging initialized at level: {level}")
+
     if log_file:
         logger.info(f"Log file: {log_file}")
+
 
 def get_logger(name):
     """
