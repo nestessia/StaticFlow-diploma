@@ -38,11 +38,6 @@
                     <label for="token">GitHub Token (Personal Access Token)</label>
                     <input type="password" id="token" name="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="{{ 'STORED_TOKEN' if config.has_token else '' }}">
                     <small>Personal access token with repo scope (stored securely)</small>
-                    {% if status.token_expiring_soon %}
-                    <div class="warning-notice">
-                        <i class="fas fa-exclamation-triangle"></i> Your token will expire soon (on {{ status.token_expiration }}). Consider generating a new token.
-                    </div>
-                    {% endif %}
                 </div>
                 
                 <div class="form-group">
