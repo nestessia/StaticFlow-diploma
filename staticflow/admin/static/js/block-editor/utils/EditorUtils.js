@@ -164,12 +164,22 @@
                 const language = match[1] || 'text';
                 const codeContent = match[2];
                 
-                this.blocks.push({
-                    id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                    type: 'code',
-                    content: codeContent,
-                    meta: { language }
-                });
+                // Проверяем, является ли это диаграммой Mermaid
+                if (language === 'mermaid') {
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'diagram',
+                        content: codeContent,
+                        meta: {}
+                    });
+                } else {
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'code',
+                        content: codeContent,
+                        meta: { language }
+                    });
+                }
             } else if (type === 'math') {
                 this.blocks.push({
                     id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
