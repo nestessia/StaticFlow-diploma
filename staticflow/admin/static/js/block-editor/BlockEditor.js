@@ -9,7 +9,6 @@
     // Constructor definition for BlockEditor
     class BlockEditor {
         constructor(container, initialContent = null) {
-            console.log("BlockEditor constructor called with container:", container);
             
             this.container = typeof container === 'string' ? document.querySelector(container) : container;
             
@@ -18,7 +17,6 @@
                 return;
             }
             
-            console.log("Container found:", this.container);
             
             this.blocks = [];
             this.selectedBlock = null;

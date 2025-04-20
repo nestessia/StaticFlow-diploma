@@ -132,7 +132,6 @@
     
     // Deserialize markdown content to blocks
     function deserializeContent(content) {
-        console.log("Deserializing content:", content);
         
         if (!content) {
             console.log("Content is empty, adding default paragraph");
