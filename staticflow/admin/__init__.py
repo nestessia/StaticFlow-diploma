@@ -72,7 +72,7 @@ class AdminPanel:
         """Setup admin panel routes."""
         self.app.router.add_get('', self.index_handler)
         self.app.router.add_get('/', self.index_handler)  # Добавляем явный обработчик для /
-        self.app.router.add_get('/content', self.content_handler)
+        self.app.router.add_get('/content', self.index_handler)  # Переиспользуем index_handler для /content
         self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
         self.app.router.add_post('/api/settings', self.api_settings_handler)
@@ -160,18 +160,10 @@ class AdminPanel:
             traceback.print_exc()
             return web.Response(status=500, text=str(e))
         
-    @aiohttp_jinja2.template('index.html')
+    @aiohttp_jinja2.template('content.html')
     async def index_handler(self, request):
         """Handle admin panel index page."""
-        return {
-            'site_name': self.config.get('site_name'),
-            'content_count': len(list(Path('content').rglob('*.*'))),
-            'last_build': 'Not built yet'  # TODO: Add build timestamp
-        }
-        
-    @aiohttp_jinja2.template('content.html')
-    async def content_handler(self, request):
-        """Handle content management page."""
+        # Вместо перенаправления сразу возвращаем содержимое страницы content
         content_path = Path('content')
         files = []
         

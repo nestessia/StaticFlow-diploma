@@ -173,7 +173,7 @@ class Server:
     def setup_routes(self):
         """Setup server routes."""
         # Admin routes
-        self.app.router.add_get('/admin', self.admin_redirect)
+        self.app.router.add_get('/admin', self.admin_handler)
         self.app.router.add_get('/admin/{tail:.*}', self.admin_handler)
         self.app.router.add_post('/admin/api/{tail:.*}', self.admin_handler)
         
