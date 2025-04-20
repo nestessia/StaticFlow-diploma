@@ -92,13 +92,17 @@ class Site:
         # Extract category from path if not specified
         if "category" not in metadata and "/" in str(page.source_path):
             parent_dir = page.source_path.parent.name
-            # Если родительский каталог не пустой и не точка, 
+            # Если родительский каталог не пустой и не точка,
             # используем его как категорию
             if parent_dir and parent_dir != '.':
                 metadata["category"] = parent_dir
         
         # Generate the full output path using the router
-        return self.router.get_output_path(self.output_dir, content_type, metadata)
+        return self.router.get_output_path(
+            self.output_dir, 
+            content_type, 
+            metadata
+        )
         
     def get_page(self, rel_path: str) -> Optional[Page]:
         """Get a page by relative path."""

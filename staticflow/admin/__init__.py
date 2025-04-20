@@ -5,9 +5,12 @@ import jinja2
 from ..core.config import Config
 from ..core.engine import Engine
 import json
-import shutil
-from datetime import datetime
+import logging
+import os
 import re
+import secrets
+import shutil
+import time
 from ..utils.logging import get_logger
 
 # Получаем логгер для данного модуля
@@ -299,18 +302,36 @@ class AdminPanel:
             # Handle new page creation
             is_new_page = path == 'New Page'
             if is_new_page:
-                title = metadata.get('title', 'Untitled')
-                # Create sanitized filename from title
-                filename = title.lower().replace(' ', '-')
-                # Remove any character that's not alphanumeric, dash, or underscore
-                filename = re.sub(r'[^a-z0-9\-_]', '', filename)
-                # Ensure we have a valid filename
-                if not filename:
-                    filename = 'untitled'
+                # Проверяем, если путь новой страницы уже содержит имя файла
+                if '.' in path and path != 'New Page':
+                    # Используем путь как есть
+                    logger.info(f"Using provided path for new page: {path}")
+                else:
+                    # Используем имя файла из заголовка, если не указано явно
+                    title = metadata.get('title', 'Untitled')
+                    # Create sanitized filename from title
+                    filename = title.lower().replace(' ', '-')
+                    # Remove any character that's not alphanumeric, dash, or underscore
+                    filename = re.sub(r'[^a-z0-9\-_]', '', filename)
+                    # Ensure we have a valid filename
+                    if not filename:
+                        filename = 'untitled'
+                    
+                    # Определяем формат файла из метаданных
+                    output_format = metadata.get('format', 'markdown')
+                    
+                    # Выбираем правильное расширение файла в зависимости от формата
+                    if output_format == 'rst':
+                        extension = '.rst'
+                    elif output_format == 'asciidoc':
+                        extension = '.adoc'
+                    else:  # По умолчанию markdown
+                        extension = '.md'
+                    
+                    # Set path to new file in content directory with proper extension
+                    path = f"{filename}{extension}"
                 
-                # Set path to new file in content directory
-                path = f"{filename}.md"
-                logger.info(f"Creating new page at: {path}")
+                logger.info(f"Creating new page at: {path} with format: {metadata.get('format', 'markdown')}")
             
             # Normalize path to be relative to content directory
             if path.startswith('/'):
@@ -318,8 +339,85 @@ class AdminPanel:
                 
             content_path = Path('content') / path
             
+            # Проверяем если мы меняем формат существующего файла
+            if not is_new_page and 'format' in metadata:
+                # Получаем текущее расширение и формат из метаданных
+                current_ext = Path(path).suffix
+                output_format = metadata.get('format', 'markdown')
+                
+                # Определяем новое расширение на основе формата
+                if output_format == 'rst':
+                    new_ext = '.rst'
+                elif output_format == 'asciidoc':
+                    new_ext = '.adoc'
+                else:
+                    new_ext = '.md'
+                
+                # Если расширение изменилось, создаем новый путь
+                if current_ext != new_ext:
+                    # Создаем новый путь с измененным расширением
+                    new_path = Path(path).with_suffix(new_ext)
+                    new_content_path = Path('content') / new_path
+                    
+                    # Проверяем, не существует ли уже файл с таким именем
+                    if new_content_path.exists():
+                        return web.json_response({
+                            'success': False,
+                            'error': f"File already exists: {new_path}"
+                        }, status=400)
+                    
+                    # Если старый файл существует, удаляем его после создания нового
+                    should_delete_old = content_path.exists()
+                    
+                    # Обновляем пути
+                    path = str(new_path)
+                    content_path = new_content_path
+                    
+                    logger.info(f"Changing file format: {current_ext} -> {new_ext}, new path: {path}")
+                    
+                    # После сохранения нового файла, удалим старый
+                    if should_delete_old:
+                        logger.info(f"Will delete old file after saving new one")
+            
             # Ensure parent directories exist
             content_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Преобразуем контент в выбранный формат, если нужно
+            output_format = metadata.get('format', 'markdown')
+            if output_format != 'markdown' and content:
+                try:
+                    # Импортируем необходимые парсеры
+                    from ..parsers import MarkdownParser
+                    
+                    # Инициализируем markdown парсер для преобразования в HTML
+                    md_parser = MarkdownParser()
+                    
+                    # Сначала получаем HTML из Markdown
+                    html_content = md_parser.parse(content)
+                    
+                    # Преобразуем HTML в нужный формат
+                    if output_format == 'rst':
+                        # Импортируем HTML -> RST конвертер
+                        try:
+                            from html2rest import HTML2REST
+                            converter = HTML2REST()
+                            content = converter.convert(html_content)
+                            logger.info("Converted content from Markdown to reStructuredText")
+                        except ImportError:
+                            logger.warning("html2rest not installed. Keeping markdown format.")
+                    
+                    elif output_format == 'asciidoc':
+                        # Импортируем HTML -> AsciiDoc конвертер
+                        try:
+                            from html2asciidoc import convert
+                            content = convert(html_content)
+                            logger.info("Converted content from Markdown to AsciiDoc")
+                        except ImportError:
+                            logger.warning("html2asciidoc not installed. Keeping markdown format.")
+                    
+                except Exception as e:
+                    logger.error(f"Error converting content format: {e}")
+                    # Продолжаем с исходным контентом, если конвертация не удалась
             
             # Create frontmatter
             frontmatter = '---\n'
@@ -336,6 +434,27 @@ class AdminPanel:
             with open(content_path, 'w', encoding='utf-8') as f:
                 f.write(frontmatter + content)
                 
+            # Если мы изменили формат, удаляем старый файл
+            if not is_new_page and 'format' in metadata:
+                current_ext = Path(path).suffix
+                old_ext = current_ext
+                if output_format == 'rst':
+                    old_ext = '.rst' if current_ext != '.rst' else '.md'
+                elif output_format == 'asciidoc':
+                    old_ext = '.adoc' if current_ext != '.adoc' else '.md'
+                elif output_format == 'markdown':
+                    old_ext = '.md' if current_ext != '.md' else '.rst'
+                
+                # Удаляем старый файл только если он существует и отличается от нового
+                old_path = Path(path).with_suffix(old_ext)
+                old_content_path = Path('content') / old_path
+                if old_content_path.exists() and old_content_path != content_path:
+                    try:
+                        old_content_path.unlink()
+                        logger.info(f"Deleted old file: {old_path}")
+                    except Exception as e:
+                        logger.error(f"Failed to delete old file: {e}")
+            
             # Rebuild the site
             self.rebuild_site()
             
@@ -372,45 +491,123 @@ class AdminPanel:
                 
             content = data['content']
             metadata = data.get('metadata', {})
+            output_format = metadata.get('format', 'markdown')
             
-            # Рендерим контент напрямую с помощью стандартной библиотеки markdown
-            import markdown
-            import re
+            # Если формат не markdown, сначала пробуем преобразовать контент
+            original_content = content
+            if output_format != 'markdown':
+                try:
+                    # Импортируем необходимые парсеры
+                    from ..parsers import MarkdownParser
+                    
+                    # Инициализируем markdown парсер для преобразования в HTML
+                    md_parser = MarkdownParser()
+                    
+                    # Сначала получаем HTML из Markdown контента
+                    html_from_md = md_parser.parse(original_content)
+                    
+                    # Преобразуем HTML в нужный формат
+                    if output_format == 'rst':
+                        # Импортируем HTML -> RST конвертер
+                        try:
+                            from html2rest import HTML2REST
+                            converter = HTML2REST()
+                            content = converter.convert(html_from_md)
+                            logger.info("Preview: Converted Markdown to reStructuredText")
+                        except ImportError:
+                            logger.warning(
+                                "html2rest not installed. Using original markdown for preview."
+                            )
+                    
+                    elif output_format == 'asciidoc':
+                        # Импортируем HTML -> AsciiDoc конвертер
+                        try:
+                            from html2asciidoc import convert
+                            content = convert(html_from_md)
+                            logger.info("Preview: Converted Markdown to AsciiDoc")
+                        except ImportError:
+                            logger.warning(
+                                "html2asciidoc not installed. Using original markdown for preview."
+                            )
+                except Exception as e:
+                    logger.error(f"Error converting content format for preview: {e}")
+                    # Продолжаем с исходным контентом, если конвертация не удалась
             
-            # Предварительная обработка математических формул
-            def process_math(text):
-                # Обработка inline формул
-                text = re.sub(r'\$(.+?)\$', r'<span class="math">\1</span>', text)
-                # Обработка block формул
-                text = re.sub(r'\$\$(.*?)\$\$', r'<div class="math math-display">\1</div>', text, flags=re.DOTALL)
-                return text
-            
-            # Предварительная обработка специальных блоков
-            def process_special_blocks(text):
-                # Обработка информационных блоков
-                text = re.sub(r':::info(.*?):::', r'<div class="info">\1</div>', text, flags=re.DOTALL)
-                text = re.sub(r':::warning(.*?):::', r'<div class="warning">\1</div>', text, flags=re.DOTALL)
-                text = re.sub(r':::danger(.*?):::', r'<div class="danger">\1</div>', text, flags=re.DOTALL)
-                return text
+            # Рендерим контент в HTML для предпросмотра в зависимости от формата
+            try:
+                if output_format == 'rst':
+                    # Используем парсер RST
+                    from ..parsers import RSTParser
+                    parser = RSTParser()
+                    html_content = parser.parse(content)
+                elif output_format == 'asciidoc':
+                    # Используем парсер AsciiDoc
+                    from ..parsers import AsciiDocParser
+                    parser = AsciiDocParser()
+                    html_content = parser.parse(content)
+                else:
+                    # Используем стандартный Markdown парсер
+                    import markdown
+                    import re
+                    
+                    # Предварительная обработка математических формул
+                    def process_math(text):
+                        # Обработка inline формул
+                        text = re.sub(r'\$(.+?)\$', r'<span class="math">\1</span>', text)
+                        # Обработка block формул
+                        text = re.sub(
+                            r'\$\$(.*?)\$\$', 
+                            r'<div class="math math-display">\1</div>', 
+                            text, 
+                            flags=re.DOTALL
+                        )
+                        return text
+                    
+                    # Предварительная обработка специальных блоков
+                    def process_special_blocks(text):
+                        # Обработка информационных блоков
+                        text = re.sub(
+                            r':::info(.*?):::', 
+                            r'<div class="info">\1</div>', 
+                            text, 
+                            flags=re.DOTALL
+                        )
+                        text = re.sub(
+                            r':::warning(.*?):::', 
+                            r'<div class="warning">\1</div>', 
+                            text, 
+                            flags=re.DOTALL
+                        )
+                        text = re.sub(
+                            r':::danger(.*?):::', 
+                            r'<div class="danger">\1</div>', 
+                            text, 
+                            flags=re.DOTALL
+                        )
+                        return text
 
-            # Предварительная обработка контента
-            content = process_math(content)
-            content = process_special_blocks(content)
-            
-            # Создаем экземпляр Markdown с расширенными возможностями
-            md = markdown.Markdown(extensions=[
-                'fenced_code',
-                'tables',
-                'codehilite',
-                'toc',
-                'attr_list',
-                'def_list',
-                'footnotes',
-                'nl2br'
-            ])
-            
-            # Рендерим контент
-            html_content = md.convert(content)
+                    # Предварительная обработка контента
+                    content = process_math(content)
+                    content = process_special_blocks(content)
+                    
+                    # Создаем экземпляр Markdown с расширенными возможностями
+                    md = markdown.Markdown(extensions=[
+                        'fenced_code',
+                        'tables',
+                        'codehilite',
+                        'toc',
+                        'attr_list',
+                        'def_list',
+                        'footnotes',
+                        'nl2br'
+                    ])
+                    
+                    # Рендерим Markdown в HTML
+                    html_content = md.convert(content)
+            except Exception as e:
+                logger.error(f"Error rendering content for preview: {e}")
+                # В случае ошибки используем простой вывод
+                html_content = f"<pre>{content}</pre>"
             
             # Оборачиваем HTML в базовый шаблон для предпросмотра
             preview_html = f"""
@@ -532,9 +729,31 @@ class AdminPanel:
                         background-color: #fff0f0;
                         border: 1px solid #ffbaba;
                     }}
+                    /* Информация о формате */
+                    .format-info {{
+                        background-color: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        border-radius: 4px;
+                        padding: 0.5em 1em;
+                        margin-bottom: 1em;
+                        font-size: 0.9em;
+                        color: #495057;
+                    }}
+                    .katex .katex-mathml {
+                        position: absolute;
+                        clip: rect(1px, 1px, 1px, 1px);
+                        padding: 0;
+                        border: 0;
+                        height: 1px;
+                        width: 1px;
+                        overflow: hidden;
+                    }
                 </style>
             </head>
             <body>
+                <div class="format-info">
+                    Preview of content in <strong>{output_format.upper()}</strong> format
+                </div>
                 <h1>{metadata.get('title', 'Preview')}</h1>
                 {html_content}
                 <script>
