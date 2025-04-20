@@ -1,9 +1,5 @@
 from typing import Any, Dict, List, Optional
 import markdown
-from markdown.extensions import fenced_code
-from markdown.extensions import tables
-from markdown.extensions import toc
-from mdx_mermaid import MermaidExtension
 from .base import ContentParser
 
 
@@ -16,7 +12,6 @@ class MarkdownParser(ContentParser):
             'fenced_code',
             'tables',
             'toc',
-            'mdx_mermaid',
             'meta',
             'attr_list',
             'def_list',

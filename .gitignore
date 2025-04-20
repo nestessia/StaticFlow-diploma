@@ -1,0 +1,11 @@
+__pycache__
+.cache
+.pytest_cache
+.DS_Store
+.venv
+.env
+/dist
+
+/testsite
+/test-site
+

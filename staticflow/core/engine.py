@@ -1,18 +1,45 @@
 from pathlib import Path
-from typing import Optional
 import shutil
+import markdown
+from typing import List, Optional, Dict, Any
 from .config import Config
 from .site import Site
 from .page import Page
+from ..plugins.base import Plugin
 
 
 class Engine:
     """Main engine for static site generation."""
     
-    def __init__(self, config_path: Optional[Path] = None):
-        self.config = Config(config_path)
+    def __init__(self, config):
+        """Initialize engine with config."""
+        if isinstance(config, Config):
+            self.config = config
+        elif isinstance(config, (str, Path)):
+            self.config = Config(config)
+        else:
+            raise TypeError(
+                "config must be Config instance or path-like object"
+            )
         self.site = Site(self.config)
         self._cache = {}
+        self.markdown = markdown.Markdown(
+            extensions=['meta', 'fenced_code'],
+            extension_configs={
+                'fenced_code': {
+                    'lang_prefix': ''
+                }
+            }
+        )
+        self.plugins: List[Plugin] = []
+        
+    def add_plugin(self, plugin: Plugin, config: Optional[Dict[str, Any]] = None) -> None:
+        """Add a plugin to the engine with optional configuration."""
+        plugin.engine = self
+        if config:
+            plugin.config = config
+        plugin.initialize()
+        self.plugins.append(plugin)
         
     def initialize(self, source_dir: Path, output_dir: Path, 
                   templates_dir: Path) -> None:
@@ -20,22 +47,37 @@ class Engine:
         self.site.set_directories(source_dir, output_dir, templates_dir)
         
     def build(self) -> None:
-        """Build the static site."""
-        if not self.site.source_dir or not self.site.output_dir:
-            raise ValueError("Source and output directories must be set")
-            
-        # Clear output directory
-        if self.site.output_dir.exists():
-            shutil.rmtree(self.site.output_dir)
-        self.site.output_dir.mkdir(parents=True)
+        """Build the site."""
+        # Create output directory if it doesn't exist
+        if self.site.output_dir:
+            self.site.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Load all pages
+        # Execute pre-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'pre_build'):
+                plugin.pre_build(self.site)
+            
+        self.site.clear()
+        
+        # Load pages before processing them
         self.site.load_pages()
         
-        # Process pages
         self._process_pages()
         
-        # Copy static assets
+        # Execute post-build hooks
+        for plugin in self.plugins:
+            if hasattr(plugin, 'post_build'):
+                plugin.post_build(self.site)
+            
+        # Копируем статику админки в папку public
+        try:
+            from ..admin import AdminPanel
+            admin = AdminPanel(self.config, self)
+            admin.copy_static_to_public()
+        except Exception as e:
+            print(f"Ошибка при копировании статики админки: {e}")
+            
+        # Copy static files
         self._copy_static_files()
         
     def _process_pages(self) -> None:
@@ -45,22 +87,84 @@ class Engine:
             
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
-        # TODO: Implement page processing logic
-        # - Apply templates
-        # - Process markdown
-        # - Handle front matter
-        # - Generate output files
-        pass
+        if not self.site.source_dir or not self.site.output_dir:
+            raise ValueError("Source and output directories must be set")
+
+        # Use the output path already set by router in the Site.load_pages method
+        if not page.output_path:
+            # If for some reason output_path is not set, generate it now
+            output_path = self.site.generate_page_output_path(page)
+            page.set_output_path(output_path)
+        else:
+            output_path = page.output_path
+
+        # Create parent directories if they don't exist
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Use the template from config
+        template_dir = self.config.get("template_dir", "templates")
+        # Преобразуем к Path только если это строка
+        if not isinstance(template_dir, Path):
+            template_dir = Path(template_dir)
+            
+        template_filename = page.metadata.get(
+            "template", self.config.get("default_template")
+        )
+        template_path = template_dir / template_filename
+        
+        if not template_path.exists():
+            raise ValueError(f"Template not found: {template_path}")
+
+        # Read template
+        with template_path.open("r", encoding="utf-8") as f:
+            template_content = f.read()
+
+        # Convert Markdown to HTML if it's a markdown file
+        if page.source_path.suffix.lower() == '.md':
+            content_html = self.markdown.convert(page.content)
+        else:
+            content_html = page.content
+
+        # Process content through plugins
+        for plugin in self.plugins:
+            content_html = plugin.process_content(content_html)
+
+        # Get additional head content from plugins
+        head_content = []
+        for plugin in self.plugins:
+            if hasattr(plugin, 'get_head_content'):
+                head_content.append(plugin.get_head_content())
+
+        # Simple template rendering
+        html = template_content.replace("{{ page.title }}", page.title)
+        html = html.replace("{{ page.content }}", content_html)
+        
+        # Insert head content
+        if head_content:
+            head_html = "\n".join(head_content)
+            html = html.replace("{{ page.head_content }}", head_html)
+        else:
+            html = html.replace("{{ page.head_content }}", "")
+
+        # Write the rendered page
+        with output_path.open("w", encoding="utf-8") as f:
+            f.write(html)
     
     def _copy_static_files(self) -> None:
         """Copy static files to the output directory."""
-        if not self.site.source_dir or not self.site.output_dir:
+        if not self.site.output_dir:
             return
             
-        static_dir = self.site.source_dir / "static"
+        static_dir = self.config.get("static_dir", "static")
+        # Преобразуем к Path только если это строка
+        if not isinstance(static_dir, Path):
+            static_dir = Path(static_dir)
+            
         if static_dir.exists():
             output_static = self.site.output_dir / "static"
-            shutil.copytree(static_dir, output_static, dirs_exist_ok=True)
+            if output_static.exists():
+                shutil.rmtree(output_static)
+            shutil.copytree(static_dir, output_static)
             
     def clean(self) -> None:
         """Clean the build artifacts."""
@@ -69,12 +173,6 @@ class Engine:
         self._cache.clear()
         self.site.clear()
         
-    def watch(self) -> None:
-        """Watch for changes and rebuild (for development)."""
-        # TODO: Implement file watching logic
-        pass
-    
-    def serve(self, host: str = "localhost", port: int = 8000) -> None:
-        """Start a development server."""
-        # TODO: Implement development server
-        pass 
+        # Cleanup plugins
+        for plugin in self.plugins:
+            plugin.cleanup()

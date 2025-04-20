@@ -5,109 +5,55 @@
 {% block page_title %}Site Settings{% endblock %}
 
 {% block content %}
-<div x-data="settingsManager()" class="space-y-8">
-    <!-- General Settings -->
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">General Settings</h3>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Site Name</label>
-                <input type="text" 
-                       x-model="settings.site_name"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2">
+<div class="settings">
+    <form id="settings-form" class="settings-form">
+        <div class="setting-group">
+            <h2>Site Settings</h2>
+            
+            <div class="setting-item">
+                <label for="site_name">Project Name</label>
+                <input type="text" id="site_name" name="site_name" value="{{ config.site_name }}">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Base URL</label>
-                <input type="url" 
-                       x-model="settings.base_url"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2">
+            <div class="setting-item">
+                <label for="base_url">Base URL</label>
+                <input type="text" id="base_url" name="base_url" value="{{ config.base_url }}">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea x-model="settings.description"
-                         class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 h-24"></textarea>
+            <div class="setting-item">
+                <label for="description">Description</label>
+                <textarea id="description" name="description">{{ config.description }}</textarea>
             </div>
         </div>
-    </div>
-    
-    <!-- SEO Settings -->
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h3>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Default Meta Title</label>
-                <input type="text" 
-                       x-model="settings.meta_title"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2">
+        
+        <div class="setting-group">
+            <h2>Directory Settings</h2>
+            
+            <div class="setting-item">
+                <label for="source_dir">Content Directory</label>
+                <input type="text" id="source_dir" name="source_dir" value="{{ config.source_dir }}">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Default Meta Description</label>
-                <textarea x-model="settings.meta_description"
-                         class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 h-24"></textarea>
+            <div class="setting-item">
+                <label for="template_dir">Templates Directory</label>
+                <input type="text" id="template_dir" name="template_dir" value="{{ config.template_dir }}">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Keywords</label>
-                <input type="text" 
-                       x-model="settings.keywords"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2"
-                       placeholder="keyword1, keyword2, keyword3">
+            <div class="setting-item">
+                <label for="static_dir">Static Files Directory</label>
+                <input type="text" id="static_dir" name="static_dir" value="{{ config.static_dir }}">
+            </div>
+            
+            <div class="setting-item">
+                <label for="output_dir">Output Directory</label>
+                <input type="text" id="output_dir" name="output_dir" value="{{ config.output_dir }}">
             </div>
         </div>
-    </div>
-    
-    <!-- Social Media -->
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Social Media</h3>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Twitter Handle</label>
-                <input type="text" 
-                       x-model="settings.social_twitter"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2"
-                       placeholder="@username">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Facebook Page</label>
-                <input type="text" 
-                       x-model="settings.social_facebook"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700">LinkedIn Profile</label>
-                <input type="text" 
-                       x-model="settings.social_linkedin"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2">
-            </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="save-btn">Save Settings</button>
         </div>
-    </div>
-    
-    <!-- Analytics -->
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Analytics</h3>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Google Analytics ID</label>
-                <input type="text" 
-                       x-model="settings.ga_id"
-                       class="mt-1 block w-full border rounded-md shadow-sm px-3 py-2"
-                       placeholder="UA-XXXXXXXXX-X">
-            </div>
-        </div>
-    </div>
-    
-    <!-- Save Button -->
-    <div class="flex justify-end">
-        <button @click="saveSettings()"
-                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
-            Save Changes
-        </button>
-    </div>
+    </form>
 </div>
 {% endblock %}
 

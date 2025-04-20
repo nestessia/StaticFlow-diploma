@@ -1,0 +1,613 @@
+/* StaticFlow Block Editor Styles v2.0 */
+
+.sf-block-editor {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px 10px;
+    min-height: 300px;
+    background-color: #fff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+}
+
+/* Общие стили для всех блоков */
+.sf-block {
+    position: relative;
+    margin: 0.8em auto;
+    padding: 8px 16px;
+    border-radius: 4px;
+    max-width: 800px;
+    min-height: 36px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sf-block:hover {
+    border-color: #e0e0e0;
+    background-color: #fafafa;
+}
+
+.sf-block-selected {
+    border-color: #4dabf7;
+    background-color: #f8f9fa;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+}
+
+/* Контролы блока (удаление, перемещение) */
+.sf-block-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.sf-block:hover .sf-block-controls,
+.sf-block-selected .sf-block-controls {
+    display: flex;
+}
+
+.sf-block-controls button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.sf-block-controls button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.sf-block-content {
+    padding: 4px;
+}
+
+/* Кнопка добавления нового блока */
+.add-block-button {
+    position: absolute;
+    left: -32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #ddd;
+    color: #999;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    z-index: 5;
+}
+
+.sf-block:hover .add-block-button {
+    opacity: 1;
+}
+
+.add-block-button:hover {
+    background-color: #4dabf7;
+    color: white;
+    border-color: #4dabf7;
+}
+
+/* Меню выбора типа блока */
+.block-type-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 280px;
+    max-height: 500px;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 8px;
+}
+
+.block-type-group {
+    margin-bottom: 16px;
+}
+
+.block-type-group-title {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 8px;
+}
+
+.block-type-option {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.block-type-option:hover {
+    background-color: #f5f5f5;
+}
+
+.block-type-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    font-size: 14px;
+}
+
+.block-type-label {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Стили для разных типов блоков */
+/* Заголовки */
+.sf-heading-input {
+    width: 100%;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    padding: 4px;
+    border-radius: 2px;
+    resize: none;
+    outline: none;
+}
+
+.sf-heading1 {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.sf-heading2 {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+.sf-heading3 {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+/* Параграф */
+.sf-paragraph-input {
+    width: 100%;
+    min-height: 24px;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    padding: 4px;
+    border-radius: 2px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+}
+
+/* Списки */
+.sf-list-input {
+    width: 100%;
+    min-height: 24px;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    padding: 4px;
+    border-radius: 2px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+}
+
+.sf-bullet-list {
+    padding-left: 20px;
+    position: relative;
+}
+
+.sf-bullet-list::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+}
+
+.sf-numbered-list {
+    padding-left: 24px;
+    position: relative;
+}
+
+.sf-numbered-list::before {
+    content: '1.';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+}
+
+/* Цитата */
+.sf-quote-input {
+    width: 100%;
+    min-height: 24px;
+    border: none;
+    background-color: #f9f9f9;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: 2px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+    border-left: 4px solid #ddd;
+    font-style: italic;
+}
+
+/* Код */
+.sf-code-block-wrapper {
+    width: 100%;
+}
+
+.sf-code-language {
+    width: 100%;
+    background-color: #f1f3f5;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px 4px 0 0;
+    font-size: 12px;
+    outline: none;
+}
+
+.sf-code-input {
+    width: 100%;
+    min-height: 120px;
+    background-color: #f1f3f5;
+    border: none;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    padding: 12px;
+    border-radius: 0 0 4px 4px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+/* Математические формулы */
+.sf-math-block-wrapper,
+.sf-diagram-block-wrapper {
+    width: 100%;
+}
+
+.sf-math-input,
+.sf-diagram-input {
+    width: 100%;
+    min-height: 80px;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    padding: 12px;
+    border-radius: 4px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.sf-math-preview,
+.sf-diagram-preview {
+    padding: 12px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    min-height: 40px;
+}
+
+.sf-preview-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+/* Медиа блоки */
+.sf-image-block-wrapper,
+.sf-audio-block-wrapper,
+.sf-video-block-wrapper {
+    width: 100%;
+}
+
+.sf-image-inputs,
+.sf-audio-inputs,
+.sf-video-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.sf-image-url-input,
+.sf-image-alt-input,
+.sf-audio-url-input,
+.sf-audio-desc-input,
+.sf-video-url-input,
+.sf-video-desc-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.sf-upload-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: #333;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.sf-upload-button:hover {
+    background-color: #e0e0e0;
+}
+
+.sf-image-preview,
+.sf-audio-preview,
+.sf-video-preview {
+    padding: 12px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+}
+
+.sf-empty-preview {
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Информационные блоки */
+.sf-info-block-wrapper,
+.sf-warning-block-wrapper,
+.sf-danger-block-wrapper {
+    width: 100%;
+}
+
+.sf-info-title-input,
+.sf-warning-title-input,
+.sf-danger-title-input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px 4px 0 0;
+    outline: none;
+    font-weight: bold;
+}
+
+.sf-info-title-input {
+    background-color: #e7f5ff;
+    color: #1971c2;
+}
+
+.sf-warning-title-input {
+    background-color: #fff9db;
+    color: #f08c00;
+}
+
+.sf-danger-title-input {
+    background-color: #ffe3e3;
+    color: #e03131;
+}
+
+.sf-info-input,
+.sf-warning-input,
+.sf-danger-input {
+    width: 100%;
+    min-height: 80px;
+    border: none;
+    border-radius: 0 0 4px 4px;
+    padding: 8px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+}
+
+.sf-info-input {
+    background-color: #e7f5ff;
+    color: #1971c2;
+}
+
+.sf-warning-input {
+    background-color: #fff9db;
+    color: #f08c00;
+}
+
+.sf-danger-input {
+    background-color: #ffe3e3;
+    color: #e03131;
+}
+
+.sf-info-preview {
+    margin-top: 12px;
+}
+
+.sf-preview-info,
+.sf-preview-warning,
+.sf-preview-danger {
+    padding: 12px;
+    border-radius: 4px;
+}
+
+.sf-preview-info {
+    background-color: #e7f5ff;
+    border: 1px solid #74c0fc;
+}
+
+.sf-preview-warning {
+    background-color: #fff9db;
+    border: 1px solid #ffd43b;
+}
+
+.sf-preview-danger {
+    background-color: #ffe3e3;
+    border: 1px solid #ff8787;
+}
+
+.sf-preview-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.sf-preview-content {
+    line-height: 1.5;
+}
+
+/* Пустой редактор */
+.sf-empty-editor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #999;
+    font-style: italic;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+}
+
+/* Стили для редактора из шаблона */
+.block-editor-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.editor-file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#page-title {
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    padding: 5px 0;
+    outline: none;
+    width: 100%;
+}
+
+.file-path {
+    color: #666;
+    font-size: 12px;
+}
+
+.file-modified {
+    color: #666;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.editor-container {
+    position: relative;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.editor-metadata {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.metadata-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.metadata-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.metadata-field label {
+    font-weight: 500;
+    color: #333;
+}
+
+.metadata-field input[type="text"],
+.metadata-field input[type="datetime-local"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.metadata-field input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4dabf7;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn:hover {
+    background-color: #3b8fd5;
+}
+
+.btn-secondary {
+    background-color: #e9ecef;
+    color: #495057;
+} 
