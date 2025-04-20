@@ -58,6 +58,10 @@ class Engine:
                 plugin.pre_build(self.site)
             
         self.site.clear()
+        
+        # Load pages before processing them
+        self.site.load_pages()
+        
         self._process_pages()
         
         # Execute post-build hooks

@@ -46,6 +46,13 @@
                     <small>Custom domain for your GitHub Pages site (optional)</small>
                 </div>
                 
+                <div class="form-group">
+                    <div class="deployment-info">
+                        <p><strong>Deployment Mode:</strong> Full Content</p>
+                        <small>This will deploy both static files and source content to GitHub Pages</small>
+                    </div>
+                </div>
+                
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Configuration</button>
                 </div>
@@ -72,6 +79,35 @@
             <button id="deploy-btn" class="btn btn-success" {% if not status.configured %}disabled{% endif %}>Deploy to GitHub Pages</button>
         </div>
     </div>
+    
+    <div class="deployment-history">
+        <h3>Deployment History</h3>
+        <div class="history-table-container">
+            <table id="history-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Date and Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if status.history %}
+                    {% for item in status.history %}
+                    <tr>
+                        <td>{{ item.timestamp }}</td>
+                        <td><span class="status-badge status-{{ item.status }}">{{ item.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="2">No deployment history available</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block head %}
@@ -117,6 +153,17 @@
         color: #666;
         margin-top: 5px;
         font-size: 12px;
+    }
+    
+    .deployment-info {
+        background-color: #e8f4ff;
+        border-radius: 4px;
+        padding: 12px;
+        border-left: 4px solid #0366d6;
+    }
+    
+    .deployment-info p {
+        margin: 0 0 5px 0;
     }
     
     .form-actions {
@@ -242,6 +289,9 @@
                     }
                     configData[key] = value;
                 });
+                
+                // Ensure deploy_mode is set to full
+                configData.deploy_mode = 'full';
                 
                 // Show saving status
                 const submitBtn = deployForm.querySelector('button[type="submit"]');

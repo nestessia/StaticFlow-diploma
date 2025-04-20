@@ -83,6 +83,12 @@ class Server:
         else:
             self.engine = engine
             
+        # Initialize engine with directory paths
+        source_dir = Path(self.config.get('source_dir', 'content'))
+        output_dir = Path(self.config.get('output_dir', 'public'))
+        template_dir = Path(self.config.get('template_dir', 'templates'))
+        self.engine.initialize(source_dir, output_dir, template_dir)
+        
         self.app = web.Application()
         self.admin = AdminPanel(config, self.engine)
         
