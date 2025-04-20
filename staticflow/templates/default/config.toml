@@ -3,22 +3,7 @@ site_name = ""  # Will be set to project name
 base_url = "http://localhost:8000"
 description = "A new StaticFlow site"
 author = ""
-language = "ru"  # Default language
-
-# Languages
-languages = ["ru", "en", "es"]
-
-[languages.ru]
-site_name = ""  # Will be set to project name
-description = "Новый сайт на StaticFlow"
-
-[languages.en]
-site_name = ""  # Will be set to project name
-description = "A new StaticFlow site"
-
-[languages.es]
-site_name = ""  # Will be set to project name
-description = "Un nuevo sitio con StaticFlow"
+language = "ru"
 
 # Directories
 source_dir = "content"

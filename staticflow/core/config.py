@@ -50,9 +50,6 @@ class Config:
     
     def _validate_config(self) -> None:
         """Validate the loaded configuration."""
-        # Отладочный вывод для понимания структуры конфигурации
-        print(f"VALIDATING CONFIG: {self._config}")
-        
         required_fields = ["site_name", "base_url"]
         missing = [
             field for field in required_fields 
@@ -64,33 +61,8 @@ class Config:
             )
     
     def get(self, key: str, default: Any = None) -> Any:
-        """Get configuration value."""
-        value = self._config.get(key, default)
-        print(f"CONFIG GET: {key} -> {value}")
-        return value
-    
-    def get_nested(self, keys, default=None):
-        """
-        Получить значение из вложенных словарей по последовательности ключей.
-        
-        Args:
-            keys: Список ключей для доступа к вложенным значениям
-            default: Значение по умолчанию, если ключ не найден
-            
-        Returns:
-            Значение или default, если ключ не найден
-        """
-        print(f"CONFIG GET_NESTED: {keys}")
-        value = self._config
-        try:
-            for key in keys:
-                print(f"  Accessing key: {key}, current value: {type(value)}")
-                value = value[key]
-            print(f"  Final value: {value}")
-            return value
-        except (KeyError, TypeError) as e:
-            print(f"  Error accessing nested keys: {e}")
-            return default
+        """Get a configuration value."""
+        return self._config.get(key, default)
     
     def set(self, key: str, value: Any) -> None:
         """Set a configuration value."""
