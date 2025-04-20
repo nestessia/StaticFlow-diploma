@@ -10,6 +10,12 @@
     --border-color: #e5e7eb;
     --hover-bg: #f3f4f6;
     --theme-transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    --input-bg: #ffffff;
+    --input-border: #e5e7eb;
+    --form-small-color: #6b7280;
+    --status-bg: #f8f9fa;
+    --table-header-bg: #f8f9fa;
+    --table-border: #eee;
 }
 
 body {
@@ -518,6 +524,76 @@ body.dark-theme {
     --success-color: #34d399;
     --border-color: #374151;
     --hover-bg: #374151;
+    --input-bg: #111827;
+    --input-border: #4b5563;
+    --form-small-color: #9ca3af;
+    --status-bg: #1f2937;
+    --table-header-bg: #111827;
+    --table-border: #374151;
+}
+
+/* Form styles for dark mode compatibility */
+.setting-item input,
+.setting-item textarea,
+.setting-item select,
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+    transition: var(--theme-transition);
+}
+
+.deploy-config, 
+.deploy-action, 
+.deployment-history {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: var(--theme-transition);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: var(--theme-transition);
+}
+
+.form-group small {
+    display: block;
+    color: var(--form-small-color);
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.deploy-status {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--status-bg);
+    border-radius: 4px;
+    transition: var(--theme-transition);
+}
+
+.table th, 
+.table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--table-border);
+    transition: var(--theme-transition);
+}
+
+.table th {
+    background-color: var(--table-header-bg);
+    font-weight: 500;
+    transition: var(--theme-transition);
 }
 
 /* Keep media query for auto dark mode */
@@ -532,6 +608,12 @@ body.dark-theme {
         --success-color: #34d399;
         --border-color: #374151;
         --hover-bg: #374151;
+        --input-bg: #111827;
+        --input-border: #4b5563;
+        --form-small-color: #9ca3af;
+        --status-bg: #1f2937;
+        --table-header-bg: #111827;
+        --table-border: #374151;
     }
     
     body:not(.light-theme) .file-meta {
