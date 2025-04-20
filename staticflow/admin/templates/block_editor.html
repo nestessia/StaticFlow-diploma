@@ -38,17 +38,7 @@
 <!-- Highlight.js для подсветки кода -->
 <link rel="stylesheet" href="https://unpkg.com/highlight.js@11.7.0/styles/github.min.css" crossorigin="anonymous">
 <script src="https://unpkg.com/highlight.js@11.7.0/highlight.min.js" crossorigin="anonymous" type="text/javascript"></script>
-<!-- Дополнительные языки для highlight.js, но используем подход с полным пакетом -->
-<script>
-// Проверим, что highlight.js загружен
-document.addEventListener('DOMContentLoaded', function() {
-    if (!window.hljs) {
-        console.error("highlight.js не загружен автоматически, пробуем загрузить динамически");
-    } else {
-        console.log("highlight.js успешно загружен");
-    }
-});
-</script>
+
 {% endblock %}
 
 {% block content %}
@@ -128,10 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="/admin/static/js/block-editor.js"></script>
 <script>
 // Инициализируем mermaid для диаграмм
-mermaid.initialize({ startOnLoad: false });
-
-// Отладочная информация
-console.log("Initializing block editor...");
+mermaid.initialize({ startOnLoad: true });
 
 // Сохраняем данные страницы
 var pageData = {
@@ -150,122 +137,125 @@ var pageData = {
 
 // Инициализация редактора
 document.addEventListener('DOMContentLoaded', function() {
-    try {
-        // Инициализация редактора
-        var editor = new BlockEditor('#block-editor', pageData.content);
-        
-        // Make editor variable accessible to the editor instance
-        editor.editor = editor.editorContainer;
-        
-        // Initialize highlight.js if available
-        if (window.hljs) {
-            console.log("Initializing highlight.js...");
-            try {
-                hljs.configure({
-                    languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java', 'csharp', 'php', 'ruby', 'go', 'rust', 'swift']
-                });
-                hljs.highlightAll();
-                console.log("highlight.js initialized successfully.");
-            } catch (e) {
-                console.error("Error initializing highlight.js:", e);
+    // Wait for block editor scripts to be fully loaded before initializing
+    document.addEventListener('blockEditorLoaded', function() {
+        try {
+            // Инициализация редактора
+            var editor = new BlockEditor('#block-editor', pageData.content);
+            
+            // Make editor variable accessible to the editor instance
+            editor.editor = editor.editorContainer;
+            
+            // Initialize highlight.js if available
+            if (window.hljs) {
+                console.log("Initializing highlight.js...");
+                try {
+                    hljs.configure({
+                        languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java', 'csharp', 'php', 'ruby', 'go', 'rust', 'swift']
+                    });
+                    hljs.highlightAll();
+                    console.log("highlight.js initialized successfully.");
+                } catch (e) {
+                    console.error("Error initializing highlight.js:", e);
+                }
+            } else {
+                console.warn("highlight.js is not available! Make sure to include the library in the page.");
+                console.info("Attempting to load highlight.js dynamically...");
+                // Add script dynamically if needed
+                loadHighlightJs();
             }
-        } else {
-            console.warn("highlight.js is not available! Make sure to include the library in the page.");
-            console.info("Attempting to load highlight.js dynamically...");
-            // Add script dynamically if needed
-            loadHighlightJs();
-        }
-        
-        // Добавляем обработчики событий для кнопок
-        document.getElementById('save-btn').addEventListener('click', function() {
-            savePage(editor);
-        });
-        
-        document.getElementById('preview-btn').addEventListener('click', function() {
-            previewPage(editor);
-        });
-        
-        // Установка начального формата из метаданных
-        if (pageData.metadata.format) {
-            document.getElementById('meta-format').value = pageData.metadata.format;
-        }
-        
-        // Обработка клавиатурных сокращений
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+S или Cmd+S для сохранения
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
+            
+            // Добавляем обработчики событий для кнопок
+            document.getElementById('save-btn').addEventListener('click', function() {
                 savePage(editor);
-            }
+            });
             
-            // Ctrl+P или Cmd+P для предпросмотра
-            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-                e.preventDefault();
+            document.getElementById('preview-btn').addEventListener('click', function() {
                 previewPage(editor);
+            });
+            
+            // Установка начального формата из метаданных
+            if (pageData.metadata.format) {
+                document.getElementById('meta-format').value = pageData.metadata.format;
             }
-        });
-        
-        // Синхронизация выбора формата вывода с расширением файла
-        const formatSelector = document.getElementById('meta-format');
-        const fileExtension = document.getElementById('file-extension');
-        
-        // Обновить расширение файла при изменении формата
-        if (formatSelector && fileExtension) {
-            formatSelector.addEventListener('change', function() {
-                switch(this.value) {
-                    case 'markdown':
-                        fileExtension.value = '.md';
-                        break;
-                    case 'rst':
-                        fileExtension.value = '.rst';
-                        break;
-                    case 'asciidoc':
-                        fileExtension.value = '.adoc';
-                        break;
+            
+            // Обработка клавиатурных сокращений
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S или Cmd+S для сохранения
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    savePage(editor);
+                }
+                
+                // Ctrl+P или Cmd+P для предпросмотра
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    previewPage(editor);
                 }
             });
             
-            // Обновить формат при изменении расширения файла
-            fileExtension.addEventListener('change', function() {
-                switch(this.value) {
-                    case '.md':
-                        formatSelector.value = 'markdown';
-                        break;
-                    case '.rst':
-                        formatSelector.value = 'rst';
-                        break;
-                    case '.adoc':
-                        formatSelector.value = 'asciidoc';
-                        break;
-                }
-            });
-        }
-        
-        // Генерировать имя файла из заголовка страницы
-        const pageTitleInput = document.getElementById('page-title');
-        const filenameInput = document.getElementById('filename-input');
-        
-        if (pageTitleInput && filenameInput) {
-            pageTitleInput.addEventListener('blur', function() {
-                // Если поле имени файла пустое, предложить имя на основе заголовка
-                if (!filenameInput.value.trim()) {
-                    // Преобразуем заголовок в имя файла
-                    const title = pageTitleInput.value.trim();
-                    if (title) {
-                        const filename = title
-                            .toLowerCase()
-                            .replace(/[^a-zA-Z0-9\s-]/g, '') // Удаляем спецсимволы
-                            .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
-                            .replace(/-+/g, '-'); // Убираем дублирующиеся дефисы
-                        
-                        filenameInput.value = filename;
+            // Синхронизация выбора формата вывода с расширением файла
+            const formatSelector = document.getElementById('meta-format');
+            const fileExtension = document.getElementById('file-extension');
+            
+            // Обновить расширение файла при изменении формата
+            if (formatSelector && fileExtension) {
+                formatSelector.addEventListener('change', function() {
+                    switch(this.value) {
+                        case 'markdown':
+                            fileExtension.value = '.md';
+                            break;
+                        case 'rst':
+                            fileExtension.value = '.rst';
+                            break;
+                        case 'asciidoc':
+                            fileExtension.value = '.adoc';
+                            break;
                     }
-                }
-            });
+                });
+                
+                // Обновить формат при изменении расширения файла
+                fileExtension.addEventListener('change', function() {
+                    switch(this.value) {
+                        case '.md':
+                            formatSelector.value = 'markdown';
+                            break;
+                        case '.rst':
+                            formatSelector.value = 'rst';
+                            break;
+                        case '.adoc':
+                            formatSelector.value = 'asciidoc';
+                            break;
+                    }
+                });
+            }
+            
+            // Генерировать имя файла из заголовка страницы
+            const pageTitleInput = document.getElementById('page-title');
+            const filenameInput = document.getElementById('filename-input');
+            
+            if (pageTitleInput && filenameInput) {
+                pageTitleInput.addEventListener('blur', function() {
+                    // Если поле имени файла пустое, предложить имя на основе заголовка
+                    if (!filenameInput.value.trim()) {
+                        // Преобразуем заголовок в имя файла
+                        const title = pageTitleInput.value.trim();
+                        if (title) {
+                            const filename = title
+                                .toLowerCase()
+                                .replace(/[^a-zA-Z0-9\s-]/g, '') // Удаляем спецсимволы
+                                .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
+                                .replace(/-+/g, '-'); // Убираем дублирующиеся дефисы
+                            
+                            filenameInput.value = filename;
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Error initializing editor:", error);
         }
-    } catch (error) {
-        console.error("Error initializing editor:", error);
-    }
+    });
 });
 
 // Function to dynamically load highlight.js

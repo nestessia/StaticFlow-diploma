@@ -176,3 +176,25 @@ class Engine:
         # Cleanup plugins
         for plugin in self.plugins:
             plugin.cleanup()
+
+    def load_page_from_file(self, file_path: Path) -> Optional[Page]:
+        """
+        Load a page from a file.
+        This method is used by the admin panel to get page data for URL generation.
+        """
+        try:
+            # Создаем страницу из файла
+            page = Page.from_file(file_path)
+            
+            # Устанавливаем relative path относительно каталога контента
+            if self.site.source_dir:
+                try:
+                    page.source_path = file_path.relative_to(self.site.source_dir)
+                except ValueError:
+                    # Если не удалось получить относительный путь, используем абсолютный
+                    page.source_path = file_path
+            
+            return page
+        except Exception as e:
+            print(f"Error loading page from file {file_path}: {e}")
+            return None
