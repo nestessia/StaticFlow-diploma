@@ -78,6 +78,7 @@ class AdminPanel:
         
         # Добавляем маршруты для деплоя на GitHub Pages
         self.app.router.add_get('/deploy', self.deploy_handler)
+        self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)  # GET для получения свежих данных
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
         
@@ -113,23 +114,30 @@ class AdminPanel:
         print(f"Modified path: {path}")
         
         # Прямое перенаправление для API запросов без клонирования
-        if request.method == 'POST' and path.startswith('/api/'):
-            # Маршрутизация API напрямую к обработчикам
-            if path == '/api/content':
-                return await self.api_content_handler(request)
-            elif path == '/api/preview':
-                return await self.api_preview_handler(request)
-            elif path == '/api/settings':
-                return await self.api_settings_handler(request)
-            elif path == '/api/deploy/config':
-                return await self.api_deploy_config_handler(request)
-            elif path == '/api/deploy/start':
-                return await self.api_deploy_start_handler(request)
-            else:
-                return web.json_response({
-                    'success': False,
-                    'error': f"Unknown API endpoint: {path}"
-                }, status=404)
+        if path.startswith('/api/'):
+            # GET запросы к API
+            if request.method == 'GET':
+                if path == '/api/deploy/config':
+                    return await self.api_deploy_config_get_handler(request)
+            
+            # POST запросы к API
+            if request.method == 'POST':
+                # Маршрутизация API напрямую к обработчикам
+                if path == '/api/content':
+                    return await self.api_content_handler(request)
+                elif path == '/api/preview':
+                    return await self.api_preview_handler(request)
+                elif path == '/api/settings':
+                    return await self.api_settings_handler(request)
+                elif path == '/api/deploy/config':
+                    return await self.api_deploy_config_handler(request)
+                elif path == '/api/deploy/start':
+                    return await self.api_deploy_start_handler(request)
+                else:
+                    return web.json_response({
+                        'success': False,
+                        'error': f"Unknown API endpoint: {path}"
+                    }, status=404)
         
         # Для GET запросов и всех остальных используем клонирование
         try:
@@ -559,6 +567,30 @@ class AdminPanel:
             }, status=400)
         except Exception as e:
             print(f"Unexpected error in api_settings_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+            
+    async def api_deploy_config_get_handler(self, request):
+        """Handle deploy configuration GET API requests."""
+        try:
+            # Инициализируем GitHub Pages deployer
+            from ..deploy.github_pages import GitHubPagesDeployer
+            deployer = GitHubPagesDeployer()
+            
+            # Получаем статус и конфигурацию деплоя
+            status = deployer.get_deployment_status()
+            
+            return web.json_response({
+                'success': True,
+                'status': status,
+                'config': status['config']
+            })
+        except Exception as e:
+            print(f"Error in api_deploy_config_get_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({
