@@ -58,7 +58,11 @@
                     }
                     break;
                 case 'math':
-                    markdown += `$$\n${block.content}\n$$\n\n`;
+                    if (block.meta && block.meta.inline) {
+                        markdown += `$${block.content}$\n\n`;
+                    } else {
+                        markdown += `$$\n${block.content}\n$$\n\n`;
+                    }
                     break;
                 case 'diagram':
                     markdown += '```mermaid\n';
@@ -382,7 +386,17 @@
             } 
             // Regular text (paragraph)
             else {
-                if (currentBlock && currentBlock.type === 'paragraph') {
+                // Проверяем, содержит ли строка inline формулу в виде $...$
+                if (line.match(/\$(.*?)\$/)) {
+                    // Если формула встроена в текст, создаем блок math
+                    const mathContent = line.match(/\$(.*?)\$/)[1];
+                    this.blocks.push({
+                        id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        type: 'math',
+                        content: mathContent,
+                        meta: { inline: true }
+                    });
+                } else if (currentBlock && currentBlock.type === 'paragraph') {
                     currentBlock.content += '\n' + line;
                 } else {
                     currentBlock = {
