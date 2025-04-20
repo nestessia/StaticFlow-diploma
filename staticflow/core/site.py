@@ -17,7 +17,10 @@ class Site:
         self.output_dir: Optional[Path] = None
         self.template_dir: Optional[Path] = None
         self.pages: Dict[str, Page] = {}
-        self.router = Router()
+        
+        # Инициализируем маршрутизатор с настройками из конфига
+        router_config = config.get('router', {})
+        self.router = Router(router_config)
         
     def set_directories(
         self,
@@ -79,17 +82,23 @@ class Site:
         # Определение типа контента
         content_type = self.determine_content_type(page)
         
-        # Подготовка метаданных
+        # Подготовка метаданных для маршрутизатора
         metadata = page.metadata.copy()
         
         # Ensure slug is available
         if "slug" not in metadata:
             metadata["slug"] = page.source_path.stem
             
-        # Use router to generate output path
-        return self.router.get_output_path(
-            self.output_dir, content_type, metadata
-        )
+        # Extract category from path if not specified
+        if "category" not in metadata and "/" in str(page.source_path):
+            parent_dir = page.source_path.parent.name
+            # Если родительский каталог не пустой и не точка, 
+            # используем его как категорию
+            if parent_dir and parent_dir != '.':
+                metadata["category"] = parent_dir
+        
+        # Generate the full output path using the router
+        return self.router.get_output_path(self.output_dir, content_type, metadata)
         
     def get_page(self, rel_path: str) -> Optional[Page]:
         """Get a page by relative path."""

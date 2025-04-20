@@ -15,7 +15,13 @@
         {% for file in files %}
         <div class="content-item">
             <div class="content-info">
-                <h3>{{ file.path }}</h3>
+                <h3>
+                    {% if file.url %}
+                    <a href="{{ file.url }}" class="file-link" target="_blank">{{ file.path }}</a>
+                    {% else %}
+                    <a href="/{{ file.path | replace('.md', '.html') | replace('.html.html', '.html') }}" class="file-link" target="_blank">{{ file.path }}</a>
+                    {% endif %}
+                </h3>
                 <p>Last modified: <script>document.write(new Date({{ file.modified }} * 1000).toLocaleString())</script></p>
             </div>
             <div class="content-actions">

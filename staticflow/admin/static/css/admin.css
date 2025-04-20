@@ -124,6 +124,18 @@ body {
     font-size: 0.9rem;
 }
 
+/* Стили для ссылок на файлы в списке контента */
+.file-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.file-link:hover {
+    text-decoration: underline;
+    color: #2563eb; /* Немного темнее основного цвета при наведении */
+}
+
 .content-actions {
     display: flex;
     gap: 1rem;

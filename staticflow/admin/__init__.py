@@ -172,12 +172,45 @@ class AdminPanel:
         content_path = Path('content')
         files = []
         
+        # Используем конфигурацию из engine для определения URL файлов
+        engine = self.engine
+        site = engine.site
+        base_url = self.config.get('base_url', '')
+        
         for file in content_path.rglob('*.*'):
             if file.suffix in ['.md', '.html']:
+                rel_path = str(file.relative_to(content_path))
+                
+                # Получаем URL для файла
+                file_url = ""
+                try:
+                    # Загружаем страницу для получения ее метаданных
+                    page = engine.load_page_from_file(file)
+                    if page:
+                        # Получаем тип контента
+                        content_type = site.determine_content_type(page)
+                        
+                        # Формируем URL
+                        file_url = site.router.get_url(content_type, page.metadata)
+                        
+                        # Добавляем base_url
+                        if file_url and not file_url.startswith('http'):
+                            if not file_url.startswith('/'):
+                                file_url = '/' + file_url
+                            file_url = f"{base_url.rstrip('/')}{file_url}"
+                except Exception as e:
+                    logger.error(f"Error generating URL for {rel_path}: {e}")
+                
+                # Если не удалось получить URL, используем преобразование пути
+                if not file_url:
+                    file_url = f"{base_url.rstrip('/')}/{rel_path.replace('.md', '.html')}"
+                
+                # Добавляем информацию о файле
                 files.append({
-                    'path': str(file.relative_to(content_path)),
+                    'path': rel_path,
                     'modified': file.stat().st_mtime,
-                    'size': file.stat().st_size
+                    'size': file.stat().st_size,
+                    'url': file_url
                 })
                 
         return {
