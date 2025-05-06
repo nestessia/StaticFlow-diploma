@@ -5,12 +5,8 @@ import jinja2
 from ..core.config import Config
 from ..core.engine import Engine
 import json
-import logging
-import os
 import re
-import secrets
 import shutil
-import time
 from ..utils.logging import get_logger
 
 # Получаем логгер для данного модуля
@@ -81,40 +77,29 @@ class AdminPanel:
     def setup_routes(self):
         """Setup admin panel routes."""
         self.app.router.add_get('', self.index_handler)
-        self.app.router.add_get('/', self.index_handler)  # Добавляем явный обработчик для /
-        self.app.router.add_get('/content', self.index_handler)  # Переиспользуем index_handler для /content
+        self.app.router.add_get('/', self.index_handler)
+        self.app.router.add_get('/content', self.index_handler)
         self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
         self.app.router.add_post('/api/settings', self.api_settings_handler)
-        
-        # Добавляем маршруты для блочного редактора
         self.app.router.add_get('/block-editor', self.block_editor_handler)
         self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
-        self.app.router.add_post('/api/preview', self.api_preview_handler)
-        
-        # Добавляем маршруты для деплоя на GitHub Pages
         self.app.router.add_get('/deploy', self.deploy_handler)
-        self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)  # GET для получения свежих данных
+        self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
-        
-        # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
-        
         if not static_path.exists():
             static_path.mkdir(parents=True)
-        
-        # Проверяем наличие кэшированной статики в public
         cached_static_path = Path('public/admin/static')
         use_cached = cached_static_path.exists()
-        
-        # Используем кэшированную статику, если она есть, иначе берем из фреймворка
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
-        
-        # Если кэш не существует, копируем статику при инициализации
         if not use_cached:
             self.copy_static_to_public()
+        # Новый серверный предпросмотр (без /admin, чтобы работало с проксированием)
+        self.app.router.add_post('/preview', self.preview_post_handler)
+        self.app.router.add_get('/preview', self.preview_get_handler)
         
     async def handle_request(self, request):
         """Handle admin panel request."""
@@ -139,8 +124,6 @@ class AdminPanel:
                 # Маршрутизация API напрямую к обработчикам
                 if path == '/api/content':
                     return await self.api_content_handler(request)
-                elif path == '/api/preview':
-                    return await self.api_preview_handler(request)
                 elif path == '/api/settings':
                     return await self.api_settings_handler(request)
                 elif path == '/api/deploy/config':
@@ -280,28 +263,6 @@ class AdminPanel:
             'safe_metadata': safe_metadata
         }
     
-    @aiohttp_jinja2.template('default/page.html')
-    async def api_preview_handler(self, request):
-        """Handle preview API requests (site-like preview)."""
-        try:
-            data = await request.json()
-            if 'content' not in data:
-                return web.Response(status=400, text="Missing content field")
-            content = data['content']
-            metadata = data.get('metadata', {})
-            # Формируем временный page-объект для шаблона
-            page = {
-                'title': metadata.get('title', 'Preview'),
-                'content': content,
-                'head_content': '',  # Можно добавить генерацию head, если нужно
-                'metadata': metadata
-            }
-            return {'page': page}
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return web.Response(status=500, text=str(e))
-        
     async def api_content_handler(self, request):
         """Handle content API requests."""
         try:
@@ -694,6 +655,28 @@ class AdminPanel:
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
+
+    async def preview_post_handler(self, request):
+        """Сохраняет черновик во временный файл и возвращает 204 (без редиректа)."""
+        data = await request.json()
+        tmp_path = Path('public/admin/preview_draft.json')
+        with tmp_path.open('w', encoding='utf-8') as f:
+            json.dump(data, f)
+        return web.Response(status=204)
+
+    async def preview_get_handler(self, request):
+        """Рендерит предпросмотр страницы как при генерации сайта."""
+        tmp_path = Path('public/admin/preview_draft.json')
+        if not tmp_path.exists():
+            return web.Response(text='Нет черновика для предпросмотра', status=404)
+        with tmp_path.open('r', encoding='utf-8') as f:
+            data = json.load(f)
+        content = data.get('content', '')
+        metadata = data.get('metadata', {})
+        from staticflow.core.page import Page
+        page = Page(Path('preview.md'), content, metadata)
+        html = self.engine.render_page(page)
+        return web.Response(text=html, content_type='text/html')
 
 # Экспортируем AdminPanel для доступа из других модулей
 __all__ = ['AdminPanel'] 

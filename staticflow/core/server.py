@@ -176,6 +176,7 @@ class Server:
         self.app.router.add_get('/admin', self.admin_handler)
         self.app.router.add_get('/admin/{tail:.*}', self.admin_handler)
         self.app.router.add_post('/admin/api/{tail:.*}', self.admin_handler)
+        self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
         
         # Static files
         static_dir = self.config.get('static_dir')

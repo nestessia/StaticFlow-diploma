@@ -198,3 +198,34 @@ class Engine:
         except Exception as e:
             print(f"Error loading page from file {file_path}: {e}")
             return None
+
+    def render_page(self, page: Page) -> str:
+        """Render a Page object to HTML (for preview, no disk write)."""
+        template_dir = self.config.get("template_dir", "templates")
+        if not isinstance(template_dir, Path):
+            template_dir = Path(template_dir)
+        template_filename = page.metadata.get("template", self.config.get("default_template", "page.html"))
+        template_path = template_dir / template_filename
+        if not template_path.exists():
+            raise ValueError(f"Template not found: {template_path}")
+
+        with template_path.open("r", encoding="utf-8") as f:
+            template_content = f.read()
+
+        # Markdown → HTML
+        content_html = self.markdown.convert(page.content)
+        for plugin in self.plugins:
+            content_html = plugin.process_content(content_html)
+
+        head_content = []
+        for plugin in self.plugins:
+            if hasattr(plugin, 'get_head_content'):
+                head_content.append(plugin.get_head_content())
+
+        html = template_content.replace("{{ page.title }}", page.title)
+        html = html.replace("{{ page.content }}", content_html)
+        if head_content:
+            html = html.replace("{{ page.head_content }}", "\n".join(head_content))
+        else:
+            html = html.replace("{{ page.head_content }}", "")
+        return html
