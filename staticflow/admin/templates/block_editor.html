@@ -489,9 +489,14 @@ function previewPage(editor) {
             return response.text();
         })
         .then(html => {
-            const win = window.open('', 'preview', 'width=800,height=600');
-            win.document.write(html);
-            win.document.close();
+            // Открываем в новой вкладке
+            const previewTab = window.open('', '_blank');
+            if (previewTab) {
+                previewTab.document.write(html);
+                previewTab.document.close();
+            } else {
+                alert('Popup was blocked! Please allow popups for this site to see the preview.');
+            }
         })
         .catch(error => {
             console.error('Error previewing page:', error);

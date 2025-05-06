@@ -56,16 +56,26 @@ class AdminPanel:
         return result
         
     def setup_templates(self):
-        """Setup Jinja2 templates for admin panel."""
-        template_path = Path(__file__).parent / 'templates'
-        
-        if not template_path.exists():
-            template_path.mkdir(parents=True)
-            logger.info(f"Created template directory: {template_path}")
-            
+        """Setup Jinja2 templates for admin panel and site preview (project-aware)."""
+        from pathlib import Path
+        # Получаем путь к шаблонам из пользовательского конфига
+        template_dir = self.config.get('template_dir', 'templates')
+        if not isinstance(template_dir, Path):
+            template_path = Path(template_dir)
+        else:
+            template_path = template_dir
+        admin_template_path = Path(__file__).parent / 'templates'
+
+        if not admin_template_path.exists():
+            admin_template_path.mkdir(parents=True)
+            logger.info(f"Created template directory: {admin_template_path}")
+
         aiohttp_jinja2.setup(
             self.app,
-            loader=jinja2.FileSystemLoader(str(template_path))
+            loader=jinja2.FileSystemLoader([
+                str(admin_template_path),
+                str(template_path)
+            ])
         )
         
     def setup_routes(self):
@@ -270,6 +280,28 @@ class AdminPanel:
             'safe_metadata': safe_metadata
         }
     
+    @aiohttp_jinja2.template('default/page.html')
+    async def api_preview_handler(self, request):
+        """Handle preview API requests (site-like preview)."""
+        try:
+            data = await request.json()
+            if 'content' not in data:
+                return web.Response(status=400, text="Missing content field")
+            content = data['content']
+            metadata = data.get('metadata', {})
+            # Формируем временный page-объект для шаблона
+            page = {
+                'title': metadata.get('title', 'Preview'),
+                'content': content,
+                'head_content': '',  # Можно добавить генерацию head, если нужно
+                'metadata': metadata
+            }
+            return {'page': page}
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return web.Response(status=500, text=str(e))
+        
     async def api_content_handler(self, request):
         """Handle content API requests."""
         try:
@@ -463,185 +495,6 @@ class AdminPanel:
             }, status=400)
         except Exception as e:
             logger.error(f"Unexpected error in api_content_handler: {e}")
-            import traceback
-            traceback.print_exc()
-            return web.json_response({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-        
-    async def api_preview_handler(self, request):
-        """Handle preview API requests."""
-        try:
-            data = await request.json()
-            
-            if 'content' not in data:
-                return web.Response(
-                    status=400,
-                    text="Missing content field"
-                )
-                
-            content = data['content']
-            metadata = data.get('metadata', {})
-            output_format = metadata.get('format', 'markdown')
-            
-            # Если формат не markdown, сначала пробуем преобразовать контент
-            original_content = content
-            if output_format != 'markdown':
-                try:
-                    # Импортируем необходимые парсеры
-                    from ..parsers import MarkdownParser
-                    
-                    # Инициализируем markdown парсер для преобразования в HTML
-                    md_parser = MarkdownParser()
-                    
-                    # Сначала получаем HTML из Markdown контента
-                    html_from_md = md_parser.parse(original_content)
-                    
-                    # Преобразуем HTML в нужный формат
-                    if output_format == 'rst':
-                        # Импортируем HTML -> RST конвертер
-                        try:
-                            from html2rest import HTML2REST
-                            converter = HTML2REST()
-                            content = converter.convert(html_from_md)
-                            logger.info("Preview: Converted Markdown to reStructuredText")
-                        except ImportError:
-                            logger.warning(
-                                "html2rest not installed. Using original markdown for preview."
-                            )
-                    
-                    elif output_format == 'asciidoc':
-                        # Импортируем HTML -> AsciiDoc конвертер
-                        try:
-                            from html2asciidoc import convert
-                            content = convert(html_from_md)
-                            logger.info("Preview: Converted Markdown to AsciiDoc")
-                        except ImportError:
-                            logger.warning(
-                                "html2asciidoc not installed. Using original markdown for preview."
-                            )
-                except Exception as e:
-                    logger.error(f"Error converting content format for preview: {e}")
-                    # Продолжаем с исходным контентом, если конвертация не удалась
-            
-            # Рендерим контент в HTML для предпросмотра в зависимости от формата
-            try:
-                if output_format == 'rst':
-                    # Используем парсер RST
-                    from ..parsers import RSTParser
-                    parser = RSTParser()
-                    html_content = parser.parse(content)
-                elif output_format == 'asciidoc':
-                    # Используем парсер AsciiDoc
-                    from ..parsers import AsciiDocParser
-                    parser = AsciiDocParser()
-                    html_content = parser.parse(content)
-                else:
-                    # Используем стандартный Markdown парсер
-                    import markdown
-                    import re
-                    
-                    # Предварительная обработка математических формул
-                    def process_math(text):
-                        # Обработка inline формул
-                        text = re.sub(r'\$(.+?)\$', r'<span class="math">\1</span>', text)
-                        # Обработка block формул
-                        text = re.sub(
-                            r'\$\$(.*?)\$\$', 
-                            r'<div class="math math-display">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        return text
-                    
-                    # Предварительная обработка специальных блоков
-                    def process_special_blocks(text):
-                        # Обработка информационных блоков
-                        text = re.sub(
-                            r':::info(.*?):::', 
-                            r'<div class="info">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        text = re.sub(
-                            r':::warning(.*?):::', 
-                            r'<div class="warning">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        text = re.sub(
-                            r':::danger(.*?):::', 
-                            r'<div class="danger">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        return text
-
-                    # Предварительная обработка контента
-                    content = process_math(content)
-                    content = process_special_blocks(content)
-                    
-                    # Создаем экземпляр Markdown с расширенными возможностями
-                    md = markdown.Markdown(extensions=[
-                        'fenced_code',
-                        'tables',
-                        'codehilite',
-                        'toc',
-                        'attr_list',
-                        'def_list',
-                        'footnotes',
-                        'nl2br'
-                    ])
-                    
-                    # Рендерим Markdown в HTML
-                    html_content = md.convert(content)
-            except Exception as e:
-                logger.error(f"Error rendering content for preview: {e}")
-                # В случае ошибки используем простой вывод
-                html_content = f"<pre>{content}</pre>"
-            
-            # Оборачиваем HTML в базовый шаблон для предпросмотра
-            preview_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>{metadata.get('title', 'Preview')}</title>
-                <!-- KaTeX для математических формул -->
-                <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css\">
-                <script src=\"https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js\"></script>
-                <!-- Mermaid для диаграмм -->
-                <script src=\"https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js\"></script>
-                <!-- Подсветка синтаксиса -->
-                <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css\">
-                <script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js\"></script>
-                <!-- Preview CSS -->
-                <link rel=\"stylesheet\" href=\"/static/css/preview.css\">
-            </head>
-            <body>
-                <div class=\"format-info\">
-                    Preview of content in <strong>{output_format.upper()}</strong> format
-                </div>
-                <h1>{metadata.get('title', 'Preview')}</h1>
-                {html_content}
-                <!-- Preview JS -->
-                <script src=\"/static/js/preview.js\"></script>
-            </body>
-            </html>
-            """
-            
-            return web.Response(
-                text=preview_html,
-                content_type='text/html'
-            )
-        except json.JSONDecodeError as e:
-            logger.error(f"Preview JSON parse error: {e}")
-            return web.json_response({
-                'success': False,
-                'error': f"Invalid JSON: {e}"
-            }, status=400)
-        except Exception as e:
-            logger.error(f"Unexpected error in api_preview_handler: {e}")
             import traceback
             traceback.print_exc()
             return web.json_response({

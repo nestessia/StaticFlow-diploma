@@ -11,9 +11,9 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from ..templates import (
     load_welcome_content,
-    load_base_template,
     load_default_styles,
-    load_default_config
+    load_default_config,
+    load_default_template
 )
 
 console = Console()
@@ -155,7 +155,11 @@ def create(path: str):
 
         with open(project_path / "templates/base.html", "w", 
                   encoding="utf-8") as f:
-            f.write(load_base_template())
+            f.write(load_default_template('base.html'))
+
+        # Создаём page.html
+        with open(project_path / "templates/page.html", "w", encoding="utf-8") as f:
+            f.write(load_default_template('page.html'))
 
         with open(project_path / "static/css/style.css", "w", 
                   encoding="utf-8") as f:

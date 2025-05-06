@@ -26,11 +26,6 @@ def load_welcome_content() -> str:
     return load_default_template('welcome.md')
 
 
-def load_base_template() -> str:
-    """Load the default base HTML template for new projects."""
-    return load_default_template('base.html')
-
-
 def load_default_styles() -> str:
     """Load the default CSS styles for new projects."""
     return load_default_template('style.css')
