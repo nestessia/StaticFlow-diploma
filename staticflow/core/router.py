@@ -47,6 +47,15 @@ class Router:
         # Флаг использования чистых URL (без .html)
         self.use_clean_urls = False
         
+        # Настройки языковых префиксов
+        self.use_language_prefixes = False
+        
+        # Опция для исключения префикса для языка по умолчанию
+        self.exclude_default_lang_prefix = True
+        
+        # Язык по умолчанию (будет переопределен из конфига)
+        self.default_language = 'ru'
+        
         # Обновляем конфигурацию если она предоставлена
         if config:
             self.update_config(config)
@@ -65,6 +74,15 @@ class Router:
             
         # Опция для чистых URL (без .html на конце)
         self.use_clean_urls = config.get('CLEAN_URLS', False)
+        
+        # Опция для использования языковых префиксов
+        self.use_language_prefixes = config.get('USE_LANGUAGE_PREFIXES', True)
+        
+        # Опция для исключения префикса для языка по умолчанию
+        self.exclude_default_lang_prefix = config.get('EXCLUDE_DEFAULT_LANG_PREFIX', True)
+        
+        # Язык по умолчанию (будет переопределен из конфига)
+        self.default_language = config.get('default_language', 'ru')
     
     def get_url(self, content_type: str, metadata: Dict[str, Any]) -> str:
         """Получить URL для контента на основе типа и метаданных."""
@@ -86,6 +104,21 @@ class Router:
         # Обрабатываем "чистые URL" если они включены
         if self.use_clean_urls and url.endswith('.html'):
             url = url[:-5]
+        
+        # Добавляем языковой префикс если включено
+        if self.use_language_prefixes and 'language' in metadata:
+            language = metadata['language']
+            # Если язык не является языком по умолчанию или если мы не исключаем префикс для языка по умолчанию
+            if language != self.default_language or not self.exclude_default_lang_prefix:
+                if url == "index.html" or (self.use_clean_urls and url == "index"):
+                    # Для индексной страницы создаем url вида /en/ или /en/index.html
+                    if self.use_clean_urls:
+                        url = f"{language}/"
+                    else:
+                        url = f"{language}/index.html"
+                else:
+                    # Для остальных страниц добавляем языковой префикс
+                    url = f"{language}/{url}"
             
         return url
     
@@ -102,7 +135,21 @@ class Router:
             return self.get_url(content_type, metadata)
         
         # Заменяем переменные в шаблоне значениями из метаданных
-        return self._format_pattern(pattern, metadata)
+        save_as = self._format_pattern(pattern, metadata)
+        
+        # Добавляем языковой префикс если включено
+        if self.use_language_prefixes and 'language' in metadata:
+            language = metadata['language']
+            # Если язык не является языком по умолчанию или если мы не исключаем префикс для языка по умолчанию
+            if language != self.default_language or not self.exclude_default_lang_prefix:
+                if save_as == "index.html":
+                    # Для индексной страницы создаем путь вида /en/index.html
+                    save_as = f"{language}/index.html"
+                else:
+                    # Для остальных страниц добавляем языковой префикс
+                    save_as = f"{language}/{save_as}"
+        
+        return save_as
     
     def get_output_path(
         self, base_dir: Path, content_type: str, metadata: Dict[str, Any]

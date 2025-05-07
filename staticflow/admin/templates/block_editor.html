@@ -454,11 +454,8 @@ function previewPage(editor) {
         const content = editor.getContent();
         const title = document.getElementById('page-title').value;
         const format = document.getElementById('meta-format').value;
-        
-        // Format the date using our helper function
         const dateValue = document.getElementById('meta-date').value;
         const formattedDate = formatDateForISO(dateValue);
-        
         const metadata = {
             title: title || "Untitled",
             date: formattedDate,
@@ -469,8 +466,7 @@ function previewPage(editor) {
             format: format || "markdown",
             draft: document.getElementById('meta-draft').checked
         };
-        
-        fetch('/admin/api/preview', {
+        fetch('/admin/preview', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -486,12 +482,8 @@ function previewPage(editor) {
                     throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
                 });
             }
-            return response.text();
-        })
-        .then(html => {
-            const win = window.open('', 'preview', 'width=800,height=600');
-            win.document.write(html);
-            win.document.close();
+            // После успешного POST открываем предпросмотр по URL
+            window.open('/admin/preview', '_blank');
         })
         .catch(error => {
             console.error('Error previewing page:', error);

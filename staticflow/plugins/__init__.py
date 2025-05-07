@@ -26,7 +26,10 @@ def get_default_plugin_configs():
     return {
         "syntax_highlight": {
             "style": "monokai",
-            "line_numbers": True
+            "linenums": False,
+            "css_class": "highlight",
+            "tabsize": 4,
+            "preserve_tabs": True
         },
         "math": {
             "auto_render": True

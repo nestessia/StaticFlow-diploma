@@ -9,7 +9,8 @@ language = "ru"
 source_dir = "content"
 template_dir = "templates"
 static_dir = "static"
+static_url = "/static"
 output_dir = "public"
 
 # Default settings
-default_template = "base.html"
+default_template = "page.html"

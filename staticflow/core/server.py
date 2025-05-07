@@ -144,7 +144,6 @@ class Server:
                 try:
                     self.engine.build()
                     logger.info("Site built successfully!")
-                    console.print("[green]Site built successfully![/green]")
                 except Exception as e:
                     error_msg = f"Error building site: {str(e)}"
                     logger.error(error_msg)
@@ -176,15 +175,16 @@ class Server:
         self.app.router.add_get('/admin', self.admin_handler)
         self.app.router.add_get('/admin/{tail:.*}', self.admin_handler)
         self.app.router.add_post('/admin/api/{tail:.*}', self.admin_handler)
+        self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
         
         # Static files
-        static_dir = self.config.get('static_dir')
+        static_url = self.config.get('static_url', '/static')
+        static_dir = self.config.get('static_dir', 'static')
         if not isinstance(static_dir, Path):
             static_path = Path(static_dir)
         else:
             static_path = static_dir
-            
-        self.app.router.add_static('/static', static_path)
+        self.app.router.add_static(static_url, static_path)
         
         # All other routes
         self.app.router.add_get('/{tail:.*}', self.handle_request)
@@ -219,19 +219,32 @@ class Server:
         file_path = output_path / path.lstrip('/')
             
         if not file_path.exists():
-            if self.dev_mode:
-                return web.Response(status=404, text="Not Found")
+            # If path doesn't exist, try adding index.html for directory URLs
+            potential_index = file_path / 'index.html'
+            if potential_index.exists() and potential_index.is_file():
+                file_path = potential_index
             else:
-                raise web.HTTPNotFound()
+                if self.dev_mode:
+                    return web.Response(status=404, text="Not Found")
+                else:
+                    raise web.HTTPNotFound()
+        
+        # If it's a directory, try to serve its index.html file
+        if file_path.is_dir():
+            index_file = file_path / 'index.html'
+            if index_file.exists() and index_file.is_file():
+                file_path = index_file
+            else:
+                return web.Response(status=403, text="Forbidden")
                 
         if not file_path.is_file():
             return web.Response(status=403, text="Forbidden")
             
         # Set content type for common file extensions
         content_type = "text/html"
-        if path.endswith(".css"):
+        if str(file_path).endswith(".css"):
             content_type = "text/css"
-        elif path.endswith(".js"):
+        elif str(file_path).endswith(".js"):
             content_type = "application/javascript"
             
         return web.FileResponse(

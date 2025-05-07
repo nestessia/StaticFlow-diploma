@@ -5,12 +5,8 @@ import jinja2
 from ..core.config import Config
 from ..core.engine import Engine
 import json
-import logging
-import os
 import re
-import secrets
 import shutil
-import time
 from ..utils.logging import get_logger
 
 # Получаем логгер для данного модуля
@@ -56,55 +52,54 @@ class AdminPanel:
         return result
         
     def setup_templates(self):
-        """Setup Jinja2 templates for admin panel."""
-        template_path = Path(__file__).parent / 'templates'
-        
-        if not template_path.exists():
-            template_path.mkdir(parents=True)
-            logger.info(f"Created template directory: {template_path}")
-            
+        """Setup Jinja2 templates for admin panel and site preview (project-aware)."""
+        from pathlib import Path
+        # Получаем путь к шаблонам из пользовательского конфига
+        template_dir = self.config.get('template_dir', 'templates')
+        if not isinstance(template_dir, Path):
+            template_path = Path(template_dir)
+        else:
+            template_path = template_dir
+        admin_template_path = Path(__file__).parent / 'templates'
+
+        if not admin_template_path.exists():
+            admin_template_path.mkdir(parents=True)
+            logger.info(f"Created template directory: {admin_template_path}")
+
         aiohttp_jinja2.setup(
             self.app,
-            loader=jinja2.FileSystemLoader(str(template_path))
+            loader=jinja2.FileSystemLoader([
+                str(admin_template_path),
+                str(template_path)
+            ])
         )
         
     def setup_routes(self):
         """Setup admin panel routes."""
         self.app.router.add_get('', self.index_handler)
-        self.app.router.add_get('/', self.index_handler)  # Добавляем явный обработчик для /
-        self.app.router.add_get('/content', self.index_handler)  # Переиспользуем index_handler для /content
+        self.app.router.add_get('/', self.index_handler)
+        self.app.router.add_get('/content', self.index_handler)
         self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
         self.app.router.add_post('/api/settings', self.api_settings_handler)
-        
-        # Добавляем маршруты для блочного редактора
         self.app.router.add_get('/block-editor', self.block_editor_handler)
         self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
-        self.app.router.add_post('/api/preview', self.api_preview_handler)
-        
-        # Добавляем маршруты для деплоя на GitHub Pages
         self.app.router.add_get('/deploy', self.deploy_handler)
-        self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)  # GET для получения свежих данных
+        self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
-        
-        # Добавляем статические файлы
         static_path = Path(__file__).parent / 'static'
-        
         if not static_path.exists():
             static_path.mkdir(parents=True)
-        
-        # Проверяем наличие кэшированной статики в public
         cached_static_path = Path('public/admin/static')
         use_cached = cached_static_path.exists()
-        
-        # Используем кэшированную статику, если она есть, иначе берем из фреймворка
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
-        
-        # Если кэш не существует, копируем статику при инициализации
         if not use_cached:
             self.copy_static_to_public()
+        # Новый серверный предпросмотр (без /admin, чтобы работало с проксированием)
+        self.app.router.add_post('/preview', self.preview_post_handler)
+        self.app.router.add_get('/preview', self.preview_get_handler)
         
     async def handle_request(self, request):
         """Handle admin panel request."""
@@ -129,8 +124,6 @@ class AdminPanel:
                 # Маршрутизация API напрямую к обработчикам
                 if path == '/api/content':
                     return await self.api_content_handler(request)
-                elif path == '/api/preview':
-                    return await self.api_preview_handler(request)
                 elif path == '/api/settings':
                     return await self.api_settings_handler(request)
                 elif path == '/api/deploy/config':
@@ -208,15 +201,21 @@ class AdminPanel:
                     'url': file_url
                 })
                 
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
-            'files': files
+            'files': files,
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('settings.html')
     async def settings_handler(self, request):
         """Handle settings page."""
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
-            'config': self.config.config
+            'config': self.config.config,
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('deploy.html')
@@ -229,9 +228,12 @@ class AdminPanel:
         # Получаем статус и конфигурацию деплоя
         status = deployer.get_deployment_status()
         
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
             'status': status,
-            'config': status['config']
+            'config': status['config'],
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('block_editor.html')
@@ -470,328 +472,6 @@ class AdminPanel:
                 'error': str(e)
             }, status=500)
         
-    async def api_preview_handler(self, request):
-        """Handle preview API requests."""
-        try:
-            data = await request.json()
-            
-            if 'content' not in data:
-                return web.Response(
-                    status=400,
-                    text="Missing content field"
-                )
-                
-            content = data['content']
-            metadata = data.get('metadata', {})
-            output_format = metadata.get('format', 'markdown')
-            
-            # Если формат не markdown, сначала пробуем преобразовать контент
-            original_content = content
-            if output_format != 'markdown':
-                try:
-                    # Импортируем необходимые парсеры
-                    from ..parsers import MarkdownParser
-                    
-                    # Инициализируем markdown парсер для преобразования в HTML
-                    md_parser = MarkdownParser()
-                    
-                    # Сначала получаем HTML из Markdown контента
-                    html_from_md = md_parser.parse(original_content)
-                    
-                    # Преобразуем HTML в нужный формат
-                    if output_format == 'rst':
-                        # Импортируем HTML -> RST конвертер
-                        try:
-                            from html2rest import HTML2REST
-                            converter = HTML2REST()
-                            content = converter.convert(html_from_md)
-                            logger.info("Preview: Converted Markdown to reStructuredText")
-                        except ImportError:
-                            logger.warning(
-                                "html2rest not installed. Using original markdown for preview."
-                            )
-                    
-                    elif output_format == 'asciidoc':
-                        # Импортируем HTML -> AsciiDoc конвертер
-                        try:
-                            from html2asciidoc import convert
-                            content = convert(html_from_md)
-                            logger.info("Preview: Converted Markdown to AsciiDoc")
-                        except ImportError:
-                            logger.warning(
-                                "html2asciidoc not installed. Using original markdown for preview."
-                            )
-                except Exception as e:
-                    logger.error(f"Error converting content format for preview: {e}")
-                    # Продолжаем с исходным контентом, если конвертация не удалась
-            
-            # Рендерим контент в HTML для предпросмотра в зависимости от формата
-            try:
-                if output_format == 'rst':
-                    # Используем парсер RST
-                    from ..parsers import RSTParser
-                    parser = RSTParser()
-                    html_content = parser.parse(content)
-                elif output_format == 'asciidoc':
-                    # Используем парсер AsciiDoc
-                    from ..parsers import AsciiDocParser
-                    parser = AsciiDocParser()
-                    html_content = parser.parse(content)
-                else:
-                    # Используем стандартный Markdown парсер
-                    import markdown
-                    import re
-                    
-                    # Предварительная обработка математических формул
-                    def process_math(text):
-                        # Обработка inline формул
-                        text = re.sub(r'\$(.+?)\$', r'<span class="math">\1</span>', text)
-                        # Обработка block формул
-                        text = re.sub(
-                            r'\$\$(.*?)\$\$', 
-                            r'<div class="math math-display">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        return text
-                    
-                    # Предварительная обработка специальных блоков
-                    def process_special_blocks(text):
-                        # Обработка информационных блоков
-                        text = re.sub(
-                            r':::info(.*?):::', 
-                            r'<div class="info">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        text = re.sub(
-                            r':::warning(.*?):::', 
-                            r'<div class="warning">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        text = re.sub(
-                            r':::danger(.*?):::', 
-                            r'<div class="danger">\1</div>', 
-                            text, 
-                            flags=re.DOTALL
-                        )
-                        return text
-
-                    # Предварительная обработка контента
-                    content = process_math(content)
-                    content = process_special_blocks(content)
-                    
-                    # Создаем экземпляр Markdown с расширенными возможностями
-                    md = markdown.Markdown(extensions=[
-                        'fenced_code',
-                        'tables',
-                        'codehilite',
-                        'toc',
-                        'attr_list',
-                        'def_list',
-                        'footnotes',
-                        'nl2br'
-                    ])
-                    
-                    # Рендерим Markdown в HTML
-                    html_content = md.convert(content)
-            except Exception as e:
-                logger.error(f"Error rendering content for preview: {e}")
-                # В случае ошибки используем простой вывод
-                html_content = f"<pre>{content}</pre>"
-            
-            # Оборачиваем HTML в базовый шаблон для предпросмотра
-            preview_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>{metadata.get('title', 'Preview')}</title>
-                <!-- KaTeX для математических формул -->
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-                <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-                <!-- Mermaid для диаграмм -->
-                <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js"></script>
-                <!-- Подсветка синтаксиса -->
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-                <style>
-                    body {{ 
-                        font-family: system-ui, sans-serif; 
-                        line-height: 1.6; 
-                        max-width: 800px; 
-                        margin: 0 auto; 
-                        padding: 20px;
-                        color: #333;
-                    }}
-                    h1, h2, h3, h4, h5, h6 {{ 
-                        margin-top: 1.5em;
-                        margin-bottom: 0.5em;
-                        font-weight: 600;
-                        line-height: 1.25;
-                    }}
-                    h1 {{ font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
-                    h2 {{ font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
-                    h3 {{ font-size: 1.25em; }}
-                    a {{ color: #0366d6; text-decoration: none; }}
-                    a:hover {{ text-decoration: underline; }}
-                    pre {{ 
-                        background: #f6f8fa; 
-                        padding: 16px; 
-                        border-radius: 6px; 
-                        overflow: auto;
-                        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-                        font-size: 85%;
-                        line-height: 1.45;
-                        margin: 1em 0;
-                    }}
-                    code {{ 
-                        background: rgba(27, 31, 35, 0.05);
-                        border-radius: 3px;
-                        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-                        font-size: 85%;
-                        margin: 0;
-                        padding: 0.2em 0.4em;
-                    }}
-                    pre code {{ 
-                        background: transparent;
-                        padding: 0;
-                        margin: 0;
-                        font-size: 100%;
-                        word-break: normal;
-                        white-space: pre;
-                        border: 0;
-                    }}
-                    blockquote {{ 
-                        border-left: 4px solid #ddd; 
-                        padding-left: 1em; 
-                        color: #6a737d;
-                        margin: 1em 0;
-                    }}
-                    img {{ max-width: 100%; }}
-                    table {{
-                        border-collapse: collapse;
-                        margin: 1em 0;
-                        overflow: auto;
-                        width: 100%;
-                    }}
-                    table th, table td {{
-                        border: 1px solid #dfe2e5;
-                        padding: 6px 13px;
-                    }}
-                    table tr {{
-                        background-color: #fff;
-                        border-top: 1px solid #c6cbd1;
-                    }}
-                    table tr:nth-child(2n) {{
-                        background-color: #f6f8fa;
-                    }}
-                    /* Стили для Mermaid диаграмм */
-                    .mermaid {{ 
-                        text-align: center;
-                        margin: 1.5em 0;
-                        background: transparent;
-                    }}
-                    /* Стили для математических формул */
-                    .math {{ 
-                        overflow-x: auto;
-                        margin: 1em 0;
-                        background: transparent;
-                    }}
-                    .math-display {{
-                        display: block;
-                        text-align: center;
-                        margin: 1em 0;
-                    }}
-                    /* Стили для информационных блоков */
-                    .info, .warning, .danger {{
-                        padding: 1em;
-                        margin: 1em 0;
-                        border-radius: 4px;
-                    }}
-                    .info {{
-                        background-color: #f0f7ff;
-                        border: 1px solid #bae3ff;
-                    }}
-                    .warning {{
-                        background-color: #fffbf0;
-                        border: 1px solid #ffe7a3;
-                    }}
-                    .danger {{
-                        background-color: #fff0f0;
-                        border: 1px solid #ffbaba;
-                    }}
-                    /* Информация о формате */
-                    .format-info {{
-                        background-color: #f8f9fa;
-                        border: 1px solid #dee2e6;
-                        border-radius: 4px;
-                        padding: 0.5em 1em;
-                        margin-bottom: 1em;
-                        font-size: 0.9em;
-                        color: #495057;
-                    }}
-                    .katex .katex-mathml {
-                        position: absolute;
-                        clip: rect(1px, 1px, 1px, 1px);
-                        padding: 0;
-                        border: 0;
-                        height: 1px;
-                        width: 1px;
-                        overflow: hidden;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="format-info">
-                    Preview of content in <strong>{output_format.upper()}</strong> format
-                </div>
-                <h1>{metadata.get('title', 'Preview')}</h1>
-                {html_content}
-                <script>
-                    // Инициализация Mermaid
-                    mermaid.initialize({{startOnLoad: true}});
-                    
-                    // Инициализация подсветки кода
-                    document.querySelectorAll('pre code').forEach((block) => {{
-                        hljs.highlightBlock(block);
-                    }});
-                    
-                    // Инициализация KaTeX
-                    document.querySelectorAll('.math').forEach(function(element) {{
-                        try {{
-                            katex.render(element.textContent, element, {{
-                                throwOnError: false,
-                                displayMode: element.classList.contains('math-display')
-                            }});
-                        }} catch (e) {{
-                            console.error('KaTeX error:', e);
-                        }}
-                    }});
-                </script>
-            </body>
-            </html>
-            """
-            
-            return web.Response(
-                text=preview_html,
-                content_type='text/html'
-            )
-        except json.JSONDecodeError as e:
-            logger.error(f"Preview JSON parse error: {e}")
-            return web.json_response({
-                'success': False,
-                'error': f"Invalid JSON: {e}"
-            }, status=400)
-        except Exception as e:
-            logger.error(f"Unexpected error in api_preview_handler: {e}")
-            import traceback
-            traceback.print_exc()
-            return web.json_response({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-        
     async def api_settings_handler(self, request):
         """Handle settings API requests."""
         try:
@@ -984,6 +664,28 @@ class AdminPanel:
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
+
+    async def preview_post_handler(self, request):
+        """Сохраняет черновик во временный файл и возвращает 204 (без редиректа)."""
+        data = await request.json()
+        tmp_path = Path('public/admin/preview_draft.json')
+        with tmp_path.open('w', encoding='utf-8') as f:
+            json.dump(data, f)
+        return web.Response(status=204)
+
+    async def preview_get_handler(self, request):
+        """Рендерит предпросмотр страницы как при генерации сайта."""
+        tmp_path = Path('public/admin/preview_draft.json')
+        if not tmp_path.exists():
+            return web.Response(text='Нет черновика для предпросмотра', status=404)
+        with tmp_path.open('r', encoding='utf-8') as f:
+            data = json.load(f)
+        content = data.get('content', '')
+        metadata = data.get('metadata', {})
+        from staticflow.core.page import Page
+        page = Page(Path('preview.md'), content, metadata)
+        html = self.engine.render_page(page)
+        return web.Response(text=html, content_type='text/html')
 
 # Экспортируем AdminPanel для доступа из других модулей
 __all__ = ['AdminPanel'] 

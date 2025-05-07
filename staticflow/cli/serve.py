@@ -1,4 +1,5 @@
 import click
+import traceback
 from pathlib import Path
 from rich.console import Console
 from ..core.config import Config
@@ -37,5 +38,8 @@ def serve(port: int, host: str, config: str):
 
     except Exception as e:
         error_message = f"Error starting server: {str(e)}"
+        full_traceback = traceback.format_exc()
         logger.error(error_message)
-        console.print(f"[red]Error starting server:[/red] {str(e)}") 
+        logger.error(f"Traceback: {full_traceback}")
+        console.print(f"[red]Error starting server:[/red] {str(e)}")
+        console.print(f"[dim]Traceback:[/dim]\n{full_traceback}") 
