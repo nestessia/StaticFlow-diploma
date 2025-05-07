@@ -17,6 +17,8 @@ class Site:
         self.output_dir: Optional[Path] = None
         self.template_dir: Optional[Path] = None
         self.pages: Dict[str, Page] = {}
+        self.languages = config.get_languages()
+        self.default_language = config.get_default_language()
         
         # Инициализируем маршрутизатор с настройками из конфига
         router_config = config.get('router', {})
@@ -53,8 +55,30 @@ class Site:
             for filename in filenames:
                 if filename.endswith(('.md', '.html', '.txt')):
                     file_path = Path(root) / filename
-                    files.append(file_path)
+                    # Skip translation files
+                    if not self._is_translation_file(file_path):
+                        files.append(file_path)
         return files
+        
+    def _is_translation_file(self, file_path: Path) -> bool:
+        """Check if file is a translation of another file."""
+        if not self.source_dir:
+            return False
+            
+        filename = file_path.stem
+        if "_" not in filename:
+            return False
+            
+        base_name = filename.rsplit("_", 1)[0]
+        lang = filename.split("_")[-1]
+        
+        # Check if this is a translation file
+        if lang in self.languages:
+            # Look for the original file
+            original_path = file_path.parent / f"{base_name}{file_path.suffix}"
+            return original_path.exists()
+            
+        return False
         
     def _load_page(self, file_path: Path) -> None:
         """Load a single page from file."""
@@ -96,6 +120,9 @@ class Site:
             # используем его как категорию
             if parent_dir and parent_dir != '.':
                 metadata["category"] = parent_dir
+                
+        # Add language to metadata
+        metadata["language"] = page.language
         
         # Generate the full output path using the router
         return self.router.get_output_path(
@@ -111,6 +138,22 @@ class Site:
     def get_all_pages(self) -> List[Page]:
         """Get all pages."""
         return list(self.pages.values())
+        
+    def get_pages_by_language(self, lang: str) -> List[Page]:
+        """Get all pages for a specific language."""
+        return [p for p in self.pages.values() if p.language == lang]
+        
+    def get_page_translations(self, page: Page) -> Dict[str, Page]:
+        """Get all translations of a page."""
+        translations = {}
+        for lang in page.get_available_translations():
+            trans_path = page.get_translation_path(lang)
+            if trans_path:
+                rel_path = trans_path.relative_to(self.source_dir)
+                trans_page = self.pages.get(str(rel_path))
+                if trans_page:
+                    translations[lang] = trans_page
+        return translations
         
     def clear(self) -> None:
         """Clear all loaded pages."""

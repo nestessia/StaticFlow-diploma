@@ -1,27 +1,37 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ page.language }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    {{ page.head_content }}
+    <meta charset="utf-8">
+    <title>{% block title %}{{ page.title }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+    {% block head %}{% endblock %}
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>{{ page.title }}</h1>
-        </div>
+        <nav>
+            {% if page.translations %}
+                <ul class="lang-switcher">
+                {% for lang, url in page.translations.items() %}
+                    <li>
+                        {% if lang == page.language %}
+                            <strong>{{ lang }}</strong>
+                        {% else %}
+                            <a href="{{ url }}">{{ lang }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </nav>
     </header>
     <main>
-        <div class="container">
-            {{ page.content }}
-        </div>
+        {% block content %}{% endblock %}
     </main>
     <footer>
-        <div class="container">
-            <p>Powered by StaticFlow</p>
-        </div>
+        &copy; {{ site_name }}
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true });</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html> 

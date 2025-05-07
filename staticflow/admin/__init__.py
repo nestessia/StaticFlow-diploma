@@ -201,15 +201,21 @@ class AdminPanel:
                     'url': file_url
                 })
                 
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
-            'files': files
+            'files': files,
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('settings.html')
     async def settings_handler(self, request):
         """Handle settings page."""
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
-            'config': self.config.config
+            'config': self.config.config,
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('deploy.html')
@@ -222,9 +228,12 @@ class AdminPanel:
         # Получаем статус и конфигурацию деплоя
         status = deployer.get_deployment_status()
         
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
         return {
             'status': status,
-            'config': status['config']
+            'config': status['config'],
+            'static_url': static_url,
         }
         
     @aiohttp_jinja2.template('block_editor.html')

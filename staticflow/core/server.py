@@ -144,7 +144,6 @@ class Server:
                 try:
                     self.engine.build()
                     logger.info("Site built successfully!")
-                    console.print("[green]Site built successfully![/green]")
                 except Exception as e:
                     error_msg = f"Error building site: {str(e)}"
                     logger.error(error_msg)
@@ -179,13 +178,13 @@ class Server:
         self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
         
         # Static files
-        static_dir = self.config.get('static_dir')
+        static_url = self.config.get('static_url', '/static')
+        static_dir = self.config.get('static_dir', 'static')
         if not isinstance(static_dir, Path):
             static_path = Path(static_dir)
         else:
             static_path = static_dir
-            
-        self.app.router.add_static('/static', static_path)
+        self.app.router.add_static(static_url, static_path)
         
         # All other routes
         self.app.router.add_get('/{tail:.*}', self.handle_request)

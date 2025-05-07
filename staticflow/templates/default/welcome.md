@@ -1,6 +1,6 @@
 ---
 title: Welcome to StaticFlow
-template: base.html
+template: page.html
 ---
 # Добро пожаловать в StaticFlow!
 

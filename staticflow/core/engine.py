@@ -23,12 +23,33 @@ class Engine:
             )
         self.site = Site(self.config)
         self._cache = {}
+        
+        # Настраиваем Markdown с особым вниманием к подсветке кода
+        fenced_code_config = {
+            'lang_prefix': 'language-',  # Важно! Добавляет префикс language- к классу
+        }
+        
+        # Disable CodeHilite's built-in processing - we handle it in our plugin
+        codehilite_config = {
+            'css_class': 'highlight-placeholder',
+            'linenums': False,
+            'guess_lang': False,
+            'noclasses': True,  
+            'use_pygments': False, 
+            'preserve_tabs': True,
+        }
+        
         self.markdown = markdown.Markdown(
-            extensions=['meta', 'fenced_code'],
+            extensions=[
+                'meta',
+                'fenced_code',
+                'codehilite', 
+                'tables',
+                'attr_list',
+            ],
             extension_configs={
-                'fenced_code': {
-                    'lang_prefix': ''
-                }
+                'fenced_code': fenced_code_config,
+                'codehilite': codehilite_config
             }
         )
         self.plugins: List[Plugin] = []
@@ -41,8 +62,7 @@ class Engine:
         plugin.initialize()
         self.plugins.append(plugin)
         
-    def initialize(self, source_dir: Path, output_dir: Path, 
-                  templates_dir: Path) -> None:
+    def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
         self.site.set_directories(source_dir, output_dir, templates_dir)
         
@@ -103,50 +123,32 @@ class Engine:
 
         # Use the template from config
         template_dir = self.config.get("template_dir", "templates")
-        # Преобразуем к Path только если это строка
         if not isinstance(template_dir, Path):
             template_dir = Path(template_dir)
-            
-        template_filename = page.metadata.get(
-            "template", self.config.get("default_template")
-        )
-        template_path = template_dir / template_filename
-        
-        if not template_path.exists():
-            raise ValueError(f"Template not found: {template_path}")
-
-        # Read template
-        with template_path.open("r", encoding="utf-8") as f:
-            template_content = f.read()
-
-        # Convert Markdown to HTML if it's a markdown file
+        template_filename = page.metadata.get("template", self.config.get("default_template"))
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
+        # Markdown → HTML
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
         else:
             content_html = page.content
-
-        # Process content through plugins
         for plugin in self.plugins:
             content_html = plugin.process_content(content_html)
-
-        # Get additional head content from plugins
         head_content = []
         for plugin in self.plugins:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
-
-        # Simple template rendering
-        html = template_content.replace("{{ page.title }}", page.title)
-        html = html.replace("{{ page.content }}", content_html)
-        
-        # Insert head content
-        if head_content:
-            head_html = "\n".join(head_content)
-            html = html.replace("{{ page.head_content }}", head_html)
-        else:
-            html = html.replace("{{ page.head_content }}", "")
-
-        # Write the rendered page
+        context = {
+            "page": page,
+            "site_name": self.config.get("site_name", "StaticFlow Site"),
+            "static_url": static_url,
+            "page_content": content_html,
+            "page_head_content": "\n".join(head_content) if head_content else "",
+        }
+        from staticflow.templates.engine import TemplateEngine
+        engine = TemplateEngine(template_dir)
+        html = engine.render(template_filename, context)
         with output_path.open("w", encoding="utf-8") as f:
             f.write(html)
     
@@ -209,9 +211,6 @@ class Engine:
         if not template_path.exists():
             raise ValueError(f"Template not found: {template_path}")
 
-        with template_path.open("r", encoding="utf-8") as f:
-            template_content = f.read()
-
         # Markdown → HTML
         content_html = self.markdown.convert(page.content)
         for plugin in self.plugins:
@@ -222,10 +221,17 @@ class Engine:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
 
-        html = template_content.replace("{{ page.title }}", page.title)
-        html = html.replace("{{ page.content }}", content_html)
-        if head_content:
-            html = html.replace("{{ page.head_content }}", "\n".join(head_content))
-        else:
-            html = html.replace("{{ page.head_content }}", "")
-        return html
+        # Формируем context для шаблона
+        static_dir = self.config.get("static_dir", "static")
+        static_url = "/" + str(static_dir).strip("/")
+        context = {
+            "page": page,
+            "site_name": self.config.get("site_name", "StaticFlow Site"),
+            "static_url": static_url,
+            "page_content": content_html,
+            "page_head_content": "\n".join(head_content) if head_content else "",
+        }
+        # Используем TemplateEngine для рендера
+        from staticflow.templates.engine import TemplateEngine
+        engine = TemplateEngine(template_dir)
+        return engine.render(template_filename, context)
