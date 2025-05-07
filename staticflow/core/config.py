@@ -68,6 +68,13 @@ class Config:
             
     def get_languages(self) -> List[str]:
         """Get list of supported languages."""
+        # First check if we have languages in a nested structure
+        languages_section = self.config.get("languages", {})
+        if (isinstance(languages_section, dict) and 
+                "enabled" in languages_section):
+            return languages_section["enabled"]
+        
+        # Fall back to direct languages key
         return self.config.get("languages", ["en"])
         
     def get_default_language(self) -> str:
