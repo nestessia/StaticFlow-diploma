@@ -219,19 +219,32 @@ class Server:
         file_path = output_path / path.lstrip('/')
             
         if not file_path.exists():
-            if self.dev_mode:
-                return web.Response(status=404, text="Not Found")
+            # If path doesn't exist, try adding index.html for directory URLs
+            potential_index = file_path / 'index.html'
+            if potential_index.exists() and potential_index.is_file():
+                file_path = potential_index
             else:
-                raise web.HTTPNotFound()
+                if self.dev_mode:
+                    return web.Response(status=404, text="Not Found")
+                else:
+                    raise web.HTTPNotFound()
+        
+        # If it's a directory, try to serve its index.html file
+        if file_path.is_dir():
+            index_file = file_path / 'index.html'
+            if index_file.exists() and index_file.is_file():
+                file_path = index_file
+            else:
+                return web.Response(status=403, text="Forbidden")
                 
         if not file_path.is_file():
             return web.Response(status=403, text="Forbidden")
             
         # Set content type for common file extensions
         content_type = "text/html"
-        if path.endswith(".css"):
+        if str(file_path).endswith(".css"):
             content_type = "text/css"
-        elif path.endswith(".js"):
+        elif str(file_path).endswith(".js"):
             content_type = "application/javascript"
             
         return web.FileResponse(

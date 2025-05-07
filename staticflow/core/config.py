@@ -77,7 +77,7 @@ class Config:
     def get_language_config(self, lang: str) -> Dict[str, Any]:
         """Get language-specific configuration."""
         return self.config.get("language_config", {}).get(lang, {})
-
+        
     def _validate_config(self) -> None:
         """Validate the loaded configuration."""
         required_fields = ["site_name", "base_url"]

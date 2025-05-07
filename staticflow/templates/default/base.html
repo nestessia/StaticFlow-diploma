@@ -5,15 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page.title }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+    
+    <!-- Добавляем языковые метатеги для поисковых систем -->
+    <link rel="canonical" href="{{ site_url }}{{ page.url }}" />
+    {% for lang, url in page.translations.items() %}
+    <link rel="alternate" hreflang="{{ lang }}" href="{{ site_url }}{{ url }}" />
+    {% endfor %}
+    
     {% block head %}{% endblock %}
 </head>
 <body>
     <header>
         <div class="container">
             <nav>
-                {% if page.translations %}
+                <!-- Переключатель языков -->
+                {% if available_translations %}
                     <ul class="lang-switcher">
-                    {% for lang, url in page.translations.items() %}
+                    {% for lang, url in available_translations.items() %}
                         <li>
                             {% if lang == page.language %}
                                 <strong>{{ lang }}</strong>

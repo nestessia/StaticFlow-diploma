@@ -22,6 +22,21 @@ class Site:
         
         # Инициализируем маршрутизатор с настройками из конфига
         router_config = config.get('router', {})
+        
+        # Добавляем информацию о языках в настройки маршрутизатора
+        if 'default_language' not in router_config:
+            router_config['default_language'] = self.default_language
+            
+        # Флаг использования языковых префиксов
+        if 'USE_LANGUAGE_PREFIXES' not in router_config:
+            router_config['USE_LANGUAGE_PREFIXES'] = config.get(
+                'USE_LANGUAGE_PREFIXES', True)
+            
+        # Флаг исключения префикса для языка по умолчанию
+        if 'EXCLUDE_DEFAULT_LANG_PREFIX' not in router_config:
+            router_config['EXCLUDE_DEFAULT_LANG_PREFIX'] = config.get(
+                'EXCLUDE_DEFAULT_LANG_PREFIX', True)
+            
         self.router = Router(router_config)
         
     def set_directories(
@@ -55,30 +70,8 @@ class Site:
             for filename in filenames:
                 if filename.endswith(('.md', '.html', '.txt')):
                     file_path = Path(root) / filename
-                    # Skip translation files
-                    if not self._is_translation_file(file_path):
-                        files.append(file_path)
+                    files.append(file_path)
         return files
-        
-    def _is_translation_file(self, file_path: Path) -> bool:
-        """Check if file is a translation of another file."""
-        if not self.source_dir:
-            return False
-            
-        filename = file_path.stem
-        if "_" not in filename:
-            return False
-            
-        base_name = filename.rsplit("_", 1)[0]
-        lang = filename.split("_")[-1]
-        
-        # Check if this is a translation file
-        if lang in self.languages:
-            # Look for the original file
-            original_path = file_path.parent / f"{base_name}{file_path.suffix}"
-            return original_path.exists()
-            
-        return False
         
     def _load_page(self, file_path: Path) -> None:
         """Load a single page from file."""
@@ -86,7 +79,26 @@ class Site:
             raise ValueError("Source directory not set")
             
         rel_path = file_path.relative_to(self.source_dir)
-        page = Page.from_file(file_path)
+        # Передаем язык по умолчанию из конфига при создании страницы
+        page = Page.from_file(file_path, default_lang=self.default_language)
+        
+        # Если язык не указан явно, используем язык из конфига
+        if "language" not in page.metadata:
+            # Проверяем, находится ли файл в языковой директории
+            if len(rel_path.parts) > 0:
+                first_dir = rel_path.parts[0]
+                if (2 <= len(first_dir) <= 3 and 
+                        first_dir.islower() and 
+                        first_dir in self.languages):
+                    page.language = first_dir
+                else:
+                    # Используем язык по умолчанию из конфигурации
+                    page.language = self.default_language
+            else:
+                page.language = self.default_language
+                
+            # Обновляем метаданные страницы
+            page.metadata["language"] = page.language
         
         # Сохраняем относительный путь для дальнейшего использования
         page.source_path = rel_path
@@ -115,7 +127,14 @@ class Site:
             
         # Extract category from path if not specified
         if "category" not in metadata and "/" in str(page.source_path):
-            parent_dir = page.source_path.parent.name
+            path_parts = str(page.source_path).split('/')
+            
+            # Пропускаем первую часть пути, если она похожа на языковой код
+            if len(path_parts) > 1 and path_parts[0] in self.languages:
+                parent_dir = path_parts[1] if len(path_parts) > 2 else ""
+            else:
+                parent_dir = path_parts[0]
+                
             # Если родительский каталог не пустой и не точка,
             # используем его как категорию
             if parent_dir and parent_dir != '.':
@@ -148,12 +167,36 @@ class Site:
         translations = {}
         for lang in page.get_available_translations():
             trans_path = page.get_translation_path(lang)
-            if trans_path:
-                rel_path = trans_path.relative_to(self.source_dir)
-                trans_page = self.pages.get(str(rel_path))
-                if trans_page:
-                    translations[lang] = trans_page
+            if trans_path and self.source_dir:
+                # Проверяем, существует ли перевод в списке страниц
+                try:
+                    rel_path = trans_path.relative_to(self.source_dir)
+                    trans_page = self.pages.get(str(rel_path))
+                    if trans_page:
+                        translations[lang] = trans_page
+                except ValueError:
+                    # Файл вне source_dir
+                    pass
         return translations
+        
+    def get_page_translation_urls(self, page: Page) -> Dict[str, str]:
+        """Get URLs of all translations for a page."""
+        translation_urls = {}
+        translations = self.get_page_translations(page)
+        
+        for lang, trans_page in translations.items():
+            if trans_page.output_path and self.output_dir:
+                try:
+                    # Получаем URL перевода относительно корня сайта
+                    url = "/" + str(
+                        trans_page.output_path.relative_to(self.output_dir)
+                    )
+                    translation_urls[lang] = url
+                except ValueError:
+                    # Не удалось получить относительный путь
+                    pass
+                
+        return translation_urls
         
     def clear(self) -> None:
         """Clear all loaded pages."""

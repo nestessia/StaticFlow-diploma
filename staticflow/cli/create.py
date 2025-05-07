@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Prompt, Confirm
 from ..templates import (
     load_welcome_content,
     load_default_styles,
@@ -71,6 +71,17 @@ def is_valid_language_code(code):
         return False
 
 
+def get_language_name(code):
+    """Получить название языка по его коду."""
+    try:
+        language = pycountry.languages.get(alpha_2=code.lower())
+        if language and hasattr(language, 'name'):
+            return language.name
+        return code
+    except (KeyError, AttributeError):
+        return code
+
+
 @click.command()
 @click.argument('path')
 def create(path: str):
@@ -114,25 +125,103 @@ def create(path: str):
             if not author:
                 console.print("[yellow]Author name cannot be empty[/yellow]")
         
-        # 4. Язык сайта (с автоопределением и проверкой)
+        # 4. Основной язык сайта (с автоопределением и проверкой)
         detected_lang = detect_language()
-        language = None
-        while language is None:
+        default_language = None
+        while default_language is None:
             lang_input = Prompt.ask(
-                "[bold]Site language[/bold] (ISO code)",
+                "[bold]Default site language[/bold] (ISO code)",
                 default=detected_lang
             )
             if is_valid_language_code(lang_input):
-                language = lang_input.lower()
+                default_language = lang_input.lower()
             else:
                 console.print(
                     f"[yellow]'{lang_input}' is not a valid ISO code "
                     "language code[/yellow]"
                 )
         
+        # 5. Спрашиваем о дополнительных языках
+        additional_languages = []
+        multilingual = Confirm.ask(
+            "\n[bold]Do you want to add additional languages?[/bold]",
+            default=False
+        )
+        
+        if multilingual:
+            console.print("\n[bold]Adding additional languages:[/bold]")
+            console.print(
+                "Enter language ISO codes (e.g., en, fr, es). "
+                "Type 'done' when finished."
+            )
+            
+            while True:
+                lang_input = Prompt.ask(
+                    "[bold]Additional language[/bold] (or 'done' to finish)"
+                )
+                
+                if lang_input.lower() == 'done':
+                    break
+                    
+                if lang_input.lower() == default_language:
+                    console.print(
+                        f"[yellow]'{lang_input}' is already set as the "
+                        "default language[/yellow]"
+                    )
+                    continue
+                    
+                if lang_input.lower() in additional_languages:
+                    console.print(
+                        f"[yellow]'{lang_input}' is already added[/yellow]"
+                    )
+                    continue
+                    
+                if is_valid_language_code(lang_input):
+                    additional_languages.append(lang_input.lower())
+                    language_name = get_language_name(lang_input)
+                    console.print(
+                        f"  Added [green]{language_name}[/green] "
+                        f"({lang_input.lower()})"
+                    )
+                else:
+                    console.print(
+                        f"[yellow]'{lang_input}' is not a valid ISO code "
+                        "language code[/yellow]"
+                    )
+        
         # Create project structure
         project_path.mkdir(parents=True)
-        (project_path / "content").mkdir()
+        
+        # Adjust directory structure based on multilingual settings
+        if multilingual:
+            # Create language-specific directories
+            content_dir = project_path / "content"
+            content_dir.mkdir()
+            
+            # Create default language directory
+            (content_dir / default_language).mkdir()
+            
+            # Create additional language directories
+            for lang in additional_languages:
+                (content_dir / lang).mkdir()
+                
+            # Print information about created directories
+            console.print("\n[bold]Created language directories:[/bold]")
+            default_name = get_language_name(default_language)
+            console.print(
+                f"  Default language: [green]{default_name}[/green] "
+                f"({default_language})"
+            )
+            console.print("  Additional languages:")
+            for lang in additional_languages:
+                lang_name = get_language_name(lang)
+                console.print(
+                    f"    - [green]{lang_name}[/green] ({lang})"
+                )
+        else:
+            # Standard content directory for monolingual site
+            (project_path / "content").mkdir()
+            
         (project_path / "templates").mkdir()
         (project_path / "static").mkdir()
         (project_path / "static/css").mkdir(parents=True)
@@ -143,16 +232,43 @@ def create(path: str):
         config["site_name"] = site_name
         config["description"] = description
         config["author"] = author
-        config["language"] = language
+        config["language"] = default_language
+        
+        # Configure multilingual support
+        if multilingual:
+            # Don't set up languages section in config or enable language prefixes
+            # Just create content directories for each language
+            console.print("\n[bold]Created language directories:[/bold]")
+            default_name = get_language_name(default_language)
+            console.print(
+                f"  Default language: [green]{default_name}[/green] "
+                f"({default_language})"
+            )
+            console.print("  Additional languages:")
+            for lang in additional_languages:
+                lang_name = get_language_name(lang)
+                console.print(
+                    f"    - [green]{lang_name}[/green] ({lang})"
+                )
 
-        # Write files
+        # Write config file
         with open(project_path / "config.toml", "w", encoding="utf-8") as f:
             toml.dump(config, f)
 
-        with open(project_path / "content/index.md", "w", 
-                  encoding="utf-8") as f:
-            f.write(load_welcome_content())
+        # Write content files based on language settings
+        if multilingual:
+            # Only create standard content file in main content directory
+            # No files in language directories
+            with open(project_path / "content/index.md", "w", 
+                      encoding="utf-8") as f:
+                f.write(load_welcome_content())
+        else:
+            # Standard monolingual content
+            with open(project_path / "content/index.md", "w", 
+                      encoding="utf-8") as f:
+                f.write(load_welcome_content())
 
+        # Write template files
         with open(project_path / "templates/base.html", "w", 
                   encoding="utf-8") as f:
             f.write(load_default_template('base.html'))
@@ -161,6 +277,7 @@ def create(path: str):
         with open(project_path / "templates/page.html", "w", encoding="utf-8") as f:
             f.write(load_default_template('page.html'))
 
+        # Write CSS files
         with open(project_path / "static/css/style.css", "w", 
                   encoding="utf-8") as f:
             f.write(load_default_styles())
