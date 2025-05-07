@@ -352,4 +352,77 @@ body .mermaid * {
 .highlight .vg { color: #f8f8f2 } /* Name.Variable.Global */
 .highlight .vi { color: #f8f8f2 } /* Name.Variable.Instance */
 .highlight .vm { color: #f8f8f2 } /* Name.Variable.Magic */
-.highlight .il { color: #ae81ff } /* Literal.Number.Integer.Long */ 
+.highlight .il { color: #ae81ff } /* Literal.Number.Integer.Long */
+
+/* Language dropdown styles */
+.lang-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.lang-dropbtn {
+    background-color: white;
+    color: var(--primary-color);
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lang-dropbtn .arrow-down {
+    font-size: 10px;
+}
+
+.lang-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.lang-dropdown-content a {
+    color: var(--text-color);
+    padding: 10px 12px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+
+.lang-dropdown-content a.active {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.lang-dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.lang-dropdown:hover .lang-dropdown-content {
+    display: block;
+}
+
+.lang-dropdown:hover .lang-dropbtn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive styling for mobile */
+@media (max-width: 768px) {
+    .lang-dropdown {
+        margin: 10px 0;
+    }
+    
+    .lang-dropdown-content {
+        width: 100%;
+        position: relative;
+    }
+} 

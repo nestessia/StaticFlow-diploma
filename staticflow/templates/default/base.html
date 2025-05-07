@@ -20,17 +20,14 @@
             <nav>
                 <!-- Переключатель языков -->
                 {% if available_translations %}
-                    <ul class="lang-switcher">
-                    {% for lang, url in available_translations.items() %}
-                        <li>
-                            {% if lang == page.language %}
-                                <strong>{{ lang }}</strong>
-                            {% else %}
-                                <a href="{{ url }}">{{ lang }}</a>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                    </ul>
+                    <div class="lang-dropdown">
+                        <button class="lang-dropbtn">{{ page.language }} <span class="arrow-down">▼</span></button>
+                        <div class="lang-dropdown-content">
+                            {% for lang, url in available_translations.items() %}
+                                <a href="{{ url }}" {% if lang == page.language %}class="active"{% endif %}>{{ lang }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
                 {% endif %}
             </nav>
         </div>
