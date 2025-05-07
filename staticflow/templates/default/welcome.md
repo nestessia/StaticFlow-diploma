@@ -13,7 +13,28 @@ StaticFlow - это современный генератор статическ
 
 ```python
 def hello_world():
-    print("Привет, StaticFlow!")
+	print("Привет, StaticFlow!")
+	
+	if True:
+		print("Tabs are working!")
+		for i in range(3):
+			print(f"Tab level {i+1}")
+```
+
+Here's some JavaScript with tabs:
+
+```javascript
+function testFunction() {
+	console.log("Testing tabs");
+	
+	if (true) {
+		console.log("Nested level");
+		
+		for (let i = 0; i < 3; i++) {
+			console.log(`Loop iteration ${i}`);
+		}
+	}
+}
 ```
 
 ### 2. Математические формулы
