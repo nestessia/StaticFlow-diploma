@@ -110,24 +110,28 @@ class Engine:
         if not self.site.source_dir or not self.site.output_dir:
             raise ValueError("Source and output directories must be set")
 
-        # Use the output path already set by router in the Site.load_pages method
         if not page.output_path:
-            # If for some reason output_path is not set, generate it now
             output_path = self.site.generate_page_output_path(page)
             page.set_output_path(output_path)
         else:
             output_path = page.output_path
 
-        # Create parent directories if they don't exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Use the template from config
         template_dir = self.config.get("template_dir", "templates")
         if not isinstance(template_dir, Path):
             template_dir = Path(template_dir)
         template_filename = page.metadata.get("template", self.config.get("default_template"))
-        static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
+
+        static_url = self.config.get("static_url", "static")
+
+        if static_url.startswith('/') or static_url.startswith('http'):
+            pass
+        else:
+            static_url = f"/{static_url}"
+        if not static_url.endswith('/'):
+            static_url = f"{static_url}/"
+
         # Markdown → HTML
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
@@ -139,12 +143,10 @@ class Engine:
         for plugin in self.plugins:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
-                
-        # Получаем информацию о переводах
+
         translations = self.site.get_page_translations(page)
         translation_urls = self.site.get_page_translation_urls(page)
-        
-        # Добавляем текущий язык в список доступных переводов для переключателя
+
         available_translations = translation_urls.copy()
         if page.output_path:
             try:
@@ -153,7 +155,7 @@ class Engine:
                 available_translations[page.language] = current_url
             except (ValueError, TypeError):
                 pass
-        
+
         context = {
             "page": page,
             "site_name": self.config.get("site_name", "StaticFlow Site"),
@@ -161,26 +163,24 @@ class Engine:
             "static_url": static_url,
             "page_content": content_html,
             "page_head_content": "\n".join(head_content) if head_content else "",
-            "translations": translations,  # Объекты страниц переводов
-            "available_translations": available_translations,  # Все URLs включая текущий язык
+            "translations": translations,
+            "available_translations": available_translations,
         }
-        
-        # Добавляем translations как атрибут страницы, чтобы шаблоны могли к нему обращаться
+
         page.translations = translation_urls
-        
+
         from staticflow.templates.engine import TemplateEngine
         engine = TemplateEngine(template_dir)
         html = engine.render(template_filename, context)
         with output_path.open("w", encoding="utf-8") as f:
             f.write(html)
-    
+
     def _copy_static_files(self) -> None:
         """Copy static files to the output directory."""
         if not self.site.output_dir:
             return
-            
+
         static_dir = self.config.get("static_dir", "static")
-        # Преобразуем к Path только если это строка
         if not isinstance(static_dir, Path):
             static_dir = Path(static_dir)
             
@@ -207,18 +207,15 @@ class Engine:
         This method is used by the admin panel to get page data for URL generation.
         """
         try:
-            # Создаем страницу из файла с языком по умолчанию из конфига
             default_language = self.config.get_default_language()
             page = Page.from_file(file_path, default_lang=default_language)
-            
-            # Устанавливаем relative path относительно каталога контента
+
             if self.site.source_dir:
                 try:
                     page.source_path = file_path.relative_to(self.site.source_dir)
                 except ValueError:
-                    # Если не удалось получить относительный путь, используем абсолютный
                     page.source_path = file_path
-            
+
             return page
         except Exception as e:
             print(f"Error loading page from file {file_path}: {e}")
@@ -244,9 +241,22 @@ class Engine:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
 
-        # Формируем context для шаблона
-        static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
+        # Получаем static_url с учетом правильного пути
+        static_url = self.config.get("static_url", "static")
+        
+        # При локальной разработке делаем абсолютный путь с / в начале
+        # Для GitHub Pages static_url должен уже содержать корректный путь с repo_name
+        if static_url.startswith('/') or static_url.startswith('http'):
+            # Уже абсолютный путь, оставляем как есть
+            pass
+        else:
+            # Добавляем / в начало для локальной разработки
+            static_url = f"/{static_url}"
+        
+        # Добавляем завершающий слеш, если его нет
+        if not static_url.endswith('/'):
+            static_url = f"{static_url}/"
+            
         context = {
             "page": page,
             "site_name": self.config.get("site_name", "StaticFlow Site"),
@@ -256,11 +266,8 @@ class Engine:
             "page_head_content": "\n".join(head_content) if head_content else "",
             "available_translations": {},  # Пустой словарь для предпросмотра
         }
-        
-        # Добавляем translations как атрибут страницы для поддержки шаблонов
         page.translations = {}
-        
-        # Используем TemplateEngine для рендера
+
         from staticflow.templates.engine import TemplateEngine
         engine = TemplateEngine(template_dir)
         return engine.render(template_filename, context)

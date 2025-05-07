@@ -583,6 +583,9 @@ class AdminPanel:
             logger.info("Initializing GitHubPagesDeployer")
             deployer = GitHubPagesDeployer()
             
+            # Получаем URL репозитория
+            repo_url = deployer.config.get("repo_url", "")
+            
             # Проверяем, валидна ли конфигурация
             logger.info("Validating deployment configuration")
             is_valid, errors, warnings = deployer.validate_config()
@@ -593,34 +596,53 @@ class AdminPanel:
                     'message': f"Invalid configuration: {', '.join(errors)}"
                 }, status=400)
                 
-            # Сначала перестраиваем сайт
-            logger.info("Rebuilding site before deployment")
-            rebuild_success = self.rebuild_site()
-            if not rebuild_success:
-                logger.error("Failed to build site")
-                return web.json_response({
-                    'success': False,
-                    'message': 'Failed to build site'
-                }, status=500)
+            # Сохраняем оригинальные настройки конфигурации
+            original_base_url = self.config.get("base_url")
+            original_static_url = self.config.get("static_url")
             
-            logger.info("Site successfully rebuilt, starting deployment")
+            try:
+                # Обновляем конфигурацию для GitHub Pages
+                self._update_config_for_github_pages(repo_url)
                 
-            # Деплоим сайт
-            logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
-            success, message = deployer.deploy(commit_message=commit_message)
-            logger.info(f"Deployment result: success={success}, message={message}")
-            
-            # Получаем обновленный статус
-            status = deployer.get_deployment_status()
-            
-            logger.info("=== Deployment process completed ===")
-            return web.json_response({
-                'success': success,
-                'message': message,
-                'timestamp': status.get('last_deployment'),
-                'history': status.get('history', []),
-                'warnings': warnings
-            })
+                # Сначала перестраиваем сайт
+                logger.info("Rebuilding site before deployment")
+                rebuild_success = self.rebuild_site()
+                if not rebuild_success:
+                    logger.error("Failed to build site")
+                    return web.json_response({
+                        'success': False,
+                        'message': 'Failed to build site'
+                    }, status=500)
+                
+                logger.info("Site successfully rebuilt, starting deployment")
+                    
+                # Деплоим сайт
+                logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
+                success, message = deployer.deploy(commit_message=commit_message)
+                logger.info(f"Deployment result: success={success}, message={message}")
+                
+                # Получаем обновленный статус
+                status = deployer.get_deployment_status()
+                
+                logger.info("=== Deployment process completed ===")
+                return web.json_response({
+                    'success': success,
+                    'message': message,
+                    'timestamp': status.get('last_deployment'),
+                    'history': status.get('history', []),
+                    'warnings': warnings
+                })
+            finally:
+                # Восстанавливаем оригинальные настройки конфигурации
+                logger.info("Восстанавливаем оригинальные настройки конфигурации")
+                # Убедимся, что static_url имеет правильный формат для локальной разработки
+                self.config.set("base_url", original_base_url)
+                self.config.set("static_url", original_static_url)
+                # Восстанавливаем оригинальную конфигурацию
+                rebuild_success = self.rebuild_site()
+                if not rebuild_success:
+                    logger.warning("Не удалось пересобрать сайт после восстановления настроек")
+                logger.info(f"Конфигурация восстановлена: base_url={original_base_url}, static_url={original_static_url}")
         except Exception as e:
             logger.error(f"Critical error in api_deploy_start_handler: {e}")
             import traceback
@@ -630,6 +652,62 @@ class AdminPanel:
                 'message': f"Deployment failed: {str(e)}"
             }, status=500)
         
+    def _update_config_for_github_pages(self, repo_url):
+        """Обновляет конфигурацию для GitHub Pages"""
+        
+        # Извлекаем имя репозитория из URL GitHub
+        repo_name = self._extract_repo_name(repo_url)
+        if not repo_name:
+            logger.warning("Не удалось извлечь имя репозитория из URL, оставляем конфигурацию без изменений")
+            return
+        
+        logger.info(f"Обновляем конфигурацию для GitHub Pages репозитория: {repo_name}")
+        
+        # Получаем username из URL
+        username = None
+        if repo_url.startswith("https://github.com/"):
+            parts = repo_url.split("https://github.com/")[1].split("/")
+            if len(parts) >= 1:
+                username = parts[0]
+        elif repo_url.startswith("git@github.com:"):
+            parts = repo_url.split("git@github.com:")[1].split("/")
+            if len(parts) >= 1:
+                username = parts[0]
+        
+        if not username:
+            logger.warning("Не удалось извлечь имя пользователя из URL, оставляем конфигурацию без изменений")
+            return
+        
+        # Задаем base_url для GitHub Pages
+        base_url = f"https://{username}.github.io/{repo_name}"
+        logger.info(f"Устанавливаем base_url: {base_url}")
+        
+        # Обновляем конфигурацию для деплоя (только в памяти)
+        self.config.set("base_url", base_url)
+        # Важно: static_url должен включать имя репозитория и заканчиваться слешем
+        self.config.set("static_url", f"{repo_name}/static/")
+        
+        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_url={repo_name}/static/")
+
+    def _extract_repo_name(self, repo_url):
+        """Извлекает имя репозитория из URL GitHub"""
+        if not repo_url:
+            return None
+        
+        # Для HTTPS URL https://github.com/username/repo
+        if repo_url.startswith("https://github.com/"):
+            parts = repo_url.split("https://github.com/")[1].split("/")
+            if len(parts) >= 2:
+                return parts[1].replace(".git", "")
+        
+        # Для SSH URL git@github.com:username/repo.git
+        elif repo_url.startswith("git@github.com:"):
+            parts = repo_url.split("git@github.com:")[1].split("/")
+            if len(parts) >= 2:
+                return parts[1].replace(".git", "")
+        
+        return None
+    
     def copy_static_to_public(self):
         """Копирует статические файлы админки в папку public для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
