@@ -48,12 +48,36 @@ $
 
 ### 3. Диаграммы
 
+#### Блок-схема
 ```mermaid
-graph TD;
-    A[Начало] --> B[Создание контента];
-    B --> C[Сборка сайта];
-    C --> D[Публикация];
-    D --> E[Конец];
+graph TD
+A[Старт] --> B[Процесс]
+B --> C{Условие?}
+C -->|Да| D[Процесс 1]
+C -->|Нет| E[Процесс 2]
+D --> F[Конец]
+E --> F
+```
+
+#### Диаграмма последовательности
+```mermaid
+sequenceDiagram
+Alice->>John: Hello John
+John-->>Alice: Hi Alice
+```
+
+#### Диаграмма состояний
+```mermaid
+stateDiagram
+s1 --> s2
+s2 --> s3
+```
+
+#### Диаграмма классов
+```mermaid
+classDiagram
+Class01 <|-- Class02
+Class03 *-- Class04
 ```
 
 ### 4. Блоки в стиле Notion
@@ -79,4 +103,6 @@ graph TD;
 3. Запуск сервера разработки:
 ```bash
 staticflow serve
-``` 
+```
+
+

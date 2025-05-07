@@ -143,6 +143,12 @@ class SyntaxHighlightPlugin(Plugin):
         def process_md_block(match):
             lang = match.group(1).strip() if match.group(1) else 'text'
             code = match.group(2)
+            
+            # Особая обработка Mermaid диаграмм
+            if lang.lower() == 'mermaid':
+                # Преобразуем блок mermaid в div.mermaid для корректного отображения
+                return f'<div class="mermaid">{code}</div>'
+                
             logger.info(f"Processing markdown code block: {lang}")
             return highlight_block(code, lang)
         
@@ -165,6 +171,9 @@ class SyntaxHighlightPlugin(Plugin):
             
             if lang_match:
                 lang = lang_match.group(2)
+                # Особая обработка Mermaid диаграмм
+                if lang.lower() == 'mermaid':
+                    return f'<div class="mermaid">{code}</div>'
             else:
                 # Detect language by content
                 lang = self._detect_language_from_code(code)
