@@ -473,3 +473,68 @@ MIT
 ---
 
 Создано с 💙 разработчиком StaticFlow @nestessia
+
+## Image and Media Processing
+
+StaticFlow now includes powerful image and media processing capabilities through the `MediaPlugin`. This plugin enables:
+
+- **Automatic image optimization** - Images are automatically resized and compressed for improved performance
+- **Responsive images** - Generated with `srcset` for optimal loading on different devices
+- **WebP conversion** - Modern format support with fallbacks
+- **Image placeholders** - Low-resolution placeholders for faster perceived loading
+- **Video thumbnails** - Automatically generated from video content
+- **Asset organization** - Structured media organization with content hashing
+
+### Configuration
+
+The media plugin is configured in your site's config file:
+
+```toml
+[plugins.media]
+output_dir = "media"
+source_dir = "static"
+sizes = { 
+  thumbnail = { width = 200, height = 200, quality = 70 },
+  small = { width = 400, quality = 80 },
+  medium = { width = 800, quality = 85 },
+  large = { width = 1200, quality = 90 },
+  original = { quality = 95 }
+}
+formats = ["webp", "original"]
+generate_placeholders = true
+placeholder_size = 20
+process_videos = true
+video_thumbnail = true
+hash_filenames = true
+hash_length = 8
+```
+
+### Usage
+
+Simply add images to your content, and the media plugin will handle the rest:
+
+```markdown
+![My image](/static/images/photo.jpg)
+```
+
+This will be transformed into:
+
+```html
+<img src="/media/images/photo-a1b2c3d4-medium.webp" 
+     srcset="/media/images/photo-a1b2c3d4-small.webp 400w, 
+             /media/images/photo-a1b2c3d4-medium.webp 800w, 
+             /media/images/photo-a1b2c3d4-large.webp 1200w" 
+     sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, (max-width: 1200px) 1200px, 100vw" />
+```
+
+For videos:
+
+```html
+<video src="/static/videos/demo.mp4"></video>
+```
+
+Will be transformed to include a generated thumbnail poster:
+
+```html
+<video src="/media/videos/demo-a1b2c3d4.mp4" poster="/media/videos/demo-a1b2c3d4-thumbnail.webp"></video>
+```

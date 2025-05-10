@@ -5,6 +5,7 @@ from .syntax_highlight import SyntaxHighlightPlugin
 from .math import MathPlugin
 from .diagrams import MermaidPlugin
 from .notion_blocks import NotionBlocksPlugin
+from .media import MediaPlugin
 from pathlib import Path
 
 __all__ = [
@@ -16,6 +17,7 @@ __all__ = [
     'SitemapPlugin',
     'RSSPlugin',
     'MinifierPlugin',
+    'MediaPlugin',
     'get_default_plugin_configs',
     'initialize_plugins'
 ]
@@ -39,6 +41,24 @@ def get_default_plugin_configs():
         },
         "notion_blocks": {
             "enabled": True
+        },
+        "media": {
+            "output_dir": "media",
+            "source_dir": "static",
+            "sizes": {
+                "thumbnail": {"width": 200, "height": 200, "quality": 70},
+                "small": {"width": 400, "quality": 80},
+                "medium": {"width": 800, "quality": 85},
+                "large": {"width": 1200, "quality": 90},
+                "original": {"quality": 95}
+            },
+            "formats": ["webp", "original"],
+            "generate_placeholders": True,
+            "placeholder_size": 20,
+            "process_videos": True,
+            "video_thumbnail": True,
+            "hash_filenames": True,
+            "hash_length": 8
         }
     }
 
@@ -62,6 +82,10 @@ def initialize_plugins(engine) -> None:
     # Initialize notion blocks plugin
     notion_plugin = NotionBlocksPlugin()
     engine.add_plugin(notion_plugin, default_configs.get("notion_blocks"))
+    
+    # Initialize media plugin
+    media_plugin = MediaPlugin()
+    engine.add_plugin(media_plugin, default_configs.get("media"))
     
     # Initialize minifier plugin
     minifier_plugin = MinifierPlugin()
