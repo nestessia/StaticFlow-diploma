@@ -344,6 +344,13 @@ class MediaPlugin(Plugin):
                 if file_hash:
                     base_name = f"{base_name}-{file_hash}"
                 
+                # Получаем base_url из engine.config
+                base_url = ""
+                if hasattr(self, "engine") and hasattr(self.engine, "config"):
+                    base_url = self.engine.config.get("base_url", "")
+                    if base_url.endswith("/"):
+                        base_url = base_url[:-1]
+                
                 # Process each size
                 for size_name, size_config in self.image_sizes.items():
                     # Skip if no width/height specified for non-original sizes
@@ -397,7 +404,6 @@ class MediaPlugin(Plugin):
                         # Save path
                         save_path = media_subdir / filename
                         
-                        # Save the image
                         with io.BytesIO() as output:
                             save_quality = size_config.quality
                             
@@ -421,9 +427,17 @@ class MediaPlugin(Plugin):
                             with open(save_path, "wb") as f:
                                 f.write(output.getvalue())
                         
-                        # Add to result
-                        rel_path = (f"/{self.config['output_dir']}/{rel_dir}/{filename}" 
-                                   if rel_dir else f"/{self.config['output_dir']}/{filename}")
+                        # Формируем ссылку с учетом base_url
+                        if rel_dir:
+                            rel_path = (
+                                f"{base_url}/{self.config['output_dir']}"
+                                f"/{rel_dir}/{filename}"
+                            )
+                        else:
+                            rel_path = (
+                                f"{base_url}/{self.config['output_dir']}"
+                                f"/{filename}"
+                            )
                         
                         # Store only the most relevant version under the size name
                         if size_name not in result:
@@ -449,11 +463,17 @@ class MediaPlugin(Plugin):
                     placeholder_path = media_subdir / placeholder_filename
                     placeholder.save(placeholder_path, format="WEBP", quality=30)
                     
-                    # Add to result
-                    placeholder_url = (
-                        f"/{self.config['output_dir']}/{rel_dir}/{placeholder_filename}" 
-                        if rel_dir else f"/{self.config['output_dir']}/{placeholder_filename}"
-                    )
+                    # Формируем ссылку с учетом base_url
+                    if rel_dir:
+                        placeholder_url = (
+                            f"{base_url}/{self.config['output_dir']}"
+                            f"/{rel_dir}/{placeholder_filename}"
+                        )
+                    else:
+                        placeholder_url = (
+                            f"{base_url}/{self.config['output_dir']}"
+                            f"/{placeholder_filename}"
+                        )
                     result["placeholder"] = placeholder_url
                 
                 # Cache and return result
@@ -497,14 +517,23 @@ class MediaPlugin(Plugin):
             if file_hash:
                 base_name = f"{base_name}-{file_hash}"
             
+            # Получаем base_url из engine.config
+            base_url = ""
+            if hasattr(self, "engine") and hasattr(self.engine, "config"):
+                base_url = self.engine.config.get("base_url", "")
+                if base_url.endswith("/"):
+                    base_url = base_url[:-1]
+            
             # Copy video to media directory
             ext = source_path.suffix
             output_path = media_subdir / f"{base_name}{ext}"
             shutil.copy2(source_path, output_path)
             
             # Add to result
-            rel_path = (f"/{self.config['output_dir']}/{rel_dir}/{base_name}{ext}" 
-                        if rel_dir else f"/{self.config['output_dir']}/{base_name}{ext}")
+            if rel_dir:
+                rel_path = f"{base_url}/{self.config['output_dir']}/{rel_dir}/{base_name}{ext}"
+            else:
+                rel_path = f"{base_url}/{self.config['output_dir']}/{base_name}{ext}"
             result["default"] = rel_path
             
             # Generate thumbnail if enabled
@@ -538,14 +567,13 @@ class MediaPlugin(Plugin):
                                     (width, new_h), 
                                     Image.LANCZOS
                                 )
-                        
                         thumbnail.save(thumbnail_path, format="WEBP", quality=85)
                         
                         # Add to result
-                        thumbnail_url = (
-                            f"/{self.config['output_dir']}/{rel_dir}/{thumbnail_filename}"
-                            if rel_dir else f"/{self.config['output_dir']}/{thumbnail_filename}"
-                        )
+                        if rel_dir:
+                            thumbnail_url = f"{base_url}/{self.config['output_dir']}/{rel_dir}/{thumbnail_filename}"
+                        else:
+                            thumbnail_url = f"{base_url}/{self.config['output_dir']}/{thumbnail_filename}"
                         result["thumbnail"] = thumbnail_url
                     
                     # Release video
@@ -594,14 +622,23 @@ class MediaPlugin(Plugin):
             if file_hash:
                 base_name = f"{base_name}-{file_hash}"
             
+            # Получаем base_url из engine.config
+            base_url = ""
+            if hasattr(self, "engine") and hasattr(self.engine, "config"):
+                base_url = self.engine.config.get("base_url", "")
+                if base_url.endswith("/"):
+                    base_url = base_url[:-1]
+            
             # Copy audio to media directory
             ext = source_path.suffix
             output_path = media_subdir / f"{base_name}{ext}"
             shutil.copy2(source_path, output_path)
             
             # Add to result
-            rel_path = (f"/{self.config['output_dir']}/{rel_dir}/{base_name}{ext}"
-                        if rel_dir else f"/{self.config['output_dir']}/{base_name}{ext}")
+            if rel_dir:
+                rel_path = f"{base_url}/{self.config['output_dir']}/{rel_dir}/{base_name}{ext}"
+            else:
+                rel_path = f"{base_url}/{self.config['output_dir']}/{base_name}{ext}"
             result["default"] = rel_path
             
             # Cache and return result
