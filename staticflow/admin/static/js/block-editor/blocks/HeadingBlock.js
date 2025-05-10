@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Create heading block
-    function createHeadingBlock(container, block) {
+    function createHeadingBlock(container, block, editor) {
+        console.log('createHeadingBlock', {container, block, editor});
         // Initialize meta if it doesn't exist
         if (!block.meta) block.meta = {};
         
@@ -41,7 +42,7 @@
             
             // Event listener для обновления содержимого
             headingElement.addEventListener('input', () => {
-                this.updateBlockContent(block.id, headingElement.textContent);
+                editor.updateBlockContent(block.id, headingElement.textContent);
             });
             
             // Добавляем элемент заголовка непосредственно в контейнер, без выпадающего списка

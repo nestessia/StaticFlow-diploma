@@ -5,28 +5,41 @@
 // Modified for non-module loading
 (function() {
     // Показать меню выбора типа блока
-    function showBlockTypeMenu(button, blockId) {
+    function showBlockTypeMenu(editor, button, blockId, onBlockTypeSelected) {
+        if (!editor || !editor.blocks) {
+            console.error('showBlockTypeMenu: editor невалиден', editor);
+            return;
+        }
+        if (editor instanceof HTMLElement) {
+            console.error('showBlockTypeMenu: editor — это DOM-элемент, а не редактор!', editor);
+            return;
+        }
         console.log("Showing block type menu for blockId:", blockId);
         
         // Удаляем предыдущее меню, если оно существует
-        this.hideBlockTypeMenu();
+        window.hideBlockTypeMenu(editor);
         
         // Создаем меню
         const menu = document.createElement('div');
         menu.className = 'block-type-menu';
         
+        // Пробрасываем callback, если есть
+        if (onBlockTypeSelected) {
+            menu.onBlockTypeSelected = onBlockTypeSelected;
+        }
+        
         // Если передан ID блока, сохраняем его как data-атрибут
         // для определения позиции добавления нового блока
         if (blockId) {
-            const blockIndex = this.blocks.findIndex(block => block.id === blockId);
+            const blockIndex = editor.blocks.findIndex(block => block.id === blockId);
             console.log("Block index for position:", blockIndex);
             if (blockIndex !== -1) {
                 menu.dataset.position = blockIndex + 1; // Добавляем после текущего блока
             } else {
-                menu.dataset.position = this.blocks.length; // Fallback: Добавляем в конец
+                menu.dataset.position = editor.blocks.length; // Fallback: Добавляем в конец
             }
         } else {
-            menu.dataset.position = this.blocks.length; // Добавляем в конец
+            menu.dataset.position = editor.blocks.length; // Добавляем в конец
         }
         
         // Добавляем явный атрибут для отладки
@@ -133,11 +146,13 @@
                         console.error("Menu element or position attribute missing during click", menu);
                         return;
                     }
-                    
                     const position = parseInt(menu.dataset.position);
                     console.log("Block type option clicked directly:", blockType, "at position:", position);
-                    this.addBlock(blockType, '', position);
-                    this.hideBlockTypeMenu();
+                    if (menu.onBlockTypeSelected) {
+                        console.log('BlockTypeMenu: calling onBlockTypeSelected', blockType, position, menu.onBlockTypeSelected);
+                        menu.onBlockTypeSelected(blockType, position);
+                    }
+                    window.hideBlockTypeMenu(editor);
                     e.stopPropagation();
                 });
                 
@@ -153,7 +168,7 @@
         menu.appendChild(groupsContainer);
         
         // Добавляем меню в DOM перед позиционированием
-        this.editorContainer.appendChild(menu);
+        editor.editorContainer.appendChild(menu);
         
         // Функция поиска
         searchInput.addEventListener('input', () => {
@@ -185,7 +200,7 @@
         
         // Размещаем меню рядом с кнопкой
         const buttonRect = button.getBoundingClientRect();
-        const editorRect = this.editorContainer.getBoundingClientRect();
+        const editorRect = editor.editorContainer.getBoundingClientRect();
         const blockElement = button.closest('.sf-block');
         
         menu.style.position = 'absolute';
@@ -240,8 +255,12 @@
     }
     
     // Скрыть меню выбора типа блока
-    function hideBlockTypeMenu() {
-        const menu = this.editorContainer.querySelector('.block-type-menu');
+    function hideBlockTypeMenu(editor) {
+        if (!editor || !editor.editorContainer) {
+            console.warn("hideBlockTypeMenu: editor или editor.editorContainer не определён", editor);
+            return;
+        }
+        const menu = editor.editorContainer.querySelector('.block-type-menu');
         if (menu) {
             console.log("Removing block type menu");
             menu.remove();

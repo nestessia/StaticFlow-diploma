@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок аудио
-    function createAudioBlock(container, block) {
+    function createAudioBlock(container, block, editor) {
+        console.log('createAudioBlock', {container, block, editor});
         const audioWrapper = document.createElement('div');
         audioWrapper.className = 'sf-audio-block-wrapper';
         
@@ -89,7 +90,7 @@
             
             // Update block content and metadata
             urlInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, urlInput.value);
+                editor.updateBlockContent(block.id, urlInput.value);
             });
             
             captionInput.addEventListener('input', () => {

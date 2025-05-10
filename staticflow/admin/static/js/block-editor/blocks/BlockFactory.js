@@ -71,45 +71,45 @@
             case 'heading1':
             case 'heading2':
             case 'heading3':
-                this.createHeadingBlock(contentContainer, block);
+                this.createHeadingBlock(contentContainer, block, this);
                 break;
             case 'paragraph':
-                this.createParagraphBlock(contentContainer, block);
+                this.createParagraphBlock(contentContainer, block, this);
                 break;
             case 'bullet-list':
-                this.createBulletListBlock(contentContainer, block);
+                this.createBulletListBlock(contentContainer, block, this);
                 break;
             case 'numbered-list':
-                this.createNumberedListBlock(contentContainer, block);
+                this.createNumberedListBlock(contentContainer, block, this);
                 break;
             case 'quote':
-                this.createQuoteBlock(contentContainer, block);
+                this.createQuoteBlock(contentContainer, block, this);
                 break;
             case 'code':
-                this.createCodeBlock(contentContainer, block);
+                this.createCodeBlock(contentContainer, block, this);
                 break;
             case 'math':
-                this.createMathBlock(contentContainer, block);
+                this.createMathBlock(contentContainer, block, this);
                 break;
             case 'diagram':
-                this.createDiagramBlock(contentContainer, block);
+                this.createDiagramBlock(contentContainer, block, this);
                 break;
             case 'image':
-                this.createImageBlock(contentContainer, block);
+                this.createImageBlock(contentContainer, block, this);
                 break;
             case 'audio':
-                this.createAudioBlock(contentContainer, block);
+                this.createAudioBlock(contentContainer, block, this);
                 break;
             case 'video':
-                this.createVideoBlock(contentContainer, block);
+                this.createVideoBlock(contentContainer, block, this);
                 break;
             case 'info':
             case 'warning':
             case 'danger':
-                this.createInfoBlock(contentContainer, block);
+                this.createInfoBlock(contentContainer, block, this);
                 break;
             default:
-                this.createParagraphBlock(contentContainer, block);
+                this.createParagraphBlock(contentContainer, block, this);
         }
         
         blockElement.appendChild(contentContainer);

@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок математической формулы
-    function createMathBlock(container, block) {
+    function createMathBlock(container, block, editor) {
+        console.log('createMathBlock', {container, block, editor});
         const mathWrapper = document.createElement('div');
         mathWrapper.className = 'sf-math-block-wrapper';
         
@@ -79,7 +80,7 @@
             
             // Update preview on input
             mathInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, mathInput.value);
+                editor.updateBlockContent(block.id, mathInput.value);
                 updateMathPreview();
             });
             

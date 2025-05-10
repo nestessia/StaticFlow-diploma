@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок нумерованного списка
-    function createNumberedListBlock(container, block) {
+    function createNumberedListBlock(container, block, editor) {
+        console.log('createNumberedListBlock', {container, block, editor});
         // Determine if we should show content or editing interface
         if (block.isPreview) {
             const listElement = document.createElement('ol');
@@ -30,6 +31,9 @@
             input.contentEditable = 'true';
             input.innerHTML = block.content;
             input.dataset.placeholder = 'Нумерованный список...';
+            input.addEventListener('input', () => {
+                editor.updateBlockContent(block.id, input.innerHTML);
+            });
             
             wrapper.appendChild(input);
             container.appendChild(wrapper);

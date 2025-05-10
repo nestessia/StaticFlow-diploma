@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок маркированного списка
-    function createBulletListBlock(container, block) {
+    function createBulletListBlock(container, block, editor) {
+        console.log('createBulletListBlock', {container, block, editor});
         // Determine if we should show content or editing interface
         if (block.isPreview) {
             const listElement = document.createElement('ul');
@@ -30,6 +31,9 @@
             input.contentEditable = 'true';
             input.innerHTML = block.content;
             input.dataset.placeholder = 'Маркированный список...';
+            input.addEventListener('input', () => {
+                editor.updateBlockContent(block.id, input.innerHTML);
+            });
             
             wrapper.appendChild(input);
             container.appendChild(wrapper);

@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок цитаты
-    function createQuoteBlock(container, block) {
+    function createQuoteBlock(container, block, editor) {
+        console.log('createQuoteBlock', {container, block, editor});
         // Determine if we should show content or editing interface
         if (block.isPreview) {
             const blockquote = document.createElement('blockquote');
@@ -20,6 +21,9 @@
             input.contentEditable = 'true';
             input.innerHTML = block.content;
             input.dataset.placeholder = 'Введите цитату...';
+            input.addEventListener('input', () => {
+                editor.updateBlockContent(block.id, input.innerHTML);
+            });
             
             wrapper.appendChild(input);
             container.appendChild(wrapper);

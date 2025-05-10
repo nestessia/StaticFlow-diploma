@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать информационный/предупреждающий блок
-    function createInfoBlock(container, block) {
+    function createInfoBlock(container, block, editor) {
+        console.log('createInfoBlock', {container, block, editor});
         const infoType = block.type; // 'info', 'warning', or 'danger'
         
         const infoWrapper = document.createElement('div');
@@ -53,7 +54,7 @@
             });
             
             contentInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, contentInput.innerHTML);
+                editor.updateBlockContent(block.id, contentInput.innerHTML);
             });
             
             infoWrapper.appendChild(titleInput);

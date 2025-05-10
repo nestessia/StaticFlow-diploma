@@ -89,7 +89,7 @@
     
     // Добавить новый блок
     function addBlock(type, content = '', position = this.blocks.length) {
-        console.log(`Adding block of type ${type} at position ${position}`);
+        console.log('addBlock', {type, content, position, blocks: this.blocks, context: this});
         
         const newBlock = {
             id: `block_${Date.now()}_${Math.floor(Math.random() * 1000)}`,

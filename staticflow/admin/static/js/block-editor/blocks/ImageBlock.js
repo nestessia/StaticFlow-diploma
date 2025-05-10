@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок изображения
-    function createImageBlock(container, block) {
+    function createImageBlock(container, block, editor) {
+        console.log('createImageBlock', {container, block, editor});
         const imageWrapper = document.createElement('div');
         imageWrapper.className = 'sf-image-block-wrapper';
         
@@ -96,7 +97,7 @@
             
             // Update block content and metadata
             urlInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, urlInput.value);
+                editor.updateBlockContent(block.id, urlInput.value);
             });
             
             altInput.addEventListener('input', () => {

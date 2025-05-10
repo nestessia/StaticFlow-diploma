@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок кода
-    function createCodeBlock(container, block) {
+    function createCodeBlock(container, block, editor) {
+        console.log('createCodeBlock', {container, block, editor});
         // Setup block meta if not exists
         if (!block.meta.language) {
             block.meta.language = 'text';
@@ -106,17 +107,14 @@
             // Handle language change
             languageSelect.addEventListener('change', () => {
                 block.meta.language = languageSelect.value;
-                
-                // If the block is toggled to preview mode after language change, 
-                // ensure highlighting will be applied with the new language
                 if (block.isPreview) {
-                    this.applyCodeSyntaxHighlighting();
+                    editor.applyCodeSyntaxHighlighting();
                 }
             });
             
             // Handle code input
             codeInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, codeInput.value);
+                editor.updateBlockContent(block.id, codeInput.value);
             });
             
             // Tab key handling for code indentation
@@ -136,7 +134,7 @@
                     codeInput.selectionStart = codeInput.selectionEnd = start + 2;
                     
                     // Update block content
-                    this.updateBlockContent(block.id, codeInput.value);
+                    editor.updateBlockContent(block.id, codeInput.value);
                 }
             });
         }

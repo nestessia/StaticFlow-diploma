@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок диаграммы
-    function createDiagramBlock(container, block) {
+    function createDiagramBlock(container, block, editor) {
+        console.log('createDiagramBlock', {container, block, editor});
         const diagramWrapper = document.createElement('div');
         diagramWrapper.className = 'sf-diagram-block-wrapper';
         
@@ -78,7 +79,7 @@
             
             // Update preview on input
             diagramInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, diagramInput.value);
+                editor.updateBlockContent(block.id, diagramInput.value);
                 updateDiagramPreview();
             });
             

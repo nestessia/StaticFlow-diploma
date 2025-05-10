@@ -5,7 +5,8 @@
 // Modified for non-module loading
 (function() {
     // Создать блок видео
-    function createVideoBlock(container, block) {
+    function createVideoBlock(container, block, editor) {
+        console.log('createVideoBlock', {container, block, editor});
         const videoWrapper = document.createElement('div');
         videoWrapper.className = 'sf-video-block-wrapper';
         
@@ -89,7 +90,7 @@
             
             // Update block content and metadata
             urlInput.addEventListener('input', () => {
-                this.updateBlockContent(block.id, urlInput.value);
+                editor.updateBlockContent(block.id, urlInput.value);
             });
             
             captionInput.addEventListener('input', () => {

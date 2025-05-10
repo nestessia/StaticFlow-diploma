@@ -27,6 +27,14 @@
             this.lastMousePosition = { x: 0, y: 0 };
             this.dragOffset = null;
             
+            // Привязываем методы-экшены к экземпляру
+            this.addBlock = window.addBlock.bind(this);
+            this.removeBlock = window.removeBlock.bind(this);
+            this.selectBlock = window.selectBlock.bind(this);
+            this.moveBlock = window.moveBlock.bind(this);
+            this.toggleBlockPreview = window.toggleBlockPreview.bind(this);
+            this.updateBlockContent = window.updateBlockContent.bind(this);
+            
             // Create editor container
             this.editorContainer = document.createElement('div');
             this.editorContainer.className = 'sf-block-editor';
@@ -43,10 +51,9 @@
                 this.deserializeContent(initialContent);
             }
             
-            // If no blocks after deserialization, create a paragraph
+            // Если нет блоков после десериализации, создаём параграф
             if (this.blocks.length === 0) {
                 console.log("No blocks after deserialization, adding default paragraph");
-                this.addBlock = window.addBlock.bind(this);
                 this.addBlock('paragraph');
             }
             
@@ -67,7 +74,6 @@
         // Bind action methods
         setupEventListeners() {
             // Binding UI action methods
-            this.showBlockTypeMenu = window.showBlockTypeMenu.bind(this);
             this.hideBlockTypeMenu = window.hideBlockTypeMenu.bind(this);
             this.toggleBlockPreview = window.toggleBlockPreview.bind(this);
             this.selectBlock = window.selectBlock.bind(this);
@@ -81,36 +87,10 @@
                 if (e.target.closest('.add-block-button')) {
                     const button = e.target.closest('.add-block-button');
                     const blockId = button.dataset.blockId;
+                    console.log('this в обработчике клика:', this);
                     this.showBlockTypeMenu(button, blockId);
                     e.stopPropagation(); // Prevent event bubbling
                 }
-                
-                // Обработка клика по меню выбора типа блока (выделяем в отдельный обработчик на уровне документа)
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('.block-type-option')) {
-                        const option = e.target.closest('.block-type-option');
-                        const blockType = option.dataset.type;
-                        const menu = option.closest('.block-type-menu');
-                        
-                        if (!menu || !menu.dataset.position) {
-                            console.error("Menu element or position attribute missing", menu);
-                            return;
-                        }
-                        
-                        const position = parseInt(menu.dataset.position);
-                        
-                        console.log("Block type option clicked:", 
-                            "option:", option, 
-                            "blockType:", blockType, 
-                            "menu:", menu, 
-                            "position:", position);
-                        
-                        console.log("Adding block:", blockType, "at position:", position);
-                        this.addBlock(blockType, '', position);
-                        this.hideBlockTypeMenu();
-                        e.stopPropagation(); // Prevent event bubbling
-                    }
-                });
                 
                 // Handle drag handle click
                 if (e.target.closest('.sf-block-drag-handle')) {
@@ -152,7 +132,7 @@
             // Закрываем меню выбора типа блока при клике в другом месте
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.block-type-menu') && !e.target.closest('.add-block-button')) {
-                    this.hideBlockTypeMenu();
+                    window.hideBlockTypeMenu(this);
                 }
             });
             
@@ -297,6 +277,21 @@
         // Получить содержимое редактора
         getContent() {
             return this.serialize();
+        }
+        
+        showBlockTypeMenu(button, blockId) {
+            const editor = this;
+            window.showBlockTypeMenu(editor, button, blockId, (blockType, position) => {
+                console.log('CALLBACK: addBlock', blockType, position, editor);
+                editor.addBlock(blockType, '', position);
+                window.hideBlockTypeMenu(editor);
+                setTimeout(() => {
+                    const blocks = editor.editorContainer.querySelectorAll('.sf-block');
+                    if (blocks[position]) {
+                        blocks[position].focus();
+                    }
+                }, 0);
+            });
         }
     }
     
