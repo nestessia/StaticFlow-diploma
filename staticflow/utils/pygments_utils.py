@@ -60,11 +60,13 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
 .highlight .w {
     display: inline !important;
     white-space: pre !important;
-    width: auto !important;
+    width: 0.25em !important; /* Фиксированная ширина для пробела */
     margin: 0 !important;
     padding: 0 !important;
     visibility: visible !important;
     opacity: 1 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
 }
 
 /* Фикс для пробелов между ключевыми словами и идентификаторами */
@@ -111,12 +113,11 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
 
 /* Усиленный фикс для пробелов */
 .highlight .w:after {
-    content: ' ';
-    white-space: pre;
+    content: '' !important; /* Убираем дополнительный контент */
 }
 
 .highlight .w:before {
-    content: '';
+    content: '' !important;
 }
 
 /* Стили для кода с табуляцией */

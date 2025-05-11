@@ -163,7 +163,8 @@ class SyntaxHighlightPlugin(Plugin):
         
         def add_space_after_keyword(m):
             keyword = m.group(1)
-            return f'<span class="k">{keyword}</span><span class="w">&nbsp;</span>'
+            # Используем более точный подход - просто один пробел вместо &nbsp;
+            return f'<span class="k">{keyword}</span><span class="w"> </span>'
         
         # Применяем универсальную замену пробелов после ключевых слов
         formatted_html = re.sub(keyword_pattern, add_space_after_keyword, formatted_html)
@@ -172,7 +173,7 @@ class SyntaxHighlightPlugin(Plugin):
         operator_pattern = r'(<span class="o">[+\-*/=<>!&|^%]+</span>)'
         formatted_html = re.sub(
             operator_pattern, 
-            r'<span class="w">&nbsp;</span>\1<span class="w">&nbsp;</span>', 
+            r'<span class="w"> </span>\1<span class="w"> </span>', 
             formatted_html
         )
                 
@@ -209,12 +210,22 @@ class SyntaxHighlightPlugin(Plugin):
                 tab_count = orig_indent.count('\t')
                 space_count = orig_indent.count(' ')
                 
-                # Создаем отображаемые отступы
+                # Создаем отображаемые отступы - обрабатываем каждый таб отдельно
                 if tab_count > 0:
                     # Если есть табы, добавляем атрибут data-tabs
                     indent_html = f'<span class="ws" data-tabs="{tab_count}">'
-                    # Добавляем неразрывные пробелы для каждого таба
-                    indent_html += '&nbsp;&nbsp;&nbsp;&nbsp;' * tab_count
+                    
+                    # Обрабатываем последовательные табы в строке
+                    indent_chars = []
+                    for char in orig_indent:
+                        if char == '\t':
+                            # Добавляем каждый таб отдельно
+                            indent_chars.append('&nbsp;&nbsp;&nbsp;&nbsp;')
+                        elif char == ' ':
+                            indent_chars.append('&nbsp;')
+                    
+                    # Объединяем символы в строку
+                    indent_html += ''.join(indent_chars)
                 else:
                     indent_html = '<span class="ws">'
                     # Добавляем неразрывные пробелы для каждого пробела
@@ -254,9 +265,10 @@ class SyntaxHighlightPlugin(Plugin):
                     before, expr, after = parts.groups()
                     
                     # Создаем HTML-разметку для шаблонной строки
+                    # Важно: используем более простую разметку, чтобы избежать отображения HTML-тегов
                     template_html = (
                         f'<span class="sb">`{html.escape(before)}'
-                        f'${{<span class="nx">{html.escape(expr)}</span>}}'
+                        f'${{{expr}}}'
                         f'{html.escape(after)}`</span>'
                     )
                     
@@ -415,5 +427,31 @@ class SyntaxHighlightPlugin(Plugin):
             re.DOTALL
         )
         content = rst_pattern.sub(process_rst_block, content)
+        
+        # Fix JavaScript template literals that might still have HTML tags visible
+        def fix_js_template_literals(content):
+            # Находим блоки JavaScript кода
+            js_blocks_pattern = re.compile(
+                r'<div class="code-block language-(javascript|js)">.*?</div>',
+                re.DOTALL
+            )
+            
+            def fix_template_literal(match):
+                block = match.group(0)
+                # Проверяем, есть ли в блоке проблемные шаблонные строки
+                if 'Loop iteration' in block and '&lt;/span&gt;' in block:
+                    # Заменяем неправильно отрендеренные шаблонные литералы
+                    block = re.sub(
+                        r'<span class="nx"><span class="sb"><code class="inline-code">([^<]+)\${&lt;span class="nx"&gt;([^<]+)&lt;/span&gt;}</code></span></span>',
+                        r'<span class="sb">`\1${\2}`</span>',
+                        block
+                    )
+                return block
+            
+            # Применяем фикс к JavaScript блокам
+            return js_blocks_pattern.sub(fix_template_literal, content)
+        
+        # Применяем фикс для шаблонных строк JavaScript
+        content = fix_js_template_literals(content)
         
         return content
