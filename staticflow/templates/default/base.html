@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page.title }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+    {% if needs_pygments_css %}
+    <link rel="stylesheet" href="{{ static_url }}/css/pygments.css">
+    {% endif %}
     
     <!-- Добавляем языковые метатеги для поисковых систем -->
     <link rel="canonical" href="{{ site_url }}{{ page.url }}" />

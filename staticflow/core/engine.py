@@ -126,17 +126,25 @@ class Engine:
         static_url = self.config.get("static_url", "static")
 
         if static_url.startswith('/') or static_url.startswith('http'):
+            # Уже абсолютный путь, оставляем как есть
             pass
         else:
+            # Добавляем / в начало для локальной разработки
             static_url = f"/{static_url}"
-        if not static_url.endswith('/'):
-            static_url = f"{static_url}/"
 
-        # Markdown → HTML
+        # Убираем лишний слеш в конце, если он есть
+        static_url = static_url.rstrip('/')
+
+        # Конвертация контента в HTML
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
+        elif page.source_path.suffix.lower() == '.rst':
+            from ..parsers import RSTParser
+            rst_parser = RSTParser()
+            content_html = rst_parser.parse(page.content)
         else:
             content_html = page.content
+
         for plugin in self.plugins:
             content_html = plugin.process_content(content_html)
         head_content = []
@@ -165,6 +173,7 @@ class Engine:
             "page_head_content": "\n".join(head_content) if head_content else "",
             "translations": translations,
             "available_translations": available_translations,
+            "needs_pygments_css": page.source_path.suffix.lower() == '.rst',
         }
 
         page.translations = translation_urls
@@ -253,9 +262,8 @@ class Engine:
             # Добавляем / в начало для локальной разработки
             static_url = f"/{static_url}"
         
-        # Добавляем завершающий слеш, если его нет
-        if not static_url.endswith('/'):
-            static_url = f"{static_url}/"
+        # Убираем лишний слеш в конце, если он есть
+        static_url = static_url.rstrip('/')
             
         context = {
             "page": page,

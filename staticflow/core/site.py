@@ -68,7 +68,7 @@ class Site:
         files = []
         for root, _, filenames in os.walk(self.source_dir):
             for filename in filenames:
-                if filename.endswith(('.md', '.html', '.txt')):
+                if filename.endswith(('.md', '.html', '.txt', '.rst')):
                     file_path = Path(root) / filename
                     files.append(file_path)
         return files
