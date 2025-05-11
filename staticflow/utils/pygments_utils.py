@@ -124,6 +124,31 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     position: relative;
 }
 
+/* ======= Универсальные стили для всех языков ======= */
+
+/* Фикс для отображения шаблонных строк JavaScript */
+.highlight .sb, .highlight .s, .highlight .sa, .highlight .sc, 
+.highlight .dl, .highlight .sd, .highlight .s2, .highlight .se, 
+.highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, 
+.highlight .s1, .highlight .ss {
+    white-space: pre !important;
+}
+
+/* Фикс для специальных символов во всех языках */
+.highlight .nb, .highlight .nf, .highlight .nx, .highlight .nc {
+    margin-left: 0.25em !important;
+}
+
+/* Фикс для отображения операторов во всех языках */
+.highlight .o, .highlight .ow {
+    margin: 0 0.25em !important;
+}
+
+/* Фикс для пунктуации */
+.highlight .p {
+    white-space: pre !important;
+}
+
 .code-block {
     position: relative;
     margin: 1em 0;
@@ -145,14 +170,74 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     z-index: 10;
 }
 
-/* Фикс для шаблонных строк JavaScript */
+/* JavaScript специфичные фиксы */
 .language-javascript .sb code.inline-code,
-.javascript .sb code.inline-code {
+.javascript .sb code.inline-code,
+.language-js .sb code.inline-code,
+.js .sb code.inline-code {
     background: transparent !important;
     padding: 0 !important;
     font-family: inherit !important;
     font-size: inherit !important;
     display: inline !important;
+}
+
+/* Python специфичные фиксы */
+.language-python .k + .n,
+.python .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Ruby специфичные фиксы */
+.language-ruby .n, .ruby .n {
+    margin-left: 0.25em !important;
+}
+
+/* PHP специфичные фиксы */
+.language-php .k + .n, .php .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* C/C++ специфичные фиксы */
+.language-c .kt + .n, .language-cpp .kt + .n, 
+.c .kt + .n, .cpp .kt + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Java специфичные фиксы */
+.language-java .kd + .n, .java .kd + .n {
+    margin-left: 0.25em !important;
+}
+
+/* C# специфичные фиксы */
+.language-csharp .k + .n, .csharp .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Go специфичные фиксы */
+.language-go .k + .n, .go .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Rust специфичные фиксы */
+.language-rust .k + .n, .rust .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* TypeScript специфичные фиксы */
+.language-typescript .k + .n, .typescript .k + .n,
+.language-ts .k + .n, .ts .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Swift специфичные фиксы */
+.language-swift .k + .n, .swift .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Kotlin специфичные фиксы */
+.language-kotlin .k + .n, .kotlin .k + .n {
+    margin-left: 0.25em !important;
 }
 """
         

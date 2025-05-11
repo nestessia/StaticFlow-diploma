@@ -45,13 +45,74 @@ class SyntaxHighlightPlugin(Plugin):
         
     def _detect_language_from_code(self, code):
         """Detect language from code content."""
-        # Detect Python by keywords
-        if (re.search(r'\bdef\s+\w+\s*\(', code) or 
-                re.search(r'\bclass\s+\w+\s*\(', code) or 
-                re.search(r'\bimport\s+\w+', code) or
-                re.search(r'\bprint\s*\(', code)):
-            logger.info("Detected Python from code content")
-            return "python"
+        # Common language patterns
+        patterns = {
+            'python': (
+                r'\bdef\s+\w+\s*\(', r'\bclass\s+\w+\s*\(', 
+                r'\bimport\s+\w+', r'\bprint\s*\('
+            ),
+            'javascript': (
+                r'\bfunction\s+\w+\s*\(', r'\bconst\s+\w+\s*=', 
+                r'\blet\s+\w+\s*=', r'\bvar\s+\w+\s*='
+            ),
+            'html': (
+                r'<html.*?>', r'<div.*?>', r'<body.*?>', r'<script.*?>'
+            ),
+            'css': (
+                r'\.\w+\s*{', r'#\w+\s*{', r'@media\s+', r'body\s*{'
+            ),
+            'java': (
+                r'\bpublic\s+class\s+\w+', r'\bprivate\s+\w+\s+\w+', 
+                r'\bprotected\s+\w+\s+\w+', r'\bimport\s+java\.'
+            ),
+            'ruby': (
+                r'\bdef\s+\w+\s*\n', r'\bclass\s+\w+\s*\n', 
+                r'\bmodule\s+\w+\s*\n', r'\brequire\s+[\'""]'
+            ),
+            'php': (
+                r'<\?php', r'\bfunction\s+\w+\s*\(', 
+                r'\$\w+\s*=', r'\becho\s+'
+            ),
+            'c': (
+                r'\bint\s+\w+\s*\(', r'\bvoid\s+\w+\s*\(', 
+                r'#include\s+<\w+\.h>', r'\bstruct\s+\w+\s*{'
+            ),
+            'cpp': (
+                r'#include\s+<\w+>', r'\bclass\s+\w+\s*{', 
+                r'\bnamespace\s+\w+', r'\btemplate\s*<'
+            ),
+            'go': (
+                r'\bfunc\s+\w+\s*\(', r'\bpackage\s+\w+', 
+                r'\bimport\s+\(', r'\btype\s+\w+\s+struct\s+{'
+            ),
+            'rust': (
+                r'\bfn\s+\w+\s*\(', r'\buse\s+\w+', 
+                r'\bstruct\s+\w+', r'\benum\s+\w+'
+            ),
+            'typescript': (
+                r'\binterface\s+\w+', r'\btype\s+\w+\s*=', 
+                r'\bclass\s+\w+\s*{', r'\bfunction\s+\w+<'
+            ),
+            'swift': (
+                r'\bfunc\s+\w+\s*\(', r'\bclass\s+\w+', 
+                r'\bvar\s+\w+\s*:', r'\blet\s+\w+\s*:'
+            ),
+            'kotlin': (
+                r'\bfun\s+\w+\s*\(', r'\bclass\s+\w+', 
+                r'\bvar\s+\w+\s*:', r'\bval\s+\w+\s*:'
+            ),
+            'csharp': (
+                r'\bpublic\s+class\s+\w+', r'\bprivate\s+\w+\s+\w+', 
+                r'\bnamespace\s+\w+', r'\busing\s+\w+;'
+            )
+        }
+        
+        # Check each language patterns
+        for lang, pattern_list in patterns.items():
+            for pattern in pattern_list:
+                if re.search(pattern, code):
+                    logger.info(f"Detected {lang} from code content")
+                    return lang
         
         # Try to guess language automatically with Pygments
         try:
@@ -76,61 +137,45 @@ class SyntaxHighlightPlugin(Plugin):
         # Запоминаем, есть ли табы
         has_tabs = '\t' in code
         
+        # Сохраняем шаблонные строки для последующего восстановления
+        template_strings = {}
+        if hasattr(lexer, 'aliases') and any(
+            lang in lexer.aliases for lang in 
+            ['js', 'javascript', 'jsx', 'typescript', 'ts', 'tsx',
+             'ruby', 'erb', 'php', 'kotlin', 'swift']
+        ):
+            # Общий шаблонный паттерн для многих языков (`...${...}...` или `...#{...}...`)
+            template_pattern = r'`([^`]*?)[#$]\{([^}]*?)\}([^`]*?)`'
+            template_matches = list(re.finditer(template_pattern, code))
+            
+            # Сохраняем и заменяем временными маркерами
+            for i, match in enumerate(template_matches):
+                placeholder = f"__TEMPLATE_STRING_{i}__"
+                template_strings[placeholder] = match.group(0)
+                code = code.replace(match.group(0), placeholder)
+        
         # Получаем HTML-разметку от Pygments с базовой подсветкой
         formatted_html = highlight(code, lexer, self.formatter)
         
-        # Прямые исправления специфических проблем с пробелами в HTML
-        # Python: исправляем пробелы после ключевых слов
-        replacements = [
-            # Python ключевые слова
-            ('<span class="k">def</span>', '<span class="k">def</span><span class="w"> </span>'),
-            ('<span class="k">if</span>', '<span class="k">if</span><span class="w"> </span>'),
-            ('<span class="k">for</span>', '<span class="k">for</span><span class="w"> </span>'),
-            ('<span class="k">while</span>', '<span class="k">while</span><span class="w"> </span>'),
-            ('<span class="k">class</span>', '<span class="k">class</span><span class="w"> </span>'),
-            ('<span class="k">import</span>', '<span class="k">import</span><span class="w"> </span>'),
-            ('<span class="k">from</span>', '<span class="k">from</span><span class="w"> </span>'),
-            ('<span class="k">in</span>', '<span class="k">in</span><span class="w"> </span>'),
-            ('<span class="k">as</span>', '<span class="k">as</span><span class="w"> </span>'),
-            ('<span class="k">return</span>', '<span class="k">return</span><span class="w"> </span>'),
-            ('<span class="k">with</span>', '<span class="k">with</span><span class="w"> </span>'),
-            ('<span class="k">try</span>', '<span class="k">try</span><span class="w"> </span>'),
-            ('<span class="k">except</span>', '<span class="k">except</span><span class="w"> </span>'),
-            ('<span class="k">finally</span>', '<span class="k">finally</span><span class="w"> </span>'),
-            ('<span class="k">else</span>', '<span class="k">else</span><span class="w"> </span>'),
-            ('<span class="k">elif</span>', '<span class="k">elif</span><span class="w"> </span>'),
-            
-            # JavaScript ключевые слова
-            ('<span class="kd">function</span>', '<span class="kd">function</span><span class="w"> </span>'),
-            ('<span class="kd">let</span>', '<span class="kd">let</span><span class="w"> </span>'),
-            ('<span class="kd">const</span>', '<span class="kd">const</span><span class="w"> </span>'),
-            ('<span class="kd">var</span>', '<span class="kd">var</span><span class="w"> </span>'),
-            ('<span class="k">if</span>', '<span class="k">if</span><span class="w"> </span>'),
-            ('<span class="k">for</span>', '<span class="k">for</span><span class="w"> </span>'),
-            ('<span class="k">while</span>', '<span class="k">while</span><span class="w"> </span>'),
-            ('<span class="k">return</span>', '<span class="k">return</span><span class="w"> </span>'),
-            ('<span class="k">switch</span>', '<span class="k">switch</span><span class="w"> </span>'),
-            ('<span class="k">case</span>', '<span class="k">case</span><span class="w"> </span>'),
-            
-            # Операторы
-            ('<span class="o">=</span>', '<span class="o">=</span><span class="w"> </span>'),
-            ('<span class="o">+</span>', '<span class="o">+</span><span class="w"> </span>'),
-            ('<span class="o">-</span>', '<span class="o">-</span><span class="w"> </span>'),
-            ('<span class="o">*</span>', '<span class="o">*</span><span class="w"> </span>'),
-            ('<span class="o">/</span>', '<span class="o">/</span><span class="w"> </span>'),
-            ('<span class="o">%</span>', '<span class="o">%</span><span class="w"> </span>'),
-            ('<span class="o">==</span>', '<span class="o">==</span><span class="w"> </span>'),
-            ('<span class="o">!=</span>', '<span class="o">!=</span><span class="w"> </span>'),
-            ('<span class="o">&lt;</span>', '<span class="o">&lt;</span><span class="w"> </span>'),
-            ('<span class="o">&gt;</span>', '<span class="o">&gt;</span><span class="w"> </span>'),
-            ('<span class="o">&lt;=</span>', '<span class="o">&lt;=</span><span class="w"> </span>'),
-            ('<span class="o">&gt;=</span>', '<span class="o">&gt;=</span><span class="w"> </span>'),
-        ]
+        # Универсальная обработка пробелов для всех языков
+        # Определяем регулярное выражение для добавления пробелов после ключевых слов
+        keyword_pattern = r'<span class="(?:k|kd|kc|kr|kt)">(\w+)</span>'
         
-        # Применяем все замены
-        for old, new in replacements:
-            formatted_html = formatted_html.replace(old, new)
-
+        def add_space_after_keyword(m):
+            keyword = m.group(1)
+            return f'<span class="k">{keyword}</span><span class="w">&nbsp;</span>'
+        
+        # Применяем универсальную замену пробелов после ключевых слов
+        formatted_html = re.sub(keyword_pattern, add_space_after_keyword, formatted_html)
+        
+        # Добавляем пробелы вокруг операторов
+        operator_pattern = r'(<span class="o">[+\-*/=<>!&|^%]+</span>)'
+        formatted_html = re.sub(
+            operator_pattern, 
+            r'<span class="w">&nbsp;</span>\1<span class="w">&nbsp;</span>', 
+            formatted_html
+        )
+                
         # Извлекаем содержимое между тегами <pre>
         pattern = r'<pre[^>]*>(.*?)</pre>'
         pre_match = re.search(pattern, formatted_html, re.DOTALL)
@@ -160,17 +205,20 @@ class SyntaxHighlightPlugin(Plugin):
             if indent_match:
                 orig_indent = indent_match.group(1)
                 
-                # Сохраняем фактические символы табуляции и пробелов
-                indent_html = '<span class="ws">'
+                # Подсчитываем количество табов и пробелов
+                tab_count = orig_indent.count('\t')
+                space_count = orig_indent.count(' ')
                 
-                # Преобразуем каждый символ отступа в соответствующее представление
-                for char in orig_indent:
-                    if char == ' ':
-                        indent_html += '&#160;'  # неразрывный пробел в HTML
-                    elif char == '\t':
-                        # Для таба добавляем фактический символ табуляции
-                        # или 4 неразрывных пробела для совместимости
-                        indent_html += '&#160;&#160;&#160;&#160;'
+                # Создаем отображаемые отступы
+                if tab_count > 0:
+                    # Если есть табы, добавляем атрибут data-tabs
+                    indent_html = f'<span class="ws" data-tabs="{tab_count}">'
+                    # Добавляем неразрывные пробелы для каждого таба
+                    indent_html += '&nbsp;&nbsp;&nbsp;&nbsp;' * tab_count
+                else:
+                    indent_html = '<span class="ws">'
+                    # Добавляем неразрывные пробелы для каждого пробела
+                    indent_html += '&nbsp;' * space_count
                 
                 indent_html += '</span>'
                 
@@ -189,6 +237,33 @@ class SyntaxHighlightPlugin(Plugin):
         formatted_html = formatted_html.replace(
             pre_match.group(1), processed_content
         )
+        
+        # Восстанавливаем шаблонные строки
+        if hasattr(lexer, 'aliases') and any(
+            lang in lexer.aliases for lang in 
+            ['js', 'javascript', 'jsx', 'typescript', 'ts', 'tsx',
+             'ruby', 'erb', 'php', 'kotlin', 'swift']
+        ) and template_strings:
+            for placeholder, template in template_strings.items():
+                # Общий паттерн для разбора шаблонной строки
+                parts = re.match(
+                    r'`([^`]*?)[#$]\{([^}]*?)\}([^`]*?)`', 
+                    template
+                )
+                if parts:
+                    before, expr, after = parts.groups()
+                    
+                    # Создаем HTML-разметку для шаблонной строки
+                    template_html = (
+                        f'<span class="sb">`{html.escape(before)}'
+                        f'${{<span class="nx">{html.escape(expr)}</span>}}'
+                        f'{html.escape(after)}`</span>'
+                    )
+                    
+                    # Заменяем плейсхолдер на шаблонную строку
+                    formatted_html = formatted_html.replace(
+                        html.escape(placeholder), template_html
+                    )
         
         # Включаем пробелы в стили
         if 'white-space: pre' not in formatted_html:
