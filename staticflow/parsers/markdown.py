@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 import markdown
 from .base import ContentParser
+from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
 
 
 class MarkdownParser(ContentParser):
@@ -30,11 +31,14 @@ class MarkdownParser(ContentParser):
             extensions=self.extensions,
             extension_configs=self.extension_configs
         )
+        self.syntax_highlighter = SyntaxHighlightPlugin()
 
     def parse(self, content: str) -> str:
         """Преобразует Markdown в HTML."""
         self._md.reset()
-        return self._md.convert(content)
+        html = self._md.convert(content)
+        html = self.syntax_highlighter.process_content(html)
+        return html
 
     def add_extension(self, extension: str, config: Optional[Dict[str, Any]] = None) -> None:
         """Добавляет расширение Markdown."""

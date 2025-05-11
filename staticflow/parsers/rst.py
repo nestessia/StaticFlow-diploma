@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 from docutils.core import publish_parts
 from .base import ContentParser
 import re
+from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
 
 
 class RSTParser(ContentParser):
@@ -20,12 +21,12 @@ class RSTParser(ContentParser):
             'halt_level': 2,
             'report_level': 1,
             'exit_status_level': 2,
-            'syntax_highlight': 'short',  # Важно: включает Pygments для подсветки кода
-            'highlight_language': 'python',  # Язык по умолчанию для блоков кода
+            'syntax_highlight': 'short',
+            'highlight_language': 'python',
             'input_encoding': 'utf-8',
             'output_encoding': 'utf-8',
         }
-        # ВАЖНО: Для корректной работы подсветки подключите pygments.css в шаблон сайта!
+        self.syntax_highlighter = SyntaxHighlightPlugin()
 
     def parse(self, content: str) -> str:
         """Преобразует reStructuredText в HTML."""
@@ -35,7 +36,6 @@ class RSTParser(ContentParser):
             settings_overrides=self.settings
         )
         html = parts['html_body']
-        html = html.replace('<pre class="code', '<pre class="highlight code')
 
         # Преобразуем admonition в callout Notion-style
         def admonition_to_callout(match):
@@ -65,6 +65,7 @@ class RSTParser(ContentParser):
             html,
             flags=re.DOTALL
         )
+        html = self.syntax_highlighter.process_content(html)
         return html
 
     def set_setting(self, key: str, value: Any) -> None:

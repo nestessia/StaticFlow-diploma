@@ -14,3 +14,7 @@ output_dir = "public"
 
 # Default settings
 default_template = "page.html"
+
+# Syntax highlighting settings
+[syntax_highlight]
+style = "monokai"  # Available options: "monokai", "default", "vs", "xcode", "colorful", "dracula", "github", etc.

@@ -29,27 +29,15 @@ class Engine:
             'lang_prefix': 'language-',  # Важно! Добавляет префикс language- к классу
         }
         
-        # Disable CodeHilite's built-in processing - we handle it in our plugin
-        codehilite_config = {
-            'css_class': 'highlight-placeholder',
-            'linenums': False,
-            'guess_lang': False,
-            'noclasses': True,  
-            'use_pygments': False, 
-            'preserve_tabs': True,
-        }
-        
         self.markdown = markdown.Markdown(
             extensions=[
                 'meta',
                 'fenced_code',
-                'codehilite', 
                 'tables',
                 'attr_list',
             ],
             extension_configs={
-                'fenced_code': fenced_code_config,
-                'codehilite': codehilite_config
+                'fenced_code': fenced_code_config
             }
         )
         self.plugins: List[Plugin] = []
@@ -173,7 +161,6 @@ class Engine:
             "page_head_content": "\n".join(head_content) if head_content else "",
             "translations": translations,
             "available_translations": available_translations,
-            "needs_pygments_css": page.source_path.suffix.lower() == '.rst',
         }
 
         page.translations = translation_urls
@@ -198,6 +185,34 @@ class Engine:
             if output_static.exists():
                 shutil.rmtree(output_static)
             shutil.copytree(static_dir, output_static)
+            
+        # Генерируем code_highlight.css на основе стиля из конфига
+        self._generate_code_highlight_css(static_dir)
+            
+    def _generate_code_highlight_css(self, static_dir: Path) -> None:
+        """Generate code highlight CSS based on configuration."""
+        try:
+            # Создаем директорию css, если её нет
+            css_dir = static_dir / "css"
+            css_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Получаем стиль подсветки из конфига
+            syntax_config = self.config.get("syntax_highlight", {})
+            style_name = syntax_config.get("style", "monokai")
+            
+            # Генерируем CSS
+            from ..utils.pygments_utils import generate_pygments_css
+            css_content = generate_pygments_css(style_name)
+            
+            # Записываем в файл
+            css_file = css_dir / "code_highlight.css"
+            with open(css_file, "w", encoding="utf-8") as f:
+                f.write(css_content)
+                
+            print(f"Generated code highlight CSS with '{style_name}' style")
+            
+        except Exception as e:
+            print(f"Error generating code highlight CSS: {e}")
             
     def clean(self) -> None:
         """Clean the build artifacts."""

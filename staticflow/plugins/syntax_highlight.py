@@ -21,9 +21,18 @@ class SyntaxHighlightPlugin(Plugin):
         
         logger.info("Initializing SyntaxHighlightPlugin")
         
+        # Получаем стиль из глобального конфига сайта, если он есть
+        style = self.config.get('style', 'monokai')
+        if (hasattr(self, 'engine') and self.engine 
+                and hasattr(self.engine, 'config')):
+            syntax_config = self.engine.config.get("syntax_highlight", {})
+            style = syntax_config.get("style", style)
+        
+        logger.info(f"Using style: {style}")
+        
         # Create formatter with explicit settings for tabulation
         self.formatter = HtmlFormatter(
-            style=self.config.get('style', 'monokai'),
+            style=style,
             cssclass=self.config.get('css_class', 'highlight'),
             linenos=linenums,
             wrapcode=True,
@@ -196,190 +205,24 @@ class SyntaxHighlightPlugin(Plugin):
             content
         )
         
-        return content
-    
-    def get_head_content(self) -> str:
-        """Get content to be inserted in the head section."""
-        # Basic Pygments styles
-        base_styles = self.formatter.get_style_defs()
-        
-        # Add custom styles with proper tab and whitespace handling
-        additional_styles = """
-        /* Custom monospace font */
-        @font-face {
-            font-family: 'CodeFont';
-            src: local('Consolas'), local('Liberation Mono'), 
-                 local('Menlo'), local('Monaco'), local('Courier New'), 
-                 monospace;
-            font-display: swap;
-        }
+        # Process RST code blocks: <pre class="code ...">...</pre>
+        def process_rst_block(match):
+            class_attr = match.group(1)
+            code = match.group(2)
+            # Если уже есть pygments-разметка, не трогаем
+            if '<span class=' in code:
+                return match.group(0)
+            # Извлекаем язык из классов
+            lang_match = re.search(
+                r'code\s+([a-zA-Z0-9_+-]+)', class_attr
+            )
+            lang = lang_match.group(1) if lang_match else 'text'
+            return highlight_block(code, lang)
 
-        /* Code block styling */
-        .code-block {
-            margin: 1.5rem 0;
-            position: relative;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            background: #272822;
-            color: #f8f8f2;
-        }
+        rst_pattern = re.compile(
+            r'<pre class="code ([^"]+)">(.*?)</pre>',
+            re.DOTALL
+        )
+        content = rst_pattern.sub(process_rst_block, content)
         
-        /* Language tag */
-        .language-tag {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 3px 10px;
-            font-size: 0.75rem;
-            font-family: sans-serif;
-            color: white;
-            background: #444;
-            border-radius: 0 0.3rem 0 0.3rem;
-            z-index: 5;
-        }
-        
-        /* Language-specific colors */
-        .language-python .language-tag { background: #306998; }
-        .language-js .language-tag, 
-        .language-javascript .language-tag { 
-            background: #f0db4f; 
-            color: black; 
-        }
-        .language-html .language-tag { background: #e34c26; }
-        .language-css .language-tag { background: #264de4; }
-        
-        /* Highlight block styles - CRITICAL for proper code display */
-        .highlight {
-            background: transparent !important;
-            color: #f8f8f2;
-            padding: 1.25rem;
-            margin: 0;
-            overflow-x: auto;
-            tab-size: 4 !important;
-            -moz-tab-size: 4 !important;
-            -o-tab-size: 4 !important;
-            -webkit-tab-size: 4 !important;
-        }
-        
-        /* ESSENTIAL: Proper whitespace and tab preservation */
-        .highlight pre, 
-        .highlight code,
-        .has-tabs pre, 
-        .has-tabs code,
-        .code-block pre,
-        .code-block code {
-            font-family: 'CodeFont', monospace !important;
-            white-space: pre !important;
-            tab-size: 4 !important;
-            -moz-tab-size: 4 !important;
-            -o-tab-size: 4 !important;
-            -webkit-tab-size: 4 !important;
-            background: transparent !important;
-            word-wrap: normal !important;
-            overflow-wrap: normal !important;
-            overflow-x: auto !important;
-            display: block !important;
-            line-height: 1.5 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        
-        /* Fix spacing in highlight spans */
-        .highlight .lineno,
-        .highlight .line,
-        .highlight span {
-            white-space: pre !important;
-            display: inline !important;
-            line-height: inherit !important;
-        }
-        
-        /* Ensure line breaks appear properly */
-        .highlight br {
-            display: block !important;
-            content: "" !important;
-            margin-top: 0 !important;
-            line-height: inherit !important;
-        }
-        
-        /* Fix for extra space bug */
-        .highlight div {
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: inherit !important;
-        }
-        
-        /* Make all code block backgrounds transparent */
-        .code-block *,
-        .highlight * {
-            background-color: transparent !important;
-        }
-        
-        /* Inline code */
-        code.inline-code {
-            background-color: #f5f5f5;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-family: 'CodeFont', monospace;
-            font-size: 90%;
-            display: inline;
-            white-space: normal;
-        }
-        
-        /* Python syntax highlighting */
-        .highlight .k { color: #66d9ef; } /* Keyword */
-        .highlight .kc { color: #66d9ef; } /* Keyword.Constant */
-        .highlight .kd { color: #66d9ef; } /* Keyword.Declaration */
-        .highlight .kn { color: #f92672; } /* Keyword.Namespace */
-        .highlight .kp { color: #66d9ef; } /* Keyword.Pseudo */
-        .highlight .kr { color: #66d9ef; } /* Keyword.Reserved */
-        .highlight .kt { color: #66d9ef; } /* Keyword.Type */
-        
-        .highlight .n { color: #f8f8f2; } /* Name */
-        .highlight .na { color: #a6e22e; } /* Name.Attribute */
-        .highlight .nb { color: #a6e22e; } /* Name.Builtin */
-        .highlight .nc { color: #a6e22e; } /* Name.Class */
-        .highlight .no { color: #66d9ef; } /* Name.Constant */
-        .highlight .nd { color: #a6e22e; } /* Name.Decorator */
-        .highlight .ni { color: #f8f8f2; } /* Name.Entity */
-        .highlight .ne { color: #a6e22e; } /* Name.Exception */
-        .highlight .nf { color: #a6e22e; } /* Name.Function */
-        .highlight .nl { color: #f8f8f2; } /* Name.Label */
-        .highlight .nn { color: #f8f8f2; } /* Name.Namespace */
-        .highlight .nx { color: #a6e22e; } /* Name.Other */
-        .highlight .py { color: #f8f8f2; } /* Name.Property */
-        .highlight .nt { color: #f92672; } /* Name.Tag */
-        .highlight .nv { color: #f8f8f2; } /* Name.Variable */
-        
-        .highlight .o { color: #f92672; } /* Operator */
-        .highlight .ow { color: #f92672; } /* Operator.Word */
-        
-        .highlight .p { color: #f8f8f2; } /* Punctuation */
-        
-        .highlight .c { color: #75715e; } /* Comment */
-        .highlight .cm { color: #75715e; } /* Comment.Multiline */
-        .highlight .cp { color: #75715e; } /* Comment.Preproc */
-        .highlight .c1 { color: #75715e; } /* Comment.Single */
-        .highlight .cs { color: #75715e; } /* Comment.Special */
-        
-        .highlight .s { color: #e6db74; } /* String */
-        .highlight .sb { color: #e6db74; } /* String.Backtick */
-        .highlight .sc { color: #e6db74; } /* String.Char */
-        .highlight .sd { color: #e6db74; } /* String.Doc */
-        .highlight .s2 { color: #e6db74; } /* String.Double */
-        .highlight .se { color: #ae81ff; } /* String.Escape */
-        .highlight .sh { color: #e6db74; } /* String.Heredoc */
-        .highlight .si { color: #e6db74; } /* String.Interpol */
-        .highlight .sx { color: #e6db74; } /* String.Other */
-        .highlight .sr { color: #e6db74; } /* String.Regex */
-        .highlight .s1 { color: #e6db74; } /* String.Single */
-        .highlight .ss { color: #e6db74; } /* String.Symbol */
-        
-        .highlight .m { color: #ae81ff; } /* Number */
-        .highlight .mb { color: #ae81ff; } /* Number.Bin */
-        .highlight .mf { color: #ae81ff; } /* Number.Float */
-        .highlight .mh { color: #ae81ff; } /* Number.Hex */
-        .highlight .mi { color: #ae81ff; } /* Number.Integer */
-        .highlight .mo { color: #ae81ff; } /* Number.Oct */
-        """
-        
-        return f'<style>{base_styles}{additional_styles}</style>'
+        return content
