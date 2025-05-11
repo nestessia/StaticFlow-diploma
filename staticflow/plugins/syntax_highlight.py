@@ -35,7 +35,6 @@ class SyntaxHighlightPlugin(Plugin):
             style=style,
             cssclass=self.config.get('css_class', 'highlight'),
             linenos=linenums,
-            wrapcode=True,
             noclasses=False,
             tabsize=4,
             # Critical settings for preserving tabs and newlines
@@ -69,31 +68,47 @@ class SyntaxHighlightPlugin(Plugin):
         return html.unescape(content)
     
     def _process_code_with_linebreaks(self, code, lexer):
-        """Process code with explicit line breaks to preserve formatting."""
-        lines = code.splitlines()
-        html_parts = []
+        """Process code with Pygments while preserving line breaks and tabs.
         
-        for line in lines:
-            # Process each line individually to preserve whitespace
-            if line.strip() == "":
-                # For empty lines, add a non-breaking space to force line height
-                html_parts.append('<span class="line">&nbsp;</span><br>')
-            else:
-                # Highlight the line and add an explicit line break
-                highlighted = highlight(line, lexer, self.formatter)
-                
-                # Extract just the code part without the container divs
-                code_part = re.search(r'<div class="highlight"><pre>(.*?)</pre></div>', 
-                                     highlighted, re.DOTALL)
-                
-                if code_part:
-                    content = code_part.group(1)
-                    html_parts.append(f'<span class="line">{content}</span><br>')
+        This method preserves the structure of the original code.
+        """
+        # Получаем полную HTML разметку от Pygments
+        formatted_html = highlight(code, lexer, self.formatter)
+        
+        # Для сохранения переносов строк, добавляем line spans
+        # Извлекаем содержимое между тегами <pre>
+        match = re.search(r'<pre[^>]*>(.*?)</pre>', formatted_html, re.DOTALL)
+        if match:
+            # Получаем содержимое между тегами <pre>
+            pre_content = match.group(1)
+            
+            # Разбиваем на строки и добавляем class="line"
+            lines = pre_content.split('\n')
+            processed_lines = []
+            
+            for i, line in enumerate(lines):
+                if not line.strip():
+                    # Добавляем пустую строку с неразрывным пробелом
+                    processed_lines.append('<span class="line">&nbsp;</span>')
                 else:
-                    html_parts.append(f'<span class="line">{highlighted}</span><br>')
+                    # Добавляем номер строки как id для возможности ссылок
+                    processed_lines.append(
+                        f'<span class="line" id="L{i+1}">{line}</span>'
+                    )
+            
+            # Собираем обратно и заменяем в исходном HTML
+            processed_content = '\n'.join(processed_lines)
+            formatted_html = formatted_html.replace(
+                match.group(1), processed_content
+            )
         
-        # Combine all lines into a single HTML output
-        return f'<div class="highlight"><pre>{"".join(html_parts)}</pre></div>'
+        # Если в коде есть табуляция, добавляем специальный класс
+        if '\t' in code:
+            formatted_html = formatted_html.replace(
+                'class="highlight"', 'class="highlight has-tabs"'
+            )
+            
+        return formatted_html
     
     def process_content(self, content: str) -> str:
         """Process content and highlight code blocks."""
@@ -108,9 +123,6 @@ class SyntaxHighlightPlugin(Plugin):
                 # Decode HTML entities properly
                 code = self._decode_entities(code)
                 
-                # Check if code has tabs
-                has_tabs = '\t' in code
-                
                 try:
                     # Try to get lexer by language
                     lexer = get_lexer_by_name(lang)
@@ -123,30 +135,21 @@ class SyntaxHighlightPlugin(Plugin):
                     except ValueError:
                         lexer = TextLexer()
                 
-                # Process code with explicit line breaks
+                # Process code with Pygments, preserving tabs and newlines
                 html_code = self._process_code_with_linebreaks(code, lexer)
                 
-                # Add has-tabs class if needed
-                if has_tabs:
-                    html_code = html_code.replace(
-                        'class="highlight"',
-                        'class="highlight has-tabs"'
-                    )
-                
                 # Create code block with language tag
-                return f'''
-                <div class="code-block language-{lang}">
-                    <div class="language-tag">{lang}</div>
-                    {html_code}
-                </div>
-                '''
+                return (
+                    f'<div class="code-block language-{lang}">\n'
+                    f'<div class="language-tag">{lang}</div>\n'
+                    f'{html_code}\n'
+                    f'</div>'
+                )
             except Exception as e:
                 logger.error(f"Error highlighting code: {e}")
                 # Fallback to simple HTML with line breaks
                 escaped = html.escape(code)
-                lines = escaped.split('\n')
-                html_lines = [f'{line}<br>' for line in lines]
-                return f'<pre><code>{"".join(html_lines)}</code></pre>'
+                return f'<pre><code>{escaped}</code></pre>'
         
         # Process markdown code blocks: ```lang ...code... ```
         def process_md_block(match):
@@ -155,7 +158,7 @@ class SyntaxHighlightPlugin(Plugin):
             
             # Особая обработка Mermaid диаграмм
             if lang.lower() == 'mermaid':
-                # Преобразуем блок mermaid в div.mermaid для корректного отображения
+                # Преобразуем блок mermaid в div.mermaid
                 return f'<div class="mermaid">{code}</div>'
                 
             logger.info(f"Processing markdown code block: {lang}")

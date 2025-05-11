@@ -23,12 +23,11 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
         str: Complete CSS for syntax highlighting
     """
     try:
-        # Основные стили от Pygments для выбранной темы
+        # Получаем базовые стили от Pygments для выбранной темы
         formatter = HtmlFormatter(style=style_name)
         pygments_css = formatter.get_style_defs('.highlight')
         return pygments_css
-
+        
     except Exception as e:
         logger.error(f"Error generating Pygments CSS: {e}")
-        # Fallback to empty CSS
         return "/* Error generating Pygments CSS */" 
