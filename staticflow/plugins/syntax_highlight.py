@@ -70,45 +70,155 @@ class SyntaxHighlightPlugin(Plugin):
     def _process_code_with_linebreaks(self, code, lexer):
         """Process code with Pygments while preserving line breaks and tabs.
         
-        This method preserves the structure of the original code.
+        This method preserves the structure of the original code by adding
+        line breaks and proper spacing.
         """
-        # Получаем полную HTML разметку от Pygments
+        # Запоминаем, есть ли табы
+        has_tabs = '\t' in code
+        
+        # Получаем HTML-разметку от Pygments с базовой подсветкой
         formatted_html = highlight(code, lexer, self.formatter)
         
-        # Для сохранения переносов строк, добавляем line spans
+        # Прямые исправления специфических проблем с пробелами в HTML
+        # Python: исправляем пробелы после ключевых слов
+        replacements = [
+            # Python ключевые слова
+            ('<span class="k">def</span>', '<span class="k">def</span><span class="w"> </span>'),
+            ('<span class="k">if</span>', '<span class="k">if</span><span class="w"> </span>'),
+            ('<span class="k">for</span>', '<span class="k">for</span><span class="w"> </span>'),
+            ('<span class="k">while</span>', '<span class="k">while</span><span class="w"> </span>'),
+            ('<span class="k">class</span>', '<span class="k">class</span><span class="w"> </span>'),
+            ('<span class="k">import</span>', '<span class="k">import</span><span class="w"> </span>'),
+            ('<span class="k">from</span>', '<span class="k">from</span><span class="w"> </span>'),
+            ('<span class="k">in</span>', '<span class="k">in</span><span class="w"> </span>'),
+            ('<span class="k">as</span>', '<span class="k">as</span><span class="w"> </span>'),
+            ('<span class="k">return</span>', '<span class="k">return</span><span class="w"> </span>'),
+            ('<span class="k">with</span>', '<span class="k">with</span><span class="w"> </span>'),
+            ('<span class="k">try</span>', '<span class="k">try</span><span class="w"> </span>'),
+            ('<span class="k">except</span>', '<span class="k">except</span><span class="w"> </span>'),
+            ('<span class="k">finally</span>', '<span class="k">finally</span><span class="w"> </span>'),
+            ('<span class="k">else</span>', '<span class="k">else</span><span class="w"> </span>'),
+            ('<span class="k">elif</span>', '<span class="k">elif</span><span class="w"> </span>'),
+            
+            # JavaScript ключевые слова
+            ('<span class="kd">function</span>', '<span class="kd">function</span><span class="w"> </span>'),
+            ('<span class="kd">let</span>', '<span class="kd">let</span><span class="w"> </span>'),
+            ('<span class="kd">const</span>', '<span class="kd">const</span><span class="w"> </span>'),
+            ('<span class="kd">var</span>', '<span class="kd">var</span><span class="w"> </span>'),
+            ('<span class="k">if</span>', '<span class="k">if</span><span class="w"> </span>'),
+            ('<span class="k">for</span>', '<span class="k">for</span><span class="w"> </span>'),
+            ('<span class="k">while</span>', '<span class="k">while</span><span class="w"> </span>'),
+            ('<span class="k">return</span>', '<span class="k">return</span><span class="w"> </span>'),
+            ('<span class="k">switch</span>', '<span class="k">switch</span><span class="w"> </span>'),
+            ('<span class="k">case</span>', '<span class="k">case</span><span class="w"> </span>'),
+            
+            # Операторы
+            ('<span class="o">=</span>', '<span class="o">=</span><span class="w"> </span>'),
+            ('<span class="o">+</span>', '<span class="o">+</span><span class="w"> </span>'),
+            ('<span class="o">-</span>', '<span class="o">-</span><span class="w"> </span>'),
+            ('<span class="o">*</span>', '<span class="o">*</span><span class="w"> </span>'),
+            ('<span class="o">/</span>', '<span class="o">/</span><span class="w"> </span>'),
+            ('<span class="o">%</span>', '<span class="o">%</span><span class="w"> </span>'),
+            ('<span class="o">==</span>', '<span class="o">==</span><span class="w"> </span>'),
+            ('<span class="o">!=</span>', '<span class="o">!=</span><span class="w"> </span>'),
+            ('<span class="o">&lt;</span>', '<span class="o">&lt;</span><span class="w"> </span>'),
+            ('<span class="o">&gt;</span>', '<span class="o">&gt;</span><span class="w"> </span>'),
+            ('<span class="o">&lt;=</span>', '<span class="o">&lt;=</span><span class="w"> </span>'),
+            ('<span class="o">&gt;=</span>', '<span class="o">&gt;=</span><span class="w"> </span>'),
+        ]
+        
+        # Применяем все замены
+        for old, new in replacements:
+            formatted_html = formatted_html.replace(old, new)
+
         # Извлекаем содержимое между тегами <pre>
-        match = re.search(r'<pre[^>]*>(.*?)</pre>', formatted_html, re.DOTALL)
-        if match:
-            # Получаем содержимое между тегами <pre>
-            pre_content = match.group(1)
+        pattern = r'<pre[^>]*>(.*?)</pre>'
+        pre_match = re.search(pattern, formatted_html, re.DOTALL)
+        if not pre_match:
+            return formatted_html
             
-            # Разбиваем на строки и добавляем class="line"
-            lines = pre_content.split('\n')
-            processed_lines = []
+        pre_content = pre_match.group(1)
+        
+        # Разбиваем по строкам и добавляем line spans
+        lines = pre_content.split('\n')
+        processed_lines = []
+        
+        # Получаем оригинальные строки для сравнения
+        orig_lines = code.split('\n')
+        
+        for i, (line, orig_line) in enumerate(zip(lines, orig_lines)):
+            # Если строка пустая, добавляем пустую строку
+            if not orig_line.strip():
+                processed_lines.append(
+                    f'<span class="line" id="L{i+1}">&nbsp;</span>'
+                )
+                continue
             
-            for i, line in enumerate(lines):
-                if not line.strip():
-                    # Добавляем пустую строку с неразрывным пробелом
-                    processed_lines.append('<span class="line">&nbsp;</span>')
-                else:
-                    # Добавляем номер строки как id для возможности ссылок
-                    processed_lines.append(
-                        f'<span class="line" id="L{i+1}">{line}</span>'
-                    )
+            # Точное копирование отступов из оригинального кода
+            # Находим отступы в оригинальной строке
+            indent_match = re.match(r'^(\s+)', orig_line)
+            if indent_match:
+                orig_indent = indent_match.group(1)
+                
+                # Сохраняем фактические символы табуляции и пробелов
+                indent_html = '<span class="ws">'
+                
+                # Преобразуем каждый символ отступа в соответствующее представление
+                for char in orig_indent:
+                    if char == ' ':
+                        indent_html += '&#160;'  # неразрывный пробел в HTML
+                    elif char == '\t':
+                        # Для таба добавляем фактический символ табуляции
+                        # или 4 неразрывных пробела для совместимости
+                        indent_html += '&#160;&#160;&#160;&#160;'
+                
+                indent_html += '</span>'
+                
+                # Заменяем отступы в текущей строке HTML
+                line = re.sub(r'^\s*', indent_html, line)
             
-            # Собираем обратно и заменяем в исходном HTML
-            processed_content = '\n'.join(processed_lines)
-            formatted_html = formatted_html.replace(
-                match.group(1), processed_content
+            # Оборачиваем в span с классом line
+            processed_lines.append(
+                f'<span class="line" id="L{i+1}">{line}</span>'
             )
         
-        # Если в коде есть табуляция, добавляем специальный класс
-        if '\t' in code:
+        # Собираем все строки в один блок
+        processed_content = '\n'.join(processed_lines)
+        
+        # Заменяем содержимое на обработанное
+        formatted_html = formatted_html.replace(
+            pre_match.group(1), processed_content
+        )
+        
+        # Включаем пробелы в стили
+        if 'white-space: pre' not in formatted_html:
+            style = 'white-space: pre !important; tab-size: 4 !important;'
             formatted_html = formatted_html.replace(
-                'class="highlight"', 'class="highlight has-tabs"'
+                '<pre>', f'<pre style="{style}">'
+            )
+        
+        # Добавляем класс has-tabs, если есть табы
+        if has_tabs:
+            formatted_html = formatted_html.replace(
+                'class="highlight"', 
+                'class="highlight has-tabs"'
             )
             
         return formatted_html
+    
+    def _get_token_class(self, token_type):
+        """Получить CSS-класс для типа токена Pygments."""
+        # Преобразуем токен в CSS-класс
+        ttype = token_type
+        cls = ''
+        while ttype:
+            if ttype in self.formatter.ttype2class:
+                cls = self.formatter.ttype2class[ttype]
+                break
+            ttype = ttype.parent
+        if not cls:
+            cls = 'text'  # Значение по умолчанию
+        return cls
     
     def process_content(self, content: str) -> str:
         """Process content and highlight code blocks."""
@@ -138,13 +248,16 @@ class SyntaxHighlightPlugin(Plugin):
                 # Process code with Pygments, preserving tabs and newlines
                 html_code = self._process_code_with_linebreaks(code, lexer)
                 
-                # Create code block with language tag
-                return (
-                    f'<div class="code-block language-{lang}">\n'
-                    f'<div class="language-tag">{lang}</div>\n'
-                    f'{html_code}\n'
-                    f'</div>'
-                )
+                # Create code block with language tag on separate lines
+                # for better readability in the output
+                result = (
+                    '<div class="code-block language-{0}">\n'
+                    '    <div class="language-tag">{0}</div>\n'
+                    '    {1}\n'
+                    '</div>'
+                ).format(lang, html_code)
+                
+                return result
             except Exception as e:
                 logger.error(f"Error highlighting code: {e}")
                 # Fallback to simple HTML with line breaks
