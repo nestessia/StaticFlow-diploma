@@ -5,7 +5,7 @@ from .base import ContentParser
 
 class MarkdownParser(ContentParser):
     """Парсер для Markdown контента."""
-    
+
     def __init__(self, extensions: Optional[List[str]] = None):
         super().__init__()
         self.extensions = extensions or [
@@ -30,13 +30,12 @@ class MarkdownParser(ContentParser):
             extensions=self.extensions,
             extension_configs=self.extension_configs
         )
-    
+
     def parse(self, content: str) -> str:
         """Преобразует Markdown в HTML."""
-        # Сбрасываем состояние парсера перед каждым использованием
         self._md.reset()
         return self._md.convert(content)
-    
+
     def add_extension(self, extension: str, config: Optional[Dict[str, Any]] = None) -> None:
         """Добавляет расширение Markdown."""
         if extension not in self.extensions:
@@ -46,4 +45,4 @@ class MarkdownParser(ContentParser):
             self._md = markdown.Markdown(
                 extensions=self.extensions,
                 extension_configs=self.extension_configs
-            ) 
+            )
