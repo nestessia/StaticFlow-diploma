@@ -10,15 +10,16 @@ window.BlockEditor = null;
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Список скриптов для загрузки: всегда EditorUtils.js, EditorUtils.md.js, EditorUtils.rst.js
+    // Load all required scripts in sequence
     const scripts = [
+        // Utils
         '/admin/static/js/block-editor/utils/EditorUtils.js',
-        '/admin/static/js/block-editor/utils/EditorUtils.md.js',
-        '/admin/static/js/block-editor/utils/EditorUtils.rst.js',
+        
         // Core components
         '/admin/static/js/block-editor/DragAndDrop.js',
         '/admin/static/js/block-editor/BlockActions.js',
         '/admin/static/js/block-editor/BlockTypeMenu.js',
+        
         // Block implementations
         '/admin/static/js/block-editor/blocks/HeadingBlock.js',
         '/admin/static/js/block-editor/blocks/ParagraphBlock.js',
@@ -32,8 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
         '/admin/static/js/block-editor/blocks/AudioBlock.js',
         '/admin/static/js/block-editor/blocks/VideoBlock.js',
         '/admin/static/js/block-editor/blocks/InfoBlock.js',
+        
         // Factory implementation
         '/admin/static/js/block-editor/blocks/BlockFactory.js',
+        
         // Main editor implementation
         '/admin/static/js/block-editor/BlockEditor.js'
     ];
@@ -61,16 +64,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Start loading scripts
     loadScriptSequentially(scripts, 0);
-
-    // После загрузки всех скриптов:
-    document.addEventListener('blockEditorLoaded', function() {
-        // Получаем формат страницы
-        var format = (window.pageData && window.pageData.metadata && window.pageData.metadata.format) ? window.pageData.metadata.format : 'markdown';
-        // Выбираем нужную функцию десериализации
-        var deserializer = (format === 'rst') ? window.deserializeRstContent : window.deserializeContent;
-        // Переопределяем метод в BlockEditor
-        if (window.BlockEditor) {
-            window.BlockEditor.prototype.deserializeContent = deserializer;
-        }
-    });
 }); 
