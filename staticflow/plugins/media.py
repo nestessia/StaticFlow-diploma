@@ -50,6 +50,11 @@ class MediaPlugin(Plugin):
             priority=50  # Run before other content processing
         )
     
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        super().__init__(config)
+        self.cdn_plugin = None
+        self.image_sizes: Dict[str, ImageSize] = {}
+        
     def initialize(self, config: Optional[Dict[str, Any]] = None) -> None:
         """Initialize the plugin with configuration."""
         super().initialize(config)
@@ -109,6 +114,10 @@ class MediaPlugin(Plugin):
             if output_dir := getattr(engine.site, "output_dir", None):
                 self.media_dir = output_dir / self.config["output_dir"]
                 self.media_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Get CDN plugin if available
+            if cdn_plugin := engine.get_plugin("cdn"):
+                self.cdn_plugin = cdn_plugin
     
     def on_pre_build(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Pre-build hook: prepare media directory."""
@@ -738,3 +747,99 @@ class MediaPlugin(Plugin):
             
         mime, _ = mimetypes.guess_type(str(path))
         return mime is not None and mime.startswith('audio/') 
+    
+    def _get_media_url(self, file_path: Path) -> str:
+        """Get URL for media file, using CDN if available."""
+        if self.cdn_plugin:
+            if cdn_url := self.cdn_plugin.get_cdn_url(str(file_path)):
+                return cdn_url
+                
+        # Fallback to local URL
+        if engine := getattr(self, "engine", None):
+            if base_url := getattr(engine.site, "base_url", None):
+                return f"{base_url}/{file_path.relative_to(engine.site.output_dir)}"
+                
+        return str(file_path)
+        
+    def process_content(self, content: str) -> str:
+        """Process content and replace media URLs with CDN URLs if available."""
+        # Process images
+        content = self.img_pattern.sub(
+            lambda m: self._process_image_tag(m.group(0)),
+            content
+        )
+        
+        # Process videos
+        content = self.video_pattern.sub(
+            lambda m: self._process_video_tag(m.group(0)),
+            content
+        )
+        
+        # Process audio
+        content = self.audio_pattern.sub(
+            lambda m: self._process_audio_tag(m.group(0)),
+            content
+        )
+        
+        return content
+        
+    def _process_image_tag(self, tag: str) -> str:
+        """Process image tag and update src/srcset attributes."""
+        # Extract src attribute
+        src_match = re.search(r'src=["\'](.*?)["\']', tag)
+        if not src_match:
+            return tag
+            
+        src = src_match.group(1)
+        file_path = Path(src)
+        
+        # Get CDN URL
+        cdn_url = self._get_media_url(file_path)
+        
+        # Update src attribute
+        tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
+        
+        # Update srcset if present
+        srcset_match = re.search(r'srcset=["\'](.*?)["\']', tag)
+        if srcset_match:
+            srcset = srcset_match.group(1)
+            new_srcset = []
+            for item in srcset.split(','):
+                url, size = item.strip().split(' ')
+                url_path = Path(url)
+                cdn_url = self._get_media_url(url_path)
+                new_srcset.append(f"{cdn_url} {size}")
+            tag = tag.replace(f'srcset="{srcset}"', f'srcset="{", ".join(new_srcset)}"')
+            
+        return tag
+        
+    def _process_video_tag(self, tag: str) -> str:
+        """Process video tag and update src/poster attributes."""
+        # Extract src attribute
+        src_match = re.search(r'src=["\'](.*?)["\']', tag)
+        if src_match:
+            src = src_match.group(1)
+            file_path = Path(src)
+            cdn_url = self._get_media_url(file_path)
+            tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
+            
+        # Extract poster attribute
+        poster_match = re.search(r'poster=["\'](.*?)["\']', tag)
+        if poster_match:
+            poster = poster_match.group(1)
+            file_path = Path(poster)
+            cdn_url = self._get_media_url(file_path)
+            tag = tag.replace(f'poster="{poster}"', f'poster="{cdn_url}"')
+            
+        return tag
+        
+    def _process_audio_tag(self, tag: str) -> str:
+        """Process audio tag and update src attribute."""
+        src_match = re.search(r'src=["\'](.*?)["\']', tag)
+        if src_match:
+            src = src_match.group(1)
+            file_path = Path(src)
+            cdn_url = self._get_media_url(file_path)
+            tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
+            
+        return tag

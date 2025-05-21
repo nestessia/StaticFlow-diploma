@@ -6,6 +6,7 @@ from .math import MathPlugin
 from .diagrams import MermaidPlugin
 from .notion_blocks import NotionBlocksPlugin
 from .media import MediaPlugin
+from .cdn import CDNPlugin
 from pathlib import Path
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     'RSSPlugin',
     'MinifierPlugin',
     'MediaPlugin',
+    'CDNPlugin',
     'get_default_plugin_configs',
     'initialize_plugins'
 ]
@@ -59,6 +61,15 @@ def get_default_plugin_configs():
             "video_thumbnail": True,
             "hash_filenames": True,
             "hash_length": 8
+        },
+        "cdn": {
+            "enabled": True,
+            "provider": "cloudflare",
+            "api_token": "${CLOUDFLARE_API_TOKEN}",
+            "zone_id": "${CLOUDFLARE_ZONE_ID}",
+            "account_id": "${CLOUDFLARE_ACCOUNT_ID}",
+            "domain": "cdn.example.com",
+            "bucket": "staticflow-assets"
         }
     }
 
