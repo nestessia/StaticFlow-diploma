@@ -166,8 +166,11 @@ class AdminPanel:
         base_url = self.config.get('base_url', '')
         
         for file in content_path.rglob('*.*'):
-            if file.suffix in ['.md', '.html']:
-                rel_path = str(file.relative_to(content_path))
+            if file.suffix in ['.md', '.rst', '.html']:
+                rel_path = str(file.relative_to(content_path)).replace('\\', '/')
+                print(f"DEBUG: rel_path={rel_path!r} for file={file}")
+                if not rel_path:
+                    continue
                 
                 # Получаем URL для файла
                 file_url = ""
@@ -191,7 +194,7 @@ class AdminPanel:
                 
                 # Если не удалось получить URL, используем преобразование пути
                 if not file_url:
-                    file_url = f"{base_url.rstrip('/')}/{rel_path.replace('.md', '.html')}"
+                    file_url = f"{base_url.rstrip('/')}/" + re.sub(r'\.(md|rst)$', '.html', rel_path)
                 
                 # Добавляем информацию о файле
                 files.append({
@@ -242,34 +245,33 @@ class AdminPanel:
         path = request.match_info.get('path', '')
         page = None
         safe_metadata = {}
-        
+        error_message = None
+        import logging
+        logger = logging.getLogger("admin.block_editor_handler")
         if path:
             content_path = Path('content') / path
             logger.info(f"Attempting to load page from: {content_path}")
             if content_path.exists():
                 try:
-                    # Создаем объект Page из существующего файла
                     from ..core.page import Page
                     page = Page.from_file(content_path)
-                    
-                    # Устанавливаем правильный путь к исходному файлу
                     page.source_path = path
-                    
-                    # Добавляем время последнего изменения файла, если его нет
                     if not hasattr(page, 'modified'):
                         page.modified = content_path.stat().st_mtime
-                    # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
                     logger.info(f"Successfully loaded page: {path}")
-                
                 except Exception as e:
                     logger.error(f"Error loading page: {e}")
                     import traceback
                     traceback.print_exc()
-        
+                    error_message = f"Ошибка загрузки файла: {e}"
+            else:
+                logger.error(f"File does not exist: {content_path}")
+                error_message = f"Файл не найден: {content_path}"
         return {
             'page': page,
-            'safe_metadata': safe_metadata
+            'safe_metadata': safe_metadata,
+            'error_message': error_message
         }
     
     async def api_content_handler(self, request):

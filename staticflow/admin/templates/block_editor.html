@@ -112,6 +112,11 @@
         </div>
     </div>
 </div>
+{% if error_message %}
+<div class="alert alert-danger" style="margin: 20px 0;">
+  {{ error_message }}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

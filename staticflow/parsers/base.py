@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import frontmatter
 
 
@@ -7,7 +7,20 @@ class ContentParser(ABC):
     """Базовый класс для парсеров контента."""
 
     def __init__(self):
-        self.options: Dict[str, Any] = {}
+        self.options: Dict[str, Any] = {
+            'syntax_highlight': True,
+            'math_support': True,
+            'toc': True,
+            'callouts': True,
+            'tables': True,
+            'footnotes': True,
+            'code_blocks': True,
+            'smart_quotes': True,
+            'link_anchors': True,
+            'image_processing': True,
+            'diagrams': True
+        }
+        self.extensions: List[str] = []
 
     @abstractmethod
     def parse(self, content: str) -> str:
@@ -26,4 +39,18 @@ class ContentParser(ABC):
 
     def get_option(self, key: str, default: Any = None) -> Any:
         """Получает значение опции парсера."""
-        return self.options.get(key, default) 
+        return self.options.get(key, default)
+
+    def enable_extension(self, extension: str) -> None:
+        """Включает расширение парсера."""
+        if extension not in self.extensions:
+            self.extensions.append(extension)
+
+    def disable_extension(self, extension: str) -> None:
+        """Отключает расширение парсера."""
+        if extension in self.extensions:
+            self.extensions.remove(extension)
+
+    def has_extension(self, extension: str) -> bool:
+        """Проверяет наличие расширения."""
+        return extension in self.extensions 
