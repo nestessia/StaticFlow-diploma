@@ -4,9 +4,6 @@ import yaml
 import toml
 
 
-# Configuration manager for StaticFlow
-
-
 class Config:
     """Configuration for StaticFlow."""
     

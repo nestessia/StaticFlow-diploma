@@ -51,14 +51,19 @@ class MediaPlugin(Plugin):
         )
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        super().__init__(config)
+        super().__init__()
         self.cdn_plugin = None
         self.image_sizes: Dict[str, ImageSize] = {}
+        if config:
+            self.initialize(config)
         
     def initialize(self, config: Optional[Dict[str, Any]] = None) -> None:
-        """Initialize the plugin with configuration."""
-        super().initialize(config)
+        """Initialize the plugin. Called when plugin is loaded."""
+        super().initialize()
+        self.setup(config)
         
+    def setup(self, config: Optional[Dict[str, Any]] = None) -> None:
+        """Setup the plugin with configuration."""
         # Default configuration
         self.default_config = {
             "output_dir": "media",

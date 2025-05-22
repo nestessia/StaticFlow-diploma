@@ -4,7 +4,7 @@ import hashlib
 import mimetypes
 import requests
 from .base import Plugin
-from ..utils.logger import get_logger
+from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
 

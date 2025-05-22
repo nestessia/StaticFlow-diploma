@@ -50,6 +50,13 @@ class Engine:
         plugin.initialize()
         self.plugins.append(plugin)
         
+    def get_plugin(self, name: str) -> Optional[Plugin]:
+        """Get a plugin by its name."""
+        for plugin in self.plugins:
+            if hasattr(plugin, 'metadata') and plugin.metadata.name == name:
+                return plugin
+        return None
+        
     def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
         self.site.set_directories(source_dir, output_dir, templates_dir)

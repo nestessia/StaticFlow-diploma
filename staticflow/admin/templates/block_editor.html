@@ -56,14 +56,9 @@
                 <input 
                     type="text" 
                     id="filename-input" 
-                    placeholder="Имя файла (например: my-page)" 
+                    placeholder="Имя файла (например: my-page.md или my-page.html)" 
                     value=""
                 >
-                <select id="file-extension">
-                    <option value=".md" selected>Markdown (.md)</option>
-                    <option value=".rst">reStructuredText (.rst)</option>
-                    <option value=".adoc">AsciiDoc (.adoc)</option>
-                </select>
             </div>
             {% endif %}
             <div class="file-path">{{ page.source_path if page else 'New Page' }}</div>
@@ -97,18 +92,6 @@
                 <label for="meta-tags">Tags (comma separated)</label>
                 <input type="text" id="meta-tags" value="{{ ','.join(page.metadata.tags) if page and page.metadata and page.metadata.tags else '' }}">
             </div>
-            <div class="metadata-field">
-                <label for="meta-format">Output Format</label>
-                <select id="meta-format">
-                    <option value="markdown" {% if page and page.metadata and page.metadata.format == "markdown" %}selected{% endif %}>Markdown (.md)</option>
-                    <option value="rst" {% if page and page.metadata and page.metadata.format == "rst" %}selected{% endif %}>reStructuredText (.rst)</option>
-                    <option value="asciidoc" {% if page and page.metadata and page.metadata.format == "asciidoc" %}selected{% endif %}>AsciiDoc (.adoc)</option>
-                </select>
-            </div>
-            <div class="metadata-field">
-                <label for="meta-draft">Draft</label>
-                <input type="checkbox" id="meta-draft" {% if page and page.metadata and page.metadata.draft %}checked{% endif %}>
-            </div>
         </div>
     </div>
 </div>
@@ -136,7 +119,6 @@ var pageData = {
         author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
         tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
         format: {% if safe_metadata and safe_metadata.format %}{{ safe_metadata.format|tojson }}{% else %}"markdown"{% endif %},
-        draft: {% if safe_metadata and safe_metadata.draft %}true{% else %}false{% endif %}
     }
 };
 
@@ -179,11 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewPage(editor);
             });
             
-            // Установка начального формата из метаданных
-            if (pageData.metadata.format) {
-                document.getElementById('meta-format').value = pageData.metadata.format;
-            }
-            
             // Обработка клавиатурных сокращений
             document.addEventListener('keydown', function(e) {
                 // Ctrl+S или Cmd+S для сохранения
@@ -199,58 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Синхронизация выбора формата вывода с расширением файла
-            const formatSelector = document.getElementById('meta-format');
-            const fileExtension = document.getElementById('file-extension');
-            
-            // Обновить расширение файла при изменении формата
-            if (formatSelector && fileExtension) {
-                formatSelector.addEventListener('change', function() {
-                    switch(this.value) {
-                        case 'markdown':
-                            fileExtension.value = '.md';
-                            break;
-                        case 'rst':
-                            fileExtension.value = '.rst';
-                            break;
-                        case 'asciidoc':
-                            fileExtension.value = '.adoc';
-                            break;
-                    }
-                });
-                
-                // Обновить формат при изменении расширения файла
-                fileExtension.addEventListener('change', function() {
-                    switch(this.value) {
-                        case '.md':
-                            formatSelector.value = 'markdown';
-                            break;
-                        case '.rst':
-                            formatSelector.value = 'rst';
-                            break;
-                        case '.adoc':
-                            formatSelector.value = 'asciidoc';
-                            break;
-                    }
-                });
-            }
-            
-            // Генерировать имя файла из заголовка страницы
             const pageTitleInput = document.getElementById('page-title');
             const filenameInput = document.getElementById('filename-input');
             
             if (pageTitleInput && filenameInput) {
                 pageTitleInput.addEventListener('blur', function() {
-                    // Если поле имени файла пустое, предложить имя на основе заголовка
                     if (!filenameInput.value.trim()) {
-                        // Преобразуем заголовок в имя файла
                         const title = pageTitleInput.value.trim();
                         if (title) {
                             const filename = title
                                 .toLowerCase()
-                                .replace(/[^a-zA-Z0-9\s-]/g, '') // Удаляем спецсимволы
-                                .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
-                                .replace(/-+/g, '-'); // Убираем дублирующиеся дефисы
+                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                .replace(/\s+/g, '-')
+                                .replace(/-+/g, '-');
                             
                             filenameInput.value = filename;
                         }
@@ -350,27 +288,22 @@ function savePage(editor) {
         const content = editor.getContent();
         const title = document.getElementById('page-title').value;
         let path = document.querySelector('.file-path').textContent;
-        const format = document.getElementById('meta-format').value;
         
         // Если это новая страница, используем пользовательское имя файла
         if (path === 'New Page') {
             const filename = document.getElementById('filename-input').value.trim();
-            const extension = document.getElementById('file-extension').value;
-            
             if (!filename) {
                 alert("Пожалуйста, укажите имя файла для сохранения страницы");
                 document.getElementById('filename-input').focus();
                 return;
             }
-            
-            // Валидация имени файла (только буквы, цифры, дефисы и подчеркивания)
-            if (!/^[a-zA-Z0-9\-_]+$/.test(filename)) {
-                alert("Имя файла может содержать только буквы, цифры, дефисы и знаки подчеркивания");
+            // Валидация имени файла (только буквы, цифры, дефисы, подчеркивания и расширение)
+            if (!/^[a-zA-Z0-9\-_]+\.(md|html)$/.test(filename)) {
+                alert("Имя файла должно заканчиваться на .md или .html и содержать только буквы, цифры, дефисы и знаки подчеркивания");
                 document.getElementById('filename-input').focus();
                 return;
             }
-            
-            path = filename + extension;
+            path = filename;
         }
         
         if (!content) {
@@ -389,6 +322,12 @@ function savePage(editor) {
         const dateValue = document.getElementById('meta-date').value;
         const formattedDate = formatDateForISO(dateValue);
         
+        // Определяем формат только по расширению имени файла
+        let format = 'markdown';
+        if (path.endsWith('.html')) {
+            format = 'html';
+        }
+        
         const metadata = {
             title: title || "Untitled",
             date: formattedDate,
@@ -396,8 +335,7 @@ function savePage(editor) {
             tags: document.getElementById('meta-tags').value
                   ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
                   : [],
-            format: format || "markdown",
-            draft: document.getElementById('meta-draft').checked
+            format: format,
         };
         
         // Создаем объект запроса
@@ -458,9 +396,21 @@ function previewPage(editor) {
     try {
         const content = editor.getContent();
         const title = document.getElementById('page-title').value;
-        const format = document.getElementById('meta-format').value;
         const dateValue = document.getElementById('meta-date').value;
         const formattedDate = formatDateForISO(dateValue);
+        
+        // Определяем формат только по расширению имени файла
+        let format = 'markdown';
+        let path = document.querySelector('.file-path').textContent;
+        if (path === 'New Page') {
+            const filename = document.getElementById('filename-input').value.trim();
+            if (filename.endsWith('.html')) {
+                format = 'html';
+            }
+        } else if (path.endsWith('.html')) {
+            format = 'html';
+        }
+        
         const metadata = {
             title: title || "Untitled",
             date: formattedDate,
@@ -468,9 +418,9 @@ function previewPage(editor) {
             tags: document.getElementById('meta-tags').value
                   ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
                   : [],
-            format: format || "markdown",
-            draft: document.getElementById('meta-draft').checked
+            format: format,
         };
+        
         fetch('/admin/preview', {
             method: 'POST',
             headers: {
