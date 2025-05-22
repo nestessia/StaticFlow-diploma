@@ -299,60 +299,8 @@ class AdminPanel:
                 current_ext = Path(path).suffix
                 output_format = metadata.get('format', 'markdown')
 
-                if current_ext != extension:
-                    new_path = Path(path).with_suffix(extension)
-                    new_content_path = Path('content') / new_path
-
-                    if new_content_path.exists():
-                        return web.json_response({
-                            'success': False,
-                            'error': f"File already exists: {new_path}"
-                        }, status=400)
-                    
-                    # Если старый файл существует, удаляем его после создания нового
-                    should_delete_old = content_path.exists()
-                    
-                    # Обновляем пути
-                    path = str(new_path)
-                    content_path = new_content_path
-                    
-                    logger.info(f"Changing file format: {current_ext} -> {extension}, new path: {path}")
-                    
-                    # После сохранения нового файла, удалим старый
-                    if should_delete_old:
-                        logger.info(f"Will delete old file after saving new one")
-            
-            # Ensure parent directories exist
             content_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Преобразуем контент в выбранный формат, если нужно
-            output_format = metadata.get('format', 'markdown')
-            if output_format != 'markdown' and content:
-                try:
-                    # Импортируем необходимые парсеры
-                    from ..parsers import MarkdownParser
-                    
-                    # Инициализируем markdown парсер для преобразования в HTML
-                    md_parser = MarkdownParser()
-                    
-                    # Сначала получаем HTML из Markdown
-                    html_content = md_parser.parse(content)
-                    
-                    # Преобразуем HTML в нужный формат
-                    if output_format == 'asciidoc':
-                        # Импортируем HTML -> AsciiDoc конвертер
-                        try:
-                            from html2asciidoc import convert
-                            content = convert(html_content)
-                            logger.info("Converted content from Markdown to AsciiDoc")
-                        except ImportError:
-                            logger.warning("html2asciidoc not installed. Keeping markdown format.")
-                    
-                except Exception as e:
-                    logger.error(f"Error converting content format: {e}")
-                    # Продолжаем с исходным контентом, если конвертация не удалась
-            
-            # Create frontmatter
+
             frontmatter = '---\n'
             for key, value in metadata.items():
                 if isinstance(value, list):
@@ -362,37 +310,17 @@ class AdminPanel:
                 else:
                     frontmatter += f"{key}: {value}\n"
             frontmatter += '---\n\n'
-            
-            # Write content to file with frontmatter
+
             with open(content_path, 'w', encoding='utf-8') as f:
                 f.write(frontmatter + content)
-                
-            # Если мы изменили формат, удаляем старый файл
-            if not is_new_page and 'format' in metadata:
-                old_ext = current_ext
-                if output_format == 'asciidoc':
-                    old_ext = '.adoc' if current_ext != '.adoc' else '.md'
-                elif output_format == 'markdown':
-                    old_ext = '.md' if current_ext != '.md' else '.adoc'
-                
-                # Удаляем старый файл только если он существует и отличается от нового
-                old_path = Path(path).with_suffix(old_ext)
-                old_content_path = Path('content') / old_path
-                if old_content_path.exists() and old_content_path != content_path:
-                    try:
-                        old_content_path.unlink()
-                        logger.info(f"Deleted old file: {old_path}")
-                    except Exception as e:
-                        logger.error(f"Failed to delete old file: {e}")
-            
-            # Rebuild the site
+
             self.rebuild_site()
-            
+
             return web.json_response({
                 'success': True,
                 'path': path
             })
-            
+
         except json.JSONDecodeError as e:
             logger.error(f"Content JSON parse error: {e}")
             return web.json_response({
@@ -407,18 +335,18 @@ class AdminPanel:
                 'success': False,
                 'error': str(e)
             }, status=500)
-        
+
     async def api_settings_handler(self, request):
         """Handle settings API requests."""
         try:
             data = await request.json()
-            
+
             for key, value in data.items():
                 self.config.set(key, value)
-                
+
             self.config.save()
             self.rebuild_site()
-            
+
             return web.json_response({'status': 'ok'})
         except json.JSONDecodeError as e:
             logger.error(f"Settings JSON parse error: {e}")
@@ -438,13 +366,11 @@ class AdminPanel:
     async def api_deploy_config_get_handler(self, request):
         """Handle deploy configuration GET API requests."""
         try:
-            # Инициализируем GitHub Pages deployer
             from ..deploy.github_pages import GitHubPagesDeployer
             deployer = GitHubPagesDeployer()
-            
-            # Получаем статус и конфигурацию деплоя
+
             status = deployer.get_deployment_status()
-            
+
             return web.json_response({
                 'success': True,
                 'status': status,
@@ -458,20 +384,17 @@ class AdminPanel:
                 'success': False,
                 'error': str(e)
             }, status=500)
-            
+
     async def api_deploy_config_handler(self, request):
         """Handle deploy configuration API requests."""
         try:
             data = await request.json()
-            
-            # Инициализируем GitHub Pages deployer
+
             from ..deploy.github_pages import GitHubPagesDeployer
             deployer = GitHubPagesDeployer()
-            
-            # Обновляем конфигурацию
+
             deployer.update_config(**data)
-            
-            # Проверяем, валидна ли конфигурация
+
             is_valid, errors, warnings = deployer.validate_config()
             
             return web.json_response({
@@ -495,34 +418,28 @@ class AdminPanel:
                 'error': str(e),
                 'message': 'Failed to save deployment configuration'
             }, status=500)
-            
+
     async def api_deploy_start_handler(self, request):
         """Handle deploy start API requests."""
         logger.info("=== Starting deployment process ===")
         try:
-            # Получаем данные из запроса
             data = {}
             try:
                 data = await request.json()
                 logger.info(f"Received deployment data: {data}")
             except json.JSONDecodeError:
-                # Если JSON не предоставлен, используем пустой словарь
                 logger.info("No JSON data provided in request")
                 pass
-                
-            # Получаем коммит-сообщение, если предоставлено
+
             commit_message = data.get('commit_message')
             logger.info(f"Using commit message: {commit_message or 'default'}")
-            
-            # Инициализируем GitHub Pages deployer
+
             from ..deploy.github_pages import GitHubPagesDeployer
             logger.info("Initializing GitHubPagesDeployer")
             deployer = GitHubPagesDeployer()
-            
-            # Получаем URL репозитория
+
             repo_url = deployer.config.get("repo_url", "")
-            
-            # Проверяем, валидна ли конфигурация
+
             logger.info("Validating deployment configuration")
             is_valid, errors, warnings = deployer.validate_config()
             if not is_valid:
@@ -531,16 +448,13 @@ class AdminPanel:
                     'success': False,
                     'message': f"Invalid configuration: {', '.join(errors)}"
                 }, status=400)
-                
-            # Сохраняем оригинальные настройки конфигурации
+
             original_base_url = self.config.get("base_url")
             original_static_url = self.config.get("static_url")
             
             try:
-                # Обновляем конфигурацию для GitHub Pages
                 self._update_config_for_github_pages(repo_url)
-                
-                # Сначала перестраиваем сайт
+
                 logger.info("Rebuilding site before deployment")
                 rebuild_success = self.rebuild_site()
                 if not rebuild_success:
@@ -549,17 +463,15 @@ class AdminPanel:
                         'success': False,
                         'message': 'Failed to build site'
                     }, status=500)
-                
+
                 logger.info("Site successfully rebuilt, starting deployment")
-                    
-                # Деплоим сайт
+
                 logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
                 success, message = deployer.deploy(commit_message=commit_message)
                 logger.info(f"Deployment result: success={success}, message={message}")
-                
-                # Получаем обновленный статус
+
                 status = deployer.get_deployment_status()
-                
+
                 logger.info("=== Deployment process completed ===")
                 return web.json_response({
                     'success': success,
@@ -569,12 +481,9 @@ class AdminPanel:
                     'warnings': warnings
                 })
             finally:
-                # Восстанавливаем оригинальные настройки конфигурации
                 logger.info("Восстанавливаем оригинальные настройки конфигурации")
-                # Убедимся, что static_url имеет правильный формат для локальной разработки
                 self.config.set("base_url", original_base_url)
                 self.config.set("static_url", original_static_url)
-                # Восстанавливаем оригинальную конфигурацию
                 rebuild_success = self.rebuild_site()
                 if not rebuild_success:
                     logger.warning("Не удалось пересобрать сайт после восстановления настроек")
@@ -587,19 +496,17 @@ class AdminPanel:
                 'success': False,
                 'message': f"Deployment failed: {str(e)}"
             }, status=500)
-        
+
     def _update_config_for_github_pages(self, repo_url):
         """Обновляет конфигурацию для GitHub Pages"""
-        
-        # Извлекаем имя репозитория из URL GitHub
+
         repo_name = self._extract_repo_name(repo_url)
         if not repo_name:
             logger.warning("Не удалось извлечь имя репозитория из URL, оставляем конфигурацию без изменений")
             return
         
         logger.info(f"Обновляем конфигурацию для GitHub Pages репозитория: {repo_name}")
-        
-        # Получаем username из URL
+
         username = None
         if repo_url.startswith("https://github.com/"):
             parts = repo_url.split("https://github.com/")[1].split("/")
@@ -609,64 +516,56 @@ class AdminPanel:
             parts = repo_url.split("git@github.com:")[1].split("/")
             if len(parts) >= 1:
                 username = parts[0]
-        
+
         if not username:
             logger.warning("Не удалось извлечь имя пользователя из URL, оставляем конфигурацию без изменений")
             return
-        
-        # Задаем base_url для GitHub Pages
+
         base_url = f"https://{username}.github.io/{repo_name}"
         logger.info(f"Устанавливаем base_url: {base_url}")
-        
-        # Обновляем конфигурацию для деплоя (только в памяти)
+
         self.config.set("base_url", base_url)
-        # Важно: static_url должен включать имя репозитория и заканчиваться слешем
         self.config.set("static_url", f"{repo_name}/static/")
-        
+
         logger.info(f"Конфигурация обновлена: base_url={base_url}, static_url={repo_name}/static/")
 
     def _extract_repo_name(self, repo_url):
         """Извлекает имя репозитория из URL GitHub"""
         if not repo_url:
             return None
-        
-        # Для HTTPS URL https://github.com/username/repo
+
         if repo_url.startswith("https://github.com/"):
             parts = repo_url.split("https://github.com/")[1].split("/")
             if len(parts) >= 2:
                 return parts[1].replace(".git", "")
-        
-        # Для SSH URL git@github.com:username/repo.git
+
         elif repo_url.startswith("git@github.com:"):
             parts = repo_url.split("git@github.com:")[1].split("/")
             if len(parts) >= 2:
                 return parts[1].replace(".git", "")
-        
+
         return None
-    
+
     def copy_static_to_public(self):
         """Копирует статические файлы админки в папку public для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
         if not source_static_path.exists():
             logger.info("Исходная директория статики не существует, нечего копировать")
             return
-            
+
         dest_static_path = Path('public/admin/static')
-        
-        # Создаем директории, если они не существуют
+
         dest_static_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Копируем статические файлы
+
         if dest_static_path.exists():
             shutil.rmtree(dest_static_path)
         shutil.copytree(source_static_path, dest_static_path)
-    
+
     def rebuild_site(self):
         """Rebuild the site using the engine."""
         try:
-            # Убедимся, что статика админки тоже обновлена
             self.copy_static_to_public()
-            
+
             self.engine.build()
             return True
         except Exception as e:
@@ -674,7 +573,7 @@ class AdminPanel:
             import traceback
             traceback.print_exc()
             return False
-            
+
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
@@ -701,5 +600,4 @@ class AdminPanel:
         html = self.engine.render_page(page)
         return web.Response(text=html, content_type='text/html')
 
-# Экспортируем AdminPanel для доступа из других модулей
-__all__ = ['AdminPanel'] 
+__all__ = ['AdminPanel']
