@@ -9,35 +9,31 @@ import re
 import shutil
 from ..utils.logging import get_logger
 
-# Получаем логгер для данного модуля
 logger = get_logger("admin")
 
 
 class AdminPanel:
     """Admin panel for StaticFlow."""
-    
+
     def __init__(self, config: Config, engine: Engine):
         self.config = config
         self.engine = engine
         self.app = web.Application()
         self.setup_routes()
         self.setup_templates()
-        
+
     def _safe_metadata(self, metadata):
         """Convert metadata to JSON-safe format."""
         if not metadata:
             return {}
-            
+
         result = {}
         for key, value in metadata.items():
             if key == 'date' and hasattr(value, 'isoformat'):
-                # Convert datetime to ISO string
                 result[key] = value.isoformat()
             elif isinstance(value, (str, int, float, bool, type(None))):
-                # These types are JSON-serializable
                 result[key] = value
             elif isinstance(value, list):
-                # Handle lists (e.g., tags)
                 safe_list = []
                 for item in value:
                     if isinstance(item, (str, int, float, bool)):
@@ -46,15 +42,13 @@ class AdminPanel:
                         safe_list.append(str(item))
                 result[key] = safe_list
             else:
-                # Convert other types to string
                 result[key] = str(value)
-                
+
         return result
-        
+
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel and site preview (project-aware)."""
         from pathlib import Path
-        # Получаем путь к шаблонам из пользовательского конфига
         template_dir = self.config.get('template_dir', 'templates')
         if not isinstance(template_dir, Path):
             template_path = Path(template_dir)
@@ -73,7 +67,7 @@ class AdminPanel:
                 str(template_path)
             ])
         )
-        
+
     def setup_routes(self):
         """Setup admin panel routes."""
         self.app.router.add_get('', self.index_handler)
@@ -97,31 +91,25 @@ class AdminPanel:
         self.app.router.add_static('/static', final_static_path)
         if not use_cached:
             self.copy_static_to_public()
-        # Новый серверный предпросмотр (без /admin, чтобы работало с проксированием)
         self.app.router.add_post('/preview', self.preview_post_handler)
         self.app.router.add_get('/preview', self.preview_get_handler)
-        
+
     async def handle_request(self, request):
         """Handle admin panel request."""
         logger.info(f"Admin request: {request.path}, method: {request.method}")
-        
-        # Remove /admin prefix from path
+
         path = request.path.replace('/admin', '', 1)
         if not path:
             path = '/'
-            
+
         logger.info(f"Modified path: {path}")
-        
-        # Прямое перенаправление для API запросов без клонирования
+
         if path.startswith('/api/'):
-            # GET запросы к API
             if request.method == 'GET':
                 if path == '/api/deploy/config':
                     return await self.api_deploy_config_get_handler(request)
-            
-            # POST запросы к API
+
             if request.method == 'POST':
-                # Маршрутизация API напрямую к обработчикам
                 if path == '/api/content':
                     return await self.api_content_handler(request)
                 elif path == '/api/settings':
@@ -135,13 +123,9 @@ class AdminPanel:
                         'success': False,
                         'error': f"Unknown API endpoint: {path}"
                     }, status=404)
-        
-        # Для GET запросов и всех остальных используем клонирование
+
         try:
-            # Клонируем запрос с новым URL
             subrequest = request.clone(rel_url=path)
-            
-            # Обрабатываем запрос через приложение админ-панели
             response = await self.app._handle(subrequest)
             return response
         except web.HTTPNotFound:
@@ -152,65 +136,56 @@ class AdminPanel:
             import traceback
             traceback.print_exc()
             return web.Response(status=500, text=str(e))
-        
+
     @aiohttp_jinja2.template('content.html')
     async def index_handler(self, request):
         """Handle admin panel index page."""
-        # Вместо перенаправления сразу возвращаем содержимое страницы content
         content_path = Path('content')
         files = []
-        
-        # Используем конфигурацию из engine для определения URL файлов
+
         engine = self.engine
         site = engine.site
         base_url = self.config.get('base_url', '')
-        
+
         for file in content_path.rglob('*.*'):
-            if file.suffix in ['.md', '.rst', '.html']:
+            if file.suffix in ['.md', '.html']:
                 rel_path = str(file.relative_to(content_path)).replace('\\', '/')
                 print(f"DEBUG: rel_path={rel_path!r} for file={file}")
                 if not rel_path:
                     continue
-                
-                # Получаем URL для файла
+
                 file_url = ""
                 try:
-                    # Загружаем страницу для получения ее метаданных
                     page = engine.load_page_from_file(file)
                     if page:
-                        # Получаем тип контента
                         content_type = site.determine_content_type(page)
-                        
-                        # Формируем URL
+
                         file_url = site.router.get_url(content_type, page.metadata)
-                        
-                        # Добавляем base_url
+
                         if file_url and not file_url.startswith('http'):
                             if not file_url.startswith('/'):
                                 file_url = '/' + file_url
                             file_url = f"{base_url.rstrip('/')}{file_url}"
                 except Exception as e:
                     logger.error(f"Error generating URL for {rel_path}: {e}")
-                
-                # Если не удалось получить URL, используем преобразование пути
+
                 if not file_url:
-                    file_url = f"{base_url.rstrip('/')}/" + re.sub(r'\.(md|rst)$', '.html', rel_path)
-                
-                # Добавляем информацию о файле
+                    file_url = f"{base_url.rstrip('/')}/" + re.sub(r'\.md$', '.html', rel_path)
+
                 files.append({
                     'path': rel_path,
                     'modified': file.stat().st_mtime,
                     'size': file.stat().st_size,
                     'url': file_url
                 })
-                
+
         static_dir = self.config.get("static_dir", "static")
         static_url = "/" + str(static_dir).strip("/")
         return {
             'files': files,
             'static_url': static_url,
         }
-        
+
     @aiohttp_jinja2.template('settings.html')
     async def settings_handler(self, request):
         """Handle settings page."""
@@ -220,17 +195,15 @@ class AdminPanel:
             'config': self.config.config,
             'static_url': static_url,
         }
-        
+
     @aiohttp_jinja2.template('deploy.html')
     async def deploy_handler(self, request):
         """Handle deployment page."""
-        # Инициализируем GitHub Pages deployer
         from ..deploy.github_pages import GitHubPagesDeployer
         deployer = GitHubPagesDeployer()
-        
-        # Получаем статус и конфигурацию деплоя
+
         status = deployer.get_deployment_status()
-        
+
         static_dir = self.config.get("static_dir", "static")
         static_url = "/" + str(static_dir).strip("/")
         return {
@@ -238,7 +211,7 @@ class AdminPanel:
             'config': status['config'],
             'static_url': static_url,
         }
-        
+
     @aiohttp_jinja2.template('block_editor.html')
     async def block_editor_handler(self, request):
         """Handle block editor page."""
@@ -273,89 +246,63 @@ class AdminPanel:
             'safe_metadata': safe_metadata,
             'error_message': error_message
         }
-    
+
     async def api_content_handler(self, request):
         """Handle content API requests."""
         try:
             data = await request.json()
-            
+
             if 'path' not in data:
                 return web.json_response({
                     'success': False,
                     'error': 'Missing path field'
                 }, status=400)
-                
+
             if 'content' not in data:
                 return web.json_response({
                     'success': False,
                     'error': 'Missing content field'
                 }, status=400)
-                
+
             path = data['path']
             content = data['content']
             metadata = data.get('metadata', {})
-            
-            # Handle new page creation
+
             is_new_page = path == 'New Page'
             if is_new_page:
-                # Проверяем, если путь новой страницы уже содержит имя файла
                 if '.' in path and path != 'New Page':
-                    # Используем путь как есть
                     logger.info(f"Using provided path for new page: {path}")
                 else:
-                    # Используем имя файла из заголовка, если не указано явно
                     title = metadata.get('title', 'Untitled')
-                    # Create sanitized filename from title
                     filename = title.lower().replace(' ', '-')
-                    # Remove any character that's not alphanumeric, dash, or underscore
                     filename = re.sub(r'[^a-z0-9\-_]', '', filename)
-                    # Ensure we have a valid filename
                     if not filename:
                         filename = 'untitled'
-                    
-                    # Определяем формат файла из метаданных
+
                     output_format = metadata.get('format', 'markdown')
-                    
-                    # Выбираем правильное расширение файла в зависимости от формата
-                    if output_format == 'rst':
-                        extension = '.rst'
-                    elif output_format == 'asciidoc':
-                        extension = '.adoc'
-                    else:  # По умолчанию markdown
+
+                    if output_format == 'html':
+                        extension = '.html'
+                    else:
                         extension = '.md'
-                    
-                    # Set path to new file in content directory with proper extension
+
                     path = f"{filename}{extension}"
-                
+
                 logger.info(f"Creating new page at: {path} with format: {metadata.get('format', 'markdown')}")
-            
-            # Normalize path to be relative to content directory
+
             if path.startswith('/'):
                 path = path[1:]
-                
+
             content_path = Path('content') / path
-            
-            # Проверяем если мы меняем формат существующего файла
+
             if not is_new_page and 'format' in metadata:
-                # Получаем текущее расширение и формат из метаданных
                 current_ext = Path(path).suffix
                 output_format = metadata.get('format', 'markdown')
-                
-                # Определяем новое расширение на основе формата
-                if output_format == 'rst':
-                    new_ext = '.rst'
-                elif output_format == 'asciidoc':
-                    new_ext = '.adoc'
-                else:
-                    new_ext = '.md'
-                
-                # Если расширение изменилось, создаем новый путь
-                if current_ext != new_ext:
-                    # Создаем новый путь с измененным расширением
-                    new_path = Path(path).with_suffix(new_ext)
+
+                if current_ext != extension:
+                    new_path = Path(path).with_suffix(extension)
                     new_content_path = Path('content') / new_path
-                    
-                    # Проверяем, не существует ли уже файл с таким именем
+
                     if new_content_path.exists():
                         return web.json_response({
                             'success': False,
@@ -369,7 +316,7 @@ class AdminPanel:
                     path = str(new_path)
                     content_path = new_content_path
                     
-                    logger.info(f"Changing file format: {current_ext} -> {new_ext}, new path: {path}")
+                    logger.info(f"Changing file format: {current_ext} -> {extension}, new path: {path}")
                     
                     # После сохранения нового файла, удалим старый
                     if should_delete_old:
@@ -392,17 +339,7 @@ class AdminPanel:
                     html_content = md_parser.parse(content)
                     
                     # Преобразуем HTML в нужный формат
-                    if output_format == 'rst':
-                        # Импортируем HTML -> RST конвертер
-                        try:
-                            from html2rest import HTML2REST
-                            converter = HTML2REST()
-                            content = converter.convert(html_content)
-                            logger.info("Converted content from Markdown to reStructuredText")
-                        except ImportError:
-                            logger.warning("html2rest not installed. Keeping markdown format.")
-                    
-                    elif output_format == 'asciidoc':
+                    if output_format == 'asciidoc':
                         # Импортируем HTML -> AsciiDoc конвертер
                         try:
                             from html2asciidoc import convert
@@ -432,14 +369,11 @@ class AdminPanel:
                 
             # Если мы изменили формат, удаляем старый файл
             if not is_new_page and 'format' in metadata:
-                current_ext = Path(path).suffix
                 old_ext = current_ext
-                if output_format == 'rst':
-                    old_ext = '.rst' if current_ext != '.rst' else '.md'
-                elif output_format == 'asciidoc':
+                if output_format == 'asciidoc':
                     old_ext = '.adoc' if current_ext != '.adoc' else '.md'
                 elif output_format == 'markdown':
-                    old_ext = '.md' if current_ext != '.md' else '.rst'
+                    old_ext = '.md' if current_ext != '.md' else '.adoc'
                 
                 # Удаляем старый файл только если он существует и отличается от нового
                 old_path = Path(path).with_suffix(old_ext)

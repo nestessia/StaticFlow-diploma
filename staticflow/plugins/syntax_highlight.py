@@ -408,26 +408,6 @@ class SyntaxHighlightPlugin(Plugin):
             content
         )
         
-        # Process RST code blocks: <pre class="code ...">...</pre>
-        def process_rst_block(match):
-            class_attr = match.group(1)
-            code = match.group(2)
-            # Если уже есть pygments-разметка, не трогаем
-            if '<span class=' in code:
-                return match.group(0)
-            # Извлекаем язык из классов
-            lang_match = re.search(
-                r'code\s+([a-zA-Z0-9_+-]+)', class_attr
-            )
-            lang = lang_match.group(1) if lang_match else 'text'
-            return highlight_block(code, lang)
-
-        rst_pattern = re.compile(
-            r'<pre class="code ([^"]+)">(.*?)</pre>',
-            re.DOTALL
-        )
-        content = rst_pattern.sub(process_rst_block, content)
-        
         # Fix JavaScript template literals that might still have HTML tags visible
         def fix_js_template_literals(content):
             # Находим блоки JavaScript кода

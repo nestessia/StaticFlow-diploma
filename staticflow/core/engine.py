@@ -133,10 +133,6 @@ class Engine:
         # Конвертация контента в HTML
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
-        elif page.source_path.suffix.lower() == '.rst':
-            from ..parsers import RSTParser
-            rst_parser = RSTParser()
-            content_html = rst_parser.parse(page.content)
         else:
             content_html = page.content
 

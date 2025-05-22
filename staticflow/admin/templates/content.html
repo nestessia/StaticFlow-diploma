@@ -30,7 +30,6 @@
         <select class="filter-select" x-model="filterType">
             <option value="all">All files</option>
             <option value=".md">Markdown</option>
-            <option value=".rst">reStructuredText</option>
             <option value=".html">HTML</option>
         </select>
     </div>
@@ -49,8 +48,8 @@
             <div class="content-item">
                 <div class="content-info">
                     <h3>
-                        <span class="file-icon" x-text="file.path.endsWith('.md') ? '📄' : (file.path.endsWith('.rst') ? '📄' : '🌐')"></span>
-                        <a :href="(file.url && file.url !== '') ? file.url : ('/' + file.path.replace(/\.(md|rst)$/, '.html'))"
+                        <span class="file-icon" x-text="file.path.endsWith('.md') ? '📄' : '🌐'"></span>
+                        <a :href="(file.url && file.url !== '') ? file.url : ('/' + file.path.replace(/\.md$/, '.html'))"
                            class="file-link"
                            target="_blank"
                            x-text="file.path"></a>
