@@ -10,7 +10,7 @@ from ..plugins.base import Plugin
 
 class Engine:
     """Main engine for static site generation."""
-    
+
     def __init__(self, config):
         """Initialize engine with config."""
         if isinstance(config, Config):
@@ -23,12 +23,11 @@ class Engine:
             )
         self.site = Site(self.config)
         self._cache = {}
-        
-        # Настраиваем Markdown с особым вниманием к подсветке кода
+
         fenced_code_config = {
-            'lang_prefix': 'language-',  # Важно! Добавляет префикс language- к классу
+            'lang_prefix': 'language-',
         }
-        
+
         self.markdown = markdown.Markdown(
             extensions=[
                 'meta',
@@ -41,65 +40,59 @@ class Engine:
             }
         )
         self.plugins: List[Plugin] = []
-        
-    def add_plugin(self, plugin: Plugin, config: Optional[Dict[str, Any]] = None) -> None:
+
+    def add_plugin(self, plugin: Plugin,
+                   config: Optional[Dict[str, Any]] = None) -> None:
         """Add a plugin to the engine with optional configuration."""
         plugin.engine = self
         if config:
             plugin.config = config
         plugin.initialize()
         self.plugins.append(plugin)
-        
+
     def get_plugin(self, name: str) -> Optional[Plugin]:
         """Get a plugin by its name."""
         for plugin in self.plugins:
             if hasattr(plugin, 'metadata') and plugin.metadata.name == name:
                 return plugin
         return None
-        
+
     def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
         self.site.set_directories(source_dir, output_dir, templates_dir)
-        
+
     def build(self) -> None:
         """Build the site."""
-        # Create output directory if it doesn't exist
+
         if self.site.output_dir:
             self.site.output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Execute pre-build hooks
+
         for plugin in self.plugins:
             if hasattr(plugin, 'pre_build'):
                 plugin.pre_build(self.site)
-            
+
         self.site.clear()
-        
-        # Load pages before processing them
         self.site.load_pages()
-        
         self._process_pages()
-        
-        # Execute post-build hooks
+
         for plugin in self.plugins:
             if hasattr(plugin, 'post_build'):
                 plugin.post_build(self.site)
-            
-        # Копируем статику админки в папку public
+
         try:
             from ..admin import AdminPanel
             admin = AdminPanel(self.config, self)
             admin.copy_static_to_public()
         except Exception as e:
-            print(f"Ошибка при копировании статики админки: {e}")
-            
-        # Copy static files
+            print(f"Error copying admin static files: {e}")
+
         self._copy_static_files()
-        
+
     def _process_pages(self) -> None:
         """Process all pages in the site."""
         for page in self.site.get_all_pages():
             self._process_page(page)
-            
+
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
         if not self.site.source_dir or not self.site.output_dir:
@@ -121,16 +114,12 @@ class Engine:
         static_url = self.config.get("static_url", "static")
 
         if static_url.startswith('/') or static_url.startswith('http'):
-            # Уже абсолютный путь, оставляем как есть
             pass
         else:
-            # Добавляем / в начало для локальной разработки
             static_url = f"/{static_url}"
 
-        # Убираем лишний слеш в конце, если он есть
         static_url = static_url.rstrip('/')
 
-        # Конвертация контента в HTML
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
         else:
@@ -149,7 +138,6 @@ class Engine:
         available_translations = translation_urls.copy()
         if page.output_path:
             try:
-                # Добавляем текущий язык и URL
                 current_url = "/" + str(page.output_path.relative_to(self.site.output_dir))
                 available_translations[page.language] = current_url
             except (ValueError, TypeError):
@@ -182,49 +170,43 @@ class Engine:
         static_dir = self.config.get("static_dir", "static")
         if not isinstance(static_dir, Path):
             static_dir = Path(static_dir)
-            
+
         if static_dir.exists():
             output_static = self.site.output_dir / "static"
             if output_static.exists():
                 shutil.rmtree(output_static)
             shutil.copytree(static_dir, output_static)
-            
-        # Генерируем code_highlight.css на основе стиля из конфига
+
         self._generate_code_highlight_css(static_dir)
-            
+
     def _generate_code_highlight_css(self, static_dir: Path) -> None:
         """Generate code highlight CSS based on configuration."""
         try:
-            # Создаем директорию css, если её нет
             css_dir = static_dir / "css"
             css_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Получаем стиль подсветки из конфига
+
             syntax_config = self.config.get("syntax_highlight", {})
             style_name = syntax_config.get("style", "monokai")
-            
-            # Генерируем CSS
+
             from ..utils.pygments_utils import generate_pygments_css
             css_content = generate_pygments_css(style_name)
-            
-            # Записываем в файл
+
             css_file = css_dir / "code_highlight.css"
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(css_content)
-                
+
             print(f"Generated code highlight CSS with '{style_name}' style")
-            
+
         except Exception as e:
             print(f"Error generating code highlight CSS: {e}")
-            
+
     def clean(self) -> None:
         """Clean the build artifacts."""
         if self.site.output_dir and self.site.output_dir.exists():
             shutil.rmtree(self.site.output_dir)
         self._cache.clear()
         self.site.clear()
-        
-        # Cleanup plugins
+
         for plugin in self.plugins:
             plugin.cleanup()
 
@@ -258,7 +240,6 @@ class Engine:
         if not template_path.exists():
             raise ValueError(f"Template not found: {template_path}")
 
-        # Markdown → HTML
         content_html = self.markdown.convert(page.content)
         for plugin in self.plugins:
             content_html = plugin.process_content(content_html)
@@ -268,21 +249,15 @@ class Engine:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
 
-        # Получаем static_url с учетом правильного пути
         static_url = self.config.get("static_url", "static")
-        
-        # При локальной разработке делаем абсолютный путь с / в начале
-        # Для GitHub Pages static_url должен уже содержать корректный путь с repo_name
+
         if static_url.startswith('/') or static_url.startswith('http'):
-            # Уже абсолютный путь, оставляем как есть
             pass
         else:
-            # Добавляем / в начало для локальной разработки
             static_url = f"/{static_url}"
-        
-        # Убираем лишний слеш в конце, если он есть
+
         static_url = static_url.rstrip('/')
-            
+
         context = {
             "page": page,
             "site_name": self.config.get("site_name", "StaticFlow Site"),
@@ -290,7 +265,7 @@ class Engine:
             "static_url": static_url,
             "page_content": content_html,
             "page_head_content": "\n".join(head_content) if head_content else "",
-            "available_translations": {},  # Пустой словарь для предпросмотра
+            "available_translations": {},
         }
         page.translations = {}
 
