@@ -73,9 +73,7 @@ class AdminPanel:
         self.app.router.add_get('', self.index_handler)
         self.app.router.add_get('/', self.index_handler)
         self.app.router.add_get('/content', self.index_handler)
-        self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
-        self.app.router.add_post('/api/settings', self.api_settings_handler)
         self.app.router.add_get('/block-editor', self.block_editor_handler)
         self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
         self.app.router.add_get('/deploy', self.deploy_handler)
@@ -112,8 +110,6 @@ class AdminPanel:
             if request.method == 'POST':
                 if path == '/api/content':
                     return await self.api_content_handler(request)
-                elif path == '/api/settings':
-                    return await self.api_settings_handler(request)
                 elif path == '/api/deploy/config':
                     return await self.api_deploy_config_handler(request)
                 elif path == '/api/deploy/start':
@@ -183,16 +179,6 @@ class AdminPanel:
         static_url = "/" + str(static_dir).strip("/")
         return {
             'files': files,
-            'static_url': static_url,
-        }
-
-    @aiohttp_jinja2.template('settings.html')
-    async def settings_handler(self, request):
-        """Handle settings page."""
-        static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
-        return {
-            'config': self.config.config,
             'static_url': static_url,
         }
 
@@ -336,33 +322,7 @@ class AdminPanel:
                 'error': str(e)
             }, status=500)
 
-    async def api_settings_handler(self, request):
-        """Handle settings API requests."""
-        try:
-            data = await request.json()
 
-            for key, value in data.items():
-                self.config.set(key, value)
-
-            self.config.save()
-            self.rebuild_site()
-
-            return web.json_response({'status': 'ok'})
-        except json.JSONDecodeError as e:
-            logger.error(f"Settings JSON parse error: {e}")
-            return web.json_response({
-                'success': False,
-                'error': f"Invalid JSON: {e}"
-            }, status=400)
-        except Exception as e:
-            logger.error(f"Unexpected error in api_settings_handler: {e}")
-            import traceback
-            traceback.print_exc()
-            return web.json_response({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-            
     async def api_deploy_config_get_handler(self, request):
         """Handle deploy configuration GET API requests."""
         try:
