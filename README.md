@@ -6,13 +6,6 @@ StaticFlow - современный генератор статических с
 
 ## 🌟 Особенности
 
-- **Блочный редактор** - создавайте контент визуально без знания Markdown или HTML
-- **Встроенная админ-панель** - управляйте контентом через удобный веб-интерфейс
-- **Многоязычность** - полная поддержка интернационализации (i18n)
-- **Быстрая разработка** - режим горячей перезагрузки (hot reload) для мгновенного просмотра изменений
-- **Расширяемость** - система плагинов для добавления любой функциональности
-- **SEO-оптимизация** - встроенная поддержка для метаданных, sitemap и генерации данных для поисковиков
-- **Современные форматы данных** - поддержка YAML, TOML, JSON для метаданных
 
 ## 🚀 Быстрый старт
 
@@ -28,6 +21,17 @@ pip install staticflow
 staticflow create my-awesome-site
 cd my-awesome-site
 ```
+
+Мастер создания проекта позволяет настроить:
+- Название сайта
+- Описание и автора
+- Основной язык сайта (автоматически определяется по IP или локали)
+- Добавление поддержки нескольких языков (многоязычность)
+
+Если вы выбираете многоязычность при создании проекта, StaticFlow:
+- Создаст соответствующую структуру директорий (content/ru/, content/en/, и т.д.)
+- Настроит файл конфигурации с поддержкой языковых префиксов в URL
+- Добавит переключатель языков в базовый шаблон
 
 ### Запуск сервера разработки
 
@@ -110,6 +114,13 @@ source_dir = "content"
 template_dir = "templates"
 static_dir = "static"
 
+# Настройки многоязычности
+[languages]
+default = "ru"
+enabled = ["ru", "en"]
+USE_LANGUAGE_PREFIXES = true
+EXCLUDE_DEFAULT_LANG_PREFIX = true
+
 # Плагины
 [plugins]
 enabled = ["seo", "sitemap", "rss", "minifier"]
@@ -121,6 +132,67 @@ open_graph = true
 [plugins.sitemap]
 priority = 0.8
 changefreq = "weekly"
+```
+
+### Многоязычность
+
+StaticFlow поддерживает многоязычные сайты с помощью языковых префиксов URL и языковых директорий.
+
+#### Организация контента в языковых директориях
+
+```
+content/
+├── ru/              # Контент на русском
+│   ├── about.md
+│   └── index.md
+└── en/              # Контент на английском
+    ├── about.md
+    └── index.md
+```
+
+#### Настройка маршрутизации
+
+В `config.toml` вы можете настроить параметры маршрутизации для многоязычного сайта:
+
+```toml
+[languages]
+default = "ru"        # Язык по умолчанию
+enabled = ["ru", "en"] # Поддерживаемые языки
+
+# Использовать языковые префиксы в URL (/en/about.html)
+USE_LANGUAGE_PREFIXES = true
+
+# Язык по умолчанию без префикса (/about.html вместо /ru/about.html)
+EXCLUDE_DEFAULT_LANG_PREFIX = true
+```
+
+Результирующая структура сайта будет следующей:
+
+```
+public/
+├── about.html       # Версия на языке по умолчанию (без префикса)
+├── index.html       # Главная на языке по умолчанию
+└── en/              # Английская версия (с префиксом)
+    ├── about.html
+    └── index.html
+```
+
+#### Использование в шаблонах
+
+Переключатель языков автоматически доступен в шаблонах через переменную `available_translations`:
+
+```html
+<ul class="lang-switcher">
+{% for lang, url in available_translations.items() %}
+    <li>
+        {% if lang == page.language %}
+            <strong>{{ lang }}</strong>
+        {% else %}
+            <a href="{{ url }}">{{ lang }}</a>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
 ```
 
 ## 🧩 Расширение функциональности
@@ -401,3 +473,68 @@ MIT
 ---
 
 Создано с 💙 разработчиком StaticFlow @nestessia
+
+## Image and Media Processing
+
+StaticFlow now includes powerful image and media processing capabilities through the `MediaPlugin`. This plugin enables:
+
+- **Automatic image optimization** - Images are automatically resized and compressed for improved performance
+- **Responsive images** - Generated with `srcset` for optimal loading on different devices
+- **WebP conversion** - Modern format support with fallbacks
+- **Image placeholders** - Low-resolution placeholders for faster perceived loading
+- **Video thumbnails** - Automatically generated from video content
+- **Asset organization** - Structured media organization with content hashing
+
+### Configuration
+
+The media plugin is configured in your site's config file:
+
+```toml
+[plugins.media]
+output_dir = "media"
+source_dir = "static"
+sizes = { 
+  thumbnail = { width = 200, height = 200, quality = 70 },
+  small = { width = 400, quality = 80 },
+  medium = { width = 800, quality = 85 },
+  large = { width = 1200, quality = 90 },
+  original = { quality = 95 }
+}
+formats = ["webp", "original"]
+generate_placeholders = true
+placeholder_size = 20
+process_videos = true
+video_thumbnail = true
+hash_filenames = true
+hash_length = 8
+```
+
+### Usage
+
+Simply add images to your content, and the media plugin will handle the rest:
+
+```markdown
+![My image](/static/images/photo.jpg)
+```
+
+This will be transformed into:
+
+```html
+<img src="/media/images/photo-a1b2c3d4-medium.webp" 
+     srcset="/media/images/photo-a1b2c3d4-small.webp 400w, 
+             /media/images/photo-a1b2c3d4-medium.webp 800w, 
+             /media/images/photo-a1b2c3d4-large.webp 1200w" 
+     sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, (max-width: 1200px) 1200px, 100vw" />
+```
+
+For videos:
+
+```html
+<video src="/static/videos/demo.mp4"></video>
+```
+
+Will be transformed to include a generated thumbnail poster:
+
+```html
+<video src="/media/videos/demo-a1b2c3d4.mp4" poster="/media/videos/demo-a1b2c3d4-thumbnail.webp"></video>
+```

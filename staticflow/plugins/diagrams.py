@@ -68,23 +68,35 @@ class MermaidPlugin(Plugin):
         
     def get_head_content(self) -> str:
         """Return content to be added to the head section."""
+        # Подключаем самую базовую версию Mermaid
         mermaid_script = (
             '<script src="https://cdn.jsdelivr.net/npm/'
-            'mermaid@10.2.3/dist/mermaid.min.js"></script>'
+            'mermaid@8.14.0/dist/mermaid.min.js"></script>'
         )
         init_script = """
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Базовая инициализация с минимальными настройками
+            if (typeof mermaid !== 'undefined') {
+                // Конфигурация с минимумом настроек
                 mermaid.initialize({
-                    startOnLoad: false,
+                    startOnLoad: true,
                     theme: 'default',
                     securityLevel: 'loose'
                 });
-                
-                setTimeout(function() {
-                    mermaid.run();
-                }, 100);
-            });
+            }
+        });
         </script>
+        <style>
+        /* Простые стили для диаграмм */
+        .mermaid {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        </style>
         """
         return f'{mermaid_script}\n{init_script}'

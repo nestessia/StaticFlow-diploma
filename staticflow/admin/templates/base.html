@@ -8,17 +8,29 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body>
+<body x-data="{ 
+    darkMode: localStorage.getItem('darkMode') === 'true' || 
+              (localStorage.getItem('darkMode') === null && 
+               window.matchMedia('(prefers-color-scheme: dark)').matches) 
+}" 
+:class="{ 'dark-theme': darkMode, 'light-theme': !darkMode }">
     <nav class="admin-nav">
         <div class="nav-header">
             <h1>StaticFlow</h1>
         </div>
-        <ul class="nav-links">
-            <li><a href="/admin/">Dashboard</a></li>
-            <li><a href="/admin/content">Content</a></li>
-            <li><a href="/admin/settings">Settings</a></li>
-            <li><a href="/admin/deploy">Deploy</a></li>
-        </ul>
+        <div class="nav-right" style="display: flex; align-items: center;">
+            <ul class="nav-links">
+                <li><a href="/admin/content">Content</a></li>
+                <li><a href="/admin/deploy">Deploy</a></li>
+            </ul>
+            <div class="theme-switch">
+                <label class="theme-switch-toggle">
+                    <input type="checkbox" x-model="darkMode" @change="localStorage.setItem('darkMode', darkMode)">
+                    <span class="theme-switch-slider"></span>
+                </label>
+                <span class="theme-switch-label" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </div>
+        </div>
     </nav>
     
     <main class="admin-main">

@@ -68,29 +68,4 @@ async function createContent() {
 
 async function editContent(path) {
     window.location.href = `/admin/content/edit?path=${encodeURIComponent(path)}`;
-}
-
-async function deleteContent(path) {
-    if (!confirm(`Are you sure you want to delete ${path}?`)) return;
-    
-    try {
-        const response = await fetch('/admin/api/content', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'delete',
-                path: path
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to delete content');
-        }
-        
-        window.location.reload();
-    } catch (error) {
-        alert('Error deleting content: ' + error.message);
-    }
 } 
