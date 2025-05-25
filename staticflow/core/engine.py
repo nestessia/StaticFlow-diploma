@@ -120,6 +120,10 @@ class Engine:
 
         static_url = static_url.rstrip('/')
 
+        # Add source_path to metadata for directory structure preservation
+        if page.source_path:
+            page.metadata['source_path'] = str(page.source_path)
+
         if page.source_path.suffix.lower() == '.md':
             content_html = self.markdown.convert(page.content)
         else:

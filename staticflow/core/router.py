@@ -7,10 +7,10 @@ from .category import CategoryManager, Category
 
 
 class Router:
-    """URL router for StaticFlow."""
+    """Router for StaticFlow."""
 
     DEFAULT_URL_PATTERNS = {
-        "page": "{slug}.html",                           
+        "page": "{category}/{slug}.html",
         "post": "{category_path}/{slug}.html",
         "tag": "tag/{name}.html",
         "category": "category/{category_path}/index.html",
@@ -20,7 +20,7 @@ class Router:
     }
 
     DEFAULT_SAVE_AS_PATTERNS = {
-        "page": "{slug}.html",  
+        "page": "{category}/{slug}.html",  
         "post": "{category_path}/{slug}.html",
         "tag": "tag/{name}.html",
         "category": "category/{category_path}/index.html",
@@ -29,18 +29,31 @@ class Router:
         "archive": "archives.html"
     }
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize router with optional routes from config."""
-        self.url_patterns = self.DEFAULT_URL_PATTERNS.copy()
-        self.save_as_patterns = self.DEFAULT_SAVE_AS_PATTERNS.copy()
+    def __init__(self, config: Dict[str, Any]):
+        """Initialize router with config."""
+        self.url_patterns = config.get(
+            "URL_PATTERNS", 
+            self.DEFAULT_URL_PATTERNS
+        )
+        self.save_as_patterns = config.get(
+            "SAVE_AS_PATTERNS", 
+            self.DEFAULT_SAVE_AS_PATTERNS
+        )
         self.use_clean_urls = False
-        self.use_language_prefixes = False
-        self.exclude_default_lang_prefix = True
-        self.default_language = 'ru'
+        self.use_language_prefixes = config.get(
+            "USE_LANGUAGE_PREFIXES", 
+            True
+        )
+        self.exclude_default_lang_prefix = config.get(
+            "EXCLUDE_DEFAULT_LANG_PREFIX", 
+            True
+        )
+        self.default_language = config.get("default_language", "en")
         self.default_page = 'index'
         self.category_manager = CategoryManager()
         self._url_cache: Dict[str, str] = {}
         self._save_as_cache: Dict[str, str] = {}
+        self.preserve_directory_structure = True
 
         if config:
             self.update_config(config)
@@ -62,6 +75,9 @@ class Router:
         )
         self.default_language = config.get('default_language', 'ru')
         self.default_page = config.get('DEFAULT_PAGE', 'index')
+        self.preserve_directory_structure = config.get(
+            'PRESERVE_DIRECTORY_STRUCTURE', True
+        )
 
         # Load categories if provided
         categories_file = config.get('CATEGORIES_FILE')
@@ -89,6 +105,15 @@ class Router:
             if 'slug' in metadata:
                 return f"{metadata['slug']}.html"
             return ""
+
+        # Handle directory structure
+        if self.preserve_directory_structure and 'source_path' in metadata:
+            source_path = Path(metadata['source_path'])
+            if source_path.parent.name != 'content':
+                directory = str(source_path.parent.relative_to(
+                    source_path.parents[len(source_path.parts)-2]
+                )).replace('\\', '/')
+                metadata['directory'] = directory
 
         # Handle category paths
         if 'category' in metadata:
@@ -133,6 +158,15 @@ class Router:
         if not pattern:
             return self.get_url(content_type, metadata)
 
+        # Handle directory structure
+        if self.preserve_directory_structure and 'source_path' in metadata:
+            source_path = Path(metadata['source_path'])
+            if source_path.parent.name != 'content':
+                directory = str(source_path.parent.relative_to(
+                    source_path.parents[len(source_path.parts)-2]
+                )).replace('\\', '/')
+                metadata['directory'] = directory
+
         # Handle category paths
         if 'category' in metadata:
             category_path = self._get_category_path(metadata['category'])
@@ -153,28 +187,67 @@ class Router:
         return save_as
 
     def get_output_path(
-        self, base_dir: Path, content_type: str, metadata: Dict[str, Any]
+        self,
+        output_dir: Path,
+        content_type: str,
+        metadata: Dict[str, Any]
     ) -> Path:
-        """Get full output path for file."""
-        save_as = self.get_save_as(content_type, metadata)
+        """Get output path for content."""
+        print("\nRouter debug:")
+        print(f"Content type: {content_type}")
+        print(f"Metadata: {metadata}")
 
-        if os.path.isabs(save_as):
-            return Path(save_as)
-
-        return base_dir / save_as
+        # Get the pattern for this content type
+        pattern = self.save_as_patterns.get(content_type, "{slug}.html")
+        
+        # Prepare variables for pattern formatting
+        variables = metadata.copy()
+        
+        # Handle directory structure from source path
+        if "source_path" in metadata:
+            source_path = Path(metadata["source_path"])
+            if source_path.parent.name != "content":
+                directory = str(source_path.parent.relative_to(
+                    source_path.parents[len(source_path.parts)-2]
+                )).replace("\\", "/")
+                variables["directory"] = directory
+                variables["category"] = directory
+                variables["category_path"] = directory
+        
+        # Format the path
+        try:
+            save_as_path = pattern.format(**variables)
+        except KeyError as e:
+            print(f"Warning: Missing key in pattern: {e}")
+            # Fallback to simple slug pattern if category is missing
+            save_as_path = f"{variables.get('slug', 'index')}.html"
+            
+        print(f"Save as path: {save_as_path}")
+        
+        # Ensure the path is relative and uses forward slashes
+        save_as_path = save_as_path.lstrip("/").replace("\\", "/")
+        
+        # Create the full output path
+        output_path = output_dir / save_as_path
+        print(f"Final output path: {output_path}")
+        
+        return output_path
 
     def _get_category_path(self, category: Any) -> str:
         """Get full category path from category object or string."""
+        print(f"\nProcessing category: {category}")
         if isinstance(category, Category):
-            return category.full_path
+            result = category.full_path
         elif isinstance(category, list) and category:
             # Handle list of categories, use first one
             cat = self.category_manager.get_or_create_category(category[0])
-            return cat.full_path
+            result = cat.full_path
         else:
             # Handle string category
             cat = self.category_manager.get_or_create_category(str(category))
-            return cat.full_path
+            result = cat.full_path
+        print(f"Resulting category path: {result}")
+        return result
 
     def _format_pattern(self, pattern: str, metadata: Dict[str, Any]) -> str:
         """Replace all variables in pattern with values from metadata."""
@@ -183,7 +256,9 @@ class Router:
         for match in re.finditer(r'\{([^}]+)\}', pattern):
             key = match.group(1)
 
-            if key == 'category_path' and 'category_path' in metadata:
+            if key == 'directory' and 'directory' in metadata:
+                replacement = metadata['directory']
+            elif key == 'category_path' and 'category_path' in metadata:
                 replacement = metadata['category_path']
             elif key == 'category' and 'category' in metadata:
                 category = metadata['category']
