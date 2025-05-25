@@ -207,9 +207,11 @@ class Router:
         if "source_path" in metadata:
             source_path = Path(metadata["source_path"])
             if source_path.parent.name != "content":
-                directory = str(source_path.parent.relative_to(
-                    source_path.parents[len(source_path.parts)-2]
-                )).replace("\\", "/")
+                # Get all parent directories except the last one (which is the file)
+                directory = str(source_path.parent).replace("\\", "/")
+                # Remove 'content/' prefix if present
+                if directory.startswith("content/"):
+                    directory = directory[8:]  # len("content/") = 8
                 variables["directory"] = directory
                 variables["category"] = directory
                 variables["category_path"] = directory
