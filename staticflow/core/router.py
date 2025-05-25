@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 import re
 from datetime import datetime
 import os
+from .category import CategoryManager, Category
 
 
 class Router:
@@ -10,9 +11,9 @@ class Router:
 
     DEFAULT_URL_PATTERNS = {
         "page": "{slug}.html",                           
-        "post": "{category}/{slug}.html",
+        "post": "{category_path}/{slug}.html",
         "tag": "tag/{name}.html",
-        "category": "category/{name}.html",
+        "category": "category/{category_path}/index.html",
         "author": "author/{name}.html",
         "index": "index.html",
         "archive": "archives.html"
@@ -20,9 +21,9 @@ class Router:
 
     DEFAULT_SAVE_AS_PATTERNS = {
         "page": "{slug}.html",  
-        "post": "{category}/{slug}.html",
+        "post": "{category_path}/{slug}.html",
         "tag": "tag/{name}.html",
-        "category": "category/{name}.html",
+        "category": "category/{category_path}/index.html",
         "author": "author/{name}.html",
         "index": "index.html",
         "archive": "archives.html"
@@ -36,6 +37,10 @@ class Router:
         self.use_language_prefixes = False
         self.exclude_default_lang_prefix = True
         self.default_language = 'ru'
+        self.default_page = 'index'
+        self.category_manager = CategoryManager()
+        self._url_cache: Dict[str, str] = {}
+        self._save_as_cache: Dict[str, str] = {}
 
         if config:
             self.update_config(config)
@@ -52,19 +57,43 @@ class Router:
 
         self.use_clean_urls = config.get('CLEAN_URLS', False)
         self.use_language_prefixes = config.get('USE_LANGUAGE_PREFIXES', True)
-        self.exclude_default_lang_prefix = config.get('EXCLUDE_DEFAULT_LANG_PREFIX', True)
+        self.exclude_default_lang_prefix = config.get(
+            'EXCLUDE_DEFAULT_LANG_PREFIX', True
+        )
         self.default_language = config.get('default_language', 'ru')
+        self.default_page = config.get('DEFAULT_PAGE', 'index')
+
+        # Load categories if provided
+        categories_file = config.get('CATEGORIES_FILE')
+        if categories_file:
+            self.category_manager = CategoryManager.load_from_file(
+                Path(categories_file)
+            )
 
     def get_url(self, content_type: str, metadata: Dict[str, Any]) -> str:
-        """Получить URL для контента на основе типа и метаданных."""
+        """Get URL for content based on type and metadata."""
+        cache_key = f"{content_type}:{hash(str(metadata))}"
+        if cache_key in self._url_cache:
+            return self._url_cache[cache_key]
+
         if 'url' in metadata:
             return metadata['url']
+
+        # Если это дефолтная страница и запрос к корню сайта
+        if (content_type == 'page' and 
+                metadata.get('slug') == self.default_page):
+            return ''
 
         pattern = self.url_patterns.get(content_type)
         if not pattern:
             if 'slug' in metadata:
                 return f"{metadata['slug']}.html"
             return ""
+
+        # Handle category paths
+        if 'category' in metadata:
+            category_path = self._get_category_path(metadata['category'])
+            metadata['category_path'] = category_path
 
         url = self._format_pattern(pattern, metadata)
 
@@ -73,7 +102,8 @@ class Router:
 
         if self.use_language_prefixes and 'language' in metadata:
             language = metadata['language']
-            if language != self.default_language or not self.exclude_default_lang_prefix:
+            if (language != self.default_language or 
+                    not self.exclude_default_lang_prefix):
                 if url == "index.html" or (self.use_clean_urls and url == "index"):
                     if self.use_clean_urls:
                         url = f"{language}/"
@@ -82,33 +112,50 @@ class Router:
                 else:
                     url = f"{language}/{url}"
 
+        self._url_cache[cache_key] = url
         return url
 
     def get_save_as(self, content_type: str, metadata: Dict[str, Any]) -> str:
-        """Получить путь сохранения для контента."""
+        """Get save path for content."""
+        cache_key = f"{content_type}:{hash(str(metadata))}"
+        if cache_key in self._save_as_cache:
+            return self._save_as_cache[cache_key]
+
         if 'save_as' in metadata:
             return metadata['save_as']
+
+        # Если это дефолтная страница
+        if (content_type == 'page' and 
+                metadata.get('slug') == self.default_page):
+            return 'index.html'
 
         pattern = self.save_as_patterns.get(content_type)
         if not pattern:
             return self.get_url(content_type, metadata)
 
+        # Handle category paths
+        if 'category' in metadata:
+            category_path = self._get_category_path(metadata['category'])
+            metadata['category_path'] = category_path
+
         save_as = self._format_pattern(pattern, metadata)
 
         if self.use_language_prefixes and 'language' in metadata:
             language = metadata['language']
-            if language != self.default_language or not self.exclude_default_lang_prefix:
+            if (language != self.default_language or 
+                    not self.exclude_default_lang_prefix):
                 if save_as == "index.html":
                     save_as = f"{language}/index.html"
                 else:
                     save_as = f"{language}/{save_as}"
 
+        self._save_as_cache[cache_key] = save_as
         return save_as
 
     def get_output_path(
         self, base_dir: Path, content_type: str, metadata: Dict[str, Any]
     ) -> Path:
-        """Получить полный путь для выходного файла."""
+        """Get full output path for file."""
         save_as = self.get_save_as(content_type, metadata)
 
         if os.path.isabs(save_as):
@@ -116,14 +163,29 @@ class Router:
 
         return base_dir / save_as
 
+    def _get_category_path(self, category: Any) -> str:
+        """Get full category path from category object or string."""
+        if isinstance(category, Category):
+            return category.full_path
+        elif isinstance(category, list) and category:
+            # Handle list of categories, use first one
+            cat = self.category_manager.get_or_create_category(category[0])
+            return cat.full_path
+        else:
+            # Handle string category
+            cat = self.category_manager.get_or_create_category(str(category))
+            return cat.full_path
+
     def _format_pattern(self, pattern: str, metadata: Dict[str, Any]) -> str:
-        """Заменить все переменные в шаблоне значениями из метаданных."""
+        """Replace all variables in pattern with values from metadata."""
         result = pattern
 
         for match in re.finditer(r'\{([^}]+)\}', pattern):
             key = match.group(1)
 
-            if key == 'category' and 'category' in metadata:
+            if key == 'category_path' and 'category_path' in metadata:
+                replacement = metadata['category_path']
+            elif key == 'category' and 'category' in metadata:
                 category = metadata['category']
                 if isinstance(category, list) and category:
                     replacement = category[0]
@@ -147,14 +209,14 @@ class Router:
         return self._normalize_path(result)
 
     def _normalize_path(self, path: str) -> str:
-        """Нормализовать путь (убрать двойные слэши и т.д.)."""
+        """Normalize path (remove double slashes etc)."""
         normalized = re.sub(r'(?<!:)//+', '/', path)
         if normalized.endswith('/') and len(normalized) > 1:
             normalized = normalized[:-1]
         return normalized
 
     def _format_date(self, date_value: Any, format_str: str) -> str:
-        """Форматировать значение даты по шаблону."""
+        """Format date value according to format string."""
         if isinstance(date_value, datetime):
             return date_value.strftime(format_str)
         elif isinstance(date_value, str):
@@ -164,3 +226,8 @@ class Router:
             except (ValueError, TypeError):
                 return ""
         return ""
+
+    def clear_cache(self) -> None:
+        """Clear URL and save_as caches."""
+        self._url_cache.clear()
+        self._save_as_cache.clear()
