@@ -10,23 +10,23 @@ class Router:
     """Router for StaticFlow."""
 
     DEFAULT_URL_PATTERNS = {
-        "page": "{category}/{slug}.html",
-        "post": "{category_path}/{slug}.html",
-        "tag": "tag/{name}.html",
-        "category": "category/{category_path}/index.html",
-        "author": "author/{name}.html",
-        "index": "index.html",
-        "archive": "archives.html"
+        "page": "{category}/{slug}",                           
+        "post": "{category_path}/{slug}",
+        "tag": "{name}",
+        "category": "{category_path}",
+        "author": "{name}",
+        "index": "",
+        "archive": "archives"
     }
 
     DEFAULT_SAVE_AS_PATTERNS = {
-        "page": "{category}/{slug}.html",  
-        "post": "{category_path}/{slug}.html",
-        "tag": "tag/{name}.html",
-        "category": "category/{category_path}/index.html",
-        "author": "author/{name}.html",
+        "page": "{category}/{slug}/index.html",  
+        "post": "{category_path}/{slug}/index.html",
+        "tag": "{name}/index.html",
+        "category": "{category_path}/index.html",
+        "author": "{name}/index.html",
         "index": "index.html",
-        "archive": "archives.html"
+        "archive": "archives/index.html"
     }
 
     def __init__(self, config: Dict[str, Any]):
@@ -39,7 +39,7 @@ class Router:
             "SAVE_AS_PATTERNS", 
             self.DEFAULT_SAVE_AS_PATTERNS
         )
-        self.use_clean_urls = False
+        self.use_clean_urls = True  # Always use clean URLs
         self.use_language_prefixes = config.get(
             "USE_LANGUAGE_PREFIXES", 
             True
@@ -203,13 +203,19 @@ class Router:
         # Prepare variables for pattern formatting
         variables = metadata.copy()
         
-        # Handle directory structure from source path
-        if "source_path" in metadata:
+        # Handle category path based on content type
+        if content_type == "category" and "category_path" in metadata:
+            # For categories, use category_path from metadata
+            variables["category"] = metadata["category_path"]
+            variables["category_path"] = metadata["category_path"]
+        elif content_type == "post" and "category" in metadata:
+            # For posts, use category from metadata
+            variables["category_path"] = metadata["category"]
+        elif "source_path" in metadata:
+            # For other content types, use directory structure
             source_path = Path(metadata["source_path"])
             if source_path.parent.name != "content":
-                # Get all parent directories except the last one (which is the file)
                 directory = str(source_path.parent).replace("\\", "/")
-                # Remove 'content/' prefix if present
                 if directory.startswith("content/"):
                     directory = directory[8:]  # len("content/") = 8
                 variables["directory"] = directory
