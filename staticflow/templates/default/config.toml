@@ -1,19 +1,67 @@
 # Site information
-site_name = ""  # Will be set to project name
+site_name = "My StaticFlow Site"
 base_url = "http://localhost:8000"
-description = "A new StaticFlow site"
-author = ""
-language = "ru"
+description = "A static site built with StaticFlow"
+author = "Your Name"
+language = "en"
 
-# Directories
-source_dir = "content"
-template_dir = "templates"
+# Directory settings
+content_dir = "content"
+output_dir = "output"
 static_dir = "static"
-static_url = "/static"
-output_dir = "public"
+templates_dir = "templates"
 
-# Default settings
-default_template = "page.html"
+# Default template
+default_template = "base.html"
+
+# URL patterns
+[URL_PATTERNS]
+page = "{category}/{slug}"
+post = "{category_path}/{slug}"
+tag = "{name}"
+category = "{category_path}"
+author = "{name}"
+index = ""
+
+# Save patterns
+[SAVE_AS_PATTERNS]
+page = "{category}/{slug}/index.html"
+post = "{category_path}/{slug}/index.html"
+tag = "{name}/index.html"
+category = "{category_path}/index.html"
+author = "{name}/index.html"
+index = "index.html"
+
+# Category settings
+[CATEGORY]
+enabled = true
+hierarchical = true
+max_depth = 3
+
+# Tag settings
+[TAG]
+enabled = true
+case_sensitive = false
+max_tags = 100
+
+# Author settings
+[AUTHOR]
+enabled = true
+use_slug = true
+fields = ["name", "email", "bio", "avatar"]
+
+# Plugin settings
+[PLUGINS]
+enabled = ["multilingual"]
+
+# Multilingual plugin settings
+[PLUGIN_MULTILINGUAL]
+enabled = true
+default_language = "en"
+languages = ["en", "ru"]
+url_prefix = true
+exclude_default_lang_prefix = false
+auto_redirect = true
 
 # Syntax highlighting settings
 [syntax_highlight]

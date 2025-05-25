@@ -4,7 +4,6 @@ import aiohttp_jinja2
 import jinja2
 from rich.console import Console
 from rich.panel import Panel
-from watchdog.events import FileSystemEventHandler
 from ..core.engine import Engine
 from ..admin import AdminPanel
 from ..plugins import initialize_plugins
@@ -136,12 +135,18 @@ class Server:
 
     def setup_templates(self):
         """Setup Jinja2 templates."""
-        template_dir = self.config.get('template_dir')
+        template_dir = self.config.get('template_dir', 'templates')
+        if not template_dir:
+            template_dir = 'templates'
 
         if not isinstance(template_dir, Path):
             template_path = Path(template_dir)
         else:
             template_path = template_dir
+
+        if not template_path.exists():
+            template_path.mkdir(parents=True)
+            logger.info(f"Created template directory: {template_path}")
 
         aiohttp_jinja2.setup(
             self.app,

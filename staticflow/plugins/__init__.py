@@ -7,6 +7,7 @@ from .diagrams import MermaidPlugin
 from .notion_blocks import NotionBlocksPlugin
 from .media import MediaPlugin
 from .cdn import CDNPlugin
+from .multilingual import MultilingualPlugin
 from pathlib import Path
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     'MinifierPlugin',
     'MediaPlugin',
     'CDNPlugin',
+    'MultilingualPlugin',
     'get_default_plugin_configs',
     'initialize_plugins'
 ]

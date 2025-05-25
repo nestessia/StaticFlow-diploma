@@ -1,8 +1,7 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 import re
 from datetime import datetime
-import os
 from .category import CategoryManager, Category
 
 
@@ -16,7 +15,6 @@ class Router:
         "category": "{category_path}",
         "author": "{name}",
         "index": "",
-        "archive": "archives"
     }
 
     DEFAULT_SAVE_AS_PATTERNS = {
@@ -26,7 +24,6 @@ class Router:
         "category": "{category_path}/index.html",
         "author": "{name}/index.html",
         "index": "index.html",
-        "archive": "archives/index.html"
     }
 
     def __init__(self, config: Dict[str, Any]):
@@ -125,17 +122,13 @@ class Router:
         if self.use_clean_urls and url.endswith('.html'):
             url = url[:-5]
 
-        if self.use_language_prefixes and 'language' in metadata:
-            language = metadata['language']
-            if (language != self.default_language or 
-                    not self.exclude_default_lang_prefix):
-                if url == "index.html" or (self.use_clean_urls and url == "index"):
-                    if self.use_clean_urls:
-                        url = f"{language}/"
-                    else:
-                        url = f"{language}/index.html"
-                else:
-                    url = f"{language}/{url}"
+        # Let multilingual plugin handle language prefixes
+        if 'language' in metadata and hasattr(self, 'engine'):
+            multilingual_plugin = self.engine.get_plugin('multilingual')
+            if multilingual_plugin:
+                url = multilingual_plugin.get_language_url(
+                    url, metadata['language']
+                )
 
         self._url_cache[cache_key] = url
         return url
@@ -174,14 +167,13 @@ class Router:
 
         save_as = self._format_pattern(pattern, metadata)
 
-        if self.use_language_prefixes and 'language' in metadata:
-            language = metadata['language']
-            if (language != self.default_language or 
-                    not self.exclude_default_lang_prefix):
-                if save_as == "index.html":
-                    save_as = f"{language}/index.html"
-                else:
-                    save_as = f"{language}/{save_as}"
+        # Let multilingual plugin handle language prefixes
+        if 'language' in metadata and hasattr(self, 'engine'):
+            multilingual_plugin = self.engine.get_plugin('multilingual')
+            if multilingual_plugin:
+                save_as = multilingual_plugin.get_language_save_path(
+                    save_as, metadata['language']
+                )
 
         self._save_as_cache[cache_key] = save_as
         return save_as
