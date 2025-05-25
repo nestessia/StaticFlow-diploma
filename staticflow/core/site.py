@@ -124,9 +124,11 @@ class Site:
             print(f"Path parts: {path_parts}")
             
             # Skip language directory if present
-            start_idx = (1 if (len(path_parts) > 1 and 
-                             path_parts[0] in self.languages) 
-                        else 0)
+            start_idx = (
+                1 if (len(path_parts) > 1 and 
+                      path_parts[0] in self.languages)
+                else 0
+            )
             print(f"Start index: {start_idx}")
             
             # Get all directories except the file name
@@ -140,6 +142,21 @@ class Site:
         metadata["language"] = page.language
         metadata["source_path"] = str(page.source_path)
         print(f"Final metadata: {metadata}")
+
+        # Create output path preserving language directory
+        if page.source_path.parts and len(page.source_path.parts) > 1:
+            first_dir = page.source_path.parts[0]
+            if 2 <= len(first_dir) <= 3 and first_dir.islower():
+                # Get the path without language directory
+                rel_path = page.source_path.relative_to(
+                    page.source_path.parent
+                )
+                # Change extension to html
+                rel_path = rel_path.with_suffix('.html')
+                # Create output path with language directory
+                output_path = self.output_dir / first_dir / rel_path
+                print(f"Final output path with language: {output_path}")
+                return output_path
 
         output_path = self.router.get_output_path(
             self.output_dir,
@@ -207,6 +224,16 @@ class Site:
             return page.metadata["type"]
 
         source_path_str = str(page.source_path)
+        
+        # Skip language directory when determining content type
+        if page.source_path.parts and len(page.source_path.parts) > 1:
+            first_dir = page.source_path.parts[0]
+            if (2 <= len(first_dir) <= 3 and 
+                    first_dir.islower()):
+                source_path_str = str(page.source_path.relative_to(
+                    page.source_path.parent
+                ))
+
         if "/posts/" in source_path_str or "\\posts\\" in source_path_str:
             return "post"
 
