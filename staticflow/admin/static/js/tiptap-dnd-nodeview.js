@@ -14,10 +14,12 @@ export function createDndNodeView(blockClass = '', dragIcon = '⋮⋮') {
     handle.draggable = true
     // Drag events
     handle.addEventListener('dragstart', (event) => {
+      console.log('dragstart', getPos())
       event.dataTransfer.setData('application/x-tiptap-drag', getPos())
       wrapper.classList.add('dragging')
     })
     handle.addEventListener('dragend', () => {
+      console.log('dragend', getPos())
       wrapper.classList.remove('dragging')
     })
     // Content
@@ -28,10 +30,12 @@ export function createDndNodeView(blockClass = '', dragIcon = '⋮⋮') {
     wrapper.appendChild(contentDOM)
     // Drop logic
     wrapper.addEventListener('dragover', (event) => {
+      console.log('dragover', getPos())
       event.preventDefault()
       wrapper.classList.add('drag-over')
     })
     wrapper.addEventListener('dragleave', () => {
+      console.log('dragleave', getPos())
       wrapper.classList.remove('drag-over')
     })
     wrapper.addEventListener('drop', (event) => {
@@ -39,6 +43,7 @@ export function createDndNodeView(blockClass = '', dragIcon = '⋮⋮') {
       wrapper.classList.remove('drag-over')
       const from = parseInt(event.dataTransfer.getData('application/x-tiptap-drag'))
       const to = getPos()
+      console.log('drop', { from, to })
       if (from !== to) {
         editor.commands.command(({ tr }) => {
           const node = tr.doc.nodeAt(from)
@@ -52,6 +57,11 @@ export function createDndNodeView(blockClass = '', dragIcon = '⋮⋮') {
     return {
       dom: wrapper,
       contentDOM,
+      stopEvent: (event) => {
+        // Разрешаем drag&drop
+        if (event && event.type && event.type.startsWith('drag')) return false;
+        return undefined;
+      }
     }
   }
 } 
