@@ -233,11 +233,8 @@ def create(path: str):
         config["description"] = description
         config["author"] = author
         config["language"] = default_language
-        
-        # Configure multilingual support
+
         if multilingual:
-            # Don't set up languages section in config or enable language prefixes
-            # Just create content directories for each language
             console.print("\n[bold]Created language directories:[/bold]")
             default_name = get_language_name(default_language)
             console.print(
@@ -281,13 +278,12 @@ def create(path: str):
         with open(project_path / "static/css/style.css", "w", 
                   encoding="utf-8") as f:
             f.write(load_default_styles())
-        
-        # Генерируем code_highlight.css на основе стиля из конфига
+
         try:
             from staticflow.utils.pygments_utils import generate_pygments_css
             style_name = config.get("syntax_highlight", {}).get("style", "monokai")
             css_content = generate_pygments_css(style_name)
-            
+
             with open(project_path / "static/css/code_highlight.css", "w", 
                      encoding="utf-8") as f:
                 f.write(css_content)

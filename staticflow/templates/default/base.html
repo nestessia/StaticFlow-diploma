@@ -6,8 +6,7 @@
     <title>{% block title %}{{ page.title }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ static_url }}/css/style.css">
     <link rel="stylesheet" href="{{ static_url }}/css/code_highlight.css">
-    
-    <!-- Добавляем языковые метатеги для поисковых систем -->
+
     <link rel="canonical" href="{{ site_url }}" />
     {% for lang, url in page.translations.items() %}
     <link rel="alternate" hreflang="{{ lang }}" href="{{ site_url }}{{ url }}" />
