@@ -144,6 +144,16 @@ class TipTapToolbar {
                 action: () => this.editor.chain().focus().setTextAlign('right').run(),
                 isActive: () => this.editor.isActive({ textAlign: 'right' }),
             },
+            {
+                icon: 'square-root-alt',
+                title: 'Вставить формулу (KaTeX)',
+                action: () => this.editor.chain().focus().insertContent({ type: 'mathBlock', content: '' }).run(),
+            },
+            {
+                icon: 'project-diagram',
+                title: 'Вставить диаграмму (Mermaid)',
+                action: () => this.editor.chain().focus().insertContent({ type: 'mermaidBlock', content: 'graph TD;\nA-->B;' }).run(),
+            },
         ]
 
         buttons.forEach(button => {

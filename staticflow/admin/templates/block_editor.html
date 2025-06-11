@@ -95,14 +95,15 @@
             author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
             tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
             format: {% if safe_metadata and safe_metadata.format %}{{ safe_metadata.format|tojson }}{% else %}"markdown"{% endif %},
-        }
+        },
+        type: {% if page and page.source_path and page.source_path.endswith('.html') %}"html"{% else %}"markdown"{% endif %}
     };
 
     // Инициализация редактора
     document.addEventListener('DOMContentLoaded', function() {
         try {
             // Инициализация редактора
-            const editor = new TipTapEditor('#tiptap-content', pageData.content);
+            const editor = new TipTapEditor('#tiptap-content', pageData.content, pageData.type);
             const toolbar = new TipTapToolbar(editor.editor);
             
             // Добавляем панель инструментов
@@ -172,7 +173,7 @@
 
     // Функция сохранения страницы
     async function savePage(editor) {
-        const content = editor.getMarkdown();
+        const content = editor.getContentForSave();
         const title = document.getElementById('page-title').value;
         const filename = document.getElementById('filename-input')?.value || pageData.path;
         const date = document.getElementById('meta-date').value;
@@ -193,6 +194,7 @@
                         date: date,
                         author: author,
                         tags: tags,
+                        format: pageData.type
                     }
                 })
             });
