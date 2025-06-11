@@ -27,6 +27,14 @@ def serve(port: int, host: str, config: str):
             logger.error(error_message)
             console.print(f"[red]Error:[/red] {error_message}")
             return
+
+        # Проверяем, существует ли директория сборки
+        build_dir = Path("dist")
+        if not build_dir.exists():
+            console.print("[yellow]Warning:[/yellow] Build directory not found. "
+                         "Please run 'staticflow build' first.")
+            return
+
         server = Server(
             config=Config(config_path),
             host=host,

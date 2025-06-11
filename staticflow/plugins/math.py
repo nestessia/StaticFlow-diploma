@@ -27,12 +27,6 @@ class MathPlugin(Plugin):
             </script>
         '''
 
-    def process_content(self, content: str) -> str:
-        """Process content and render math formulas."""
-        # We don't need to transform the delimiters anymore
-        # since we've configured KaTeX to use $ directly
-        return content
-
     def get_head_content(self) -> str:
         """Get content to be inserted in the head section."""
-        return self.katex_css + self.katex_js 
+        return self.katex_css + self.katex_js

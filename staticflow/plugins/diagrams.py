@@ -49,26 +49,24 @@ class MermaidExtension(Extension):
 
 class MermaidPlugin(Plugin):
     """Plugin for rendering Mermaid diagrams."""
-    
+
     def __init__(self):
         super().__init__()
         self.name = 'mermaid'
         self.description = 'Renders Mermaid diagrams in Markdown files'
-        
+
     def init(self, engine):
         """Initialize the plugin with the engine instance."""
         super().init(engine)
         self.engine = engine
         self.engine.md.registerExtension(MermaidExtension())
-        
+
     def process_content(self, content: str) -> str:
         """Process content and render Mermaid diagrams."""
-        # Обработка уже выполнена через Markdown расширение
         return content
-        
+
     def get_head_content(self) -> str:
         """Return content to be added to the head section."""
-        # Подключаем самую базовую версию Mermaid
         mermaid_script = (
             '<script src="https://cdn.jsdelivr.net/npm/'
             'mermaid@8.14.0/dist/mermaid.min.js"></script>'
@@ -76,9 +74,7 @@ class MermaidPlugin(Plugin):
         init_script = """
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Базовая инициализация с минимальными настройками
             if (typeof mermaid !== 'undefined') {
-                // Конфигурация с минимумом настроек
                 mermaid.initialize({
                     startOnLoad: true,
                     theme: 'default',
