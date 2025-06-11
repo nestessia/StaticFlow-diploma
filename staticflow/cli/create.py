@@ -15,6 +15,7 @@ from ..templates import (
     load_default_config,
     load_default_template
 )
+from staticflow.core.config import Config
 
 console = Console()
 
@@ -225,7 +226,11 @@ def create(path: str):
         (project_path / "templates").mkdir()
         (project_path / "static").mkdir()
         (project_path / "static/css").mkdir(parents=True)
-        (project_path / "public").mkdir()
+        from staticflow.core.config import Config
+        config_path = project_path / "config.toml"
+        config = Config(config_path)
+        output_dir = config.get('output_dir')
+        (project_path / output_dir).mkdir(exist_ok=True)
 
         # Update config with project info
         config = load_default_config()

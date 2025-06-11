@@ -82,7 +82,7 @@ class Engine:
         try:
             from ..admin import AdminPanel
             admin = AdminPanel(self.config, self)
-            admin.copy_static_to_public()
+            admin.copy_static_to_output()
         except Exception as e:
             print(f"Error copying admin static files: {e}")
 

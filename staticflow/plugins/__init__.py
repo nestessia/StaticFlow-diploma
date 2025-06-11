@@ -116,7 +116,7 @@ def initialize_plugins(engine) -> None:
 
         sitemap_config = {
             "base_url": base_url,
-            "output_path": engine.config.get("output_dir", "public")
+            "output_path": engine.config.get("output_dir")
         }
         sitemap_plugin = SitemapPlugin()
         engine.add_plugin(sitemap_plugin, sitemap_config)
@@ -125,7 +125,7 @@ def initialize_plugins(engine) -> None:
             "site_name": engine.config.get("site_name", "StaticFlow Site"),
             "site_description": engine.config.get("description", ""),
             "base_url": base_url,
-            "output_path": engine.config.get("output_dir", "public"),
+            "output_path": engine.config.get("output_dir"),
             "language": engine.config.get("language", "en")
         }
         rss_plugin = RSSPlugin()

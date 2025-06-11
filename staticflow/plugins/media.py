@@ -117,6 +117,10 @@ class MediaPlugin(Plugin):
         self.media_dir = None
         if engine := getattr(self, "engine", None):
             if output_dir := getattr(engine.site, "output_dir", None):
+                if isinstance(output_dir, str):
+                    output_dir = Path(output_dir)
+                if isinstance(self.config["output_dir"], str):
+                    self.config["output_dir"] = Path(self.config["output_dir"])
                 self.media_dir = output_dir / self.config["output_dir"]
                 self.media_dir.mkdir(parents=True, exist_ok=True)
             

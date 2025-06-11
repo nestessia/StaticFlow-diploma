@@ -30,3 +30,11 @@ class MathPlugin(Plugin):
     def get_head_content(self) -> str:
         """Get content to be inserted in the head section."""
         return self.katex_css + self.katex_js
+
+    def process_content(self, content: str) -> str:
+        """Process the content and return modified version.
+        
+        Since KaTeX is loaded via JavaScript and processes math on the client side,
+        this method just returns the content as is.
+        """
+        return content

@@ -18,6 +18,7 @@ class AdminPanel:
     def __init__(self, config: Config, engine: Engine):
         self.config = config
         self.engine = engine
+        self.output_dir = Path(self.config.get('output_dir'))
         self.app = web.Application()
         self.setup_routes()
         self.setup_templates()
@@ -88,7 +89,7 @@ class AdminPanel:
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
         if not use_cached:
-            self.copy_static_to_public()
+            self.copy_static_to_output()
         self.app.router.add_post('/preview', self.preview_post_handler)
         self.app.router.add_get('/preview', self.preview_get_handler)
 
@@ -506,14 +507,14 @@ class AdminPanel:
 
         return None
 
-    def copy_static_to_public(self):
-        """Копирует статические файлы админки в папку public для кэширования."""
+    def copy_static_to_output(self):
+        """Копирует статические файлы админки в папку output_dir для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
         if not source_static_path.exists():
             logger.info("Исходная директория статики не существует, нечего копировать")
             return
 
-        dest_static_path = Path('public/admin/static')
+        dest_static_path = self.output_dir / 'admin' / 'static'
 
         dest_static_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -524,7 +525,7 @@ class AdminPanel:
     def rebuild_site(self):
         """Rebuild the site using the engine."""
         try:
-            self.copy_static_to_public()
+            self.copy_static_to_output()
 
             self.engine.build()
             return True

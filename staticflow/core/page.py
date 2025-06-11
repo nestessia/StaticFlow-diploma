@@ -3,6 +3,8 @@ from typing import Any, Dict, Optional, List
 from datetime import datetime
 import yaml
 import os
+import jinja2
+from markdown import markdown
 
 
 class Page:
@@ -138,3 +140,44 @@ class Page:
             pass
 
         return translations
+
+    def render(self) -> str:
+        """
+        Рендерит страницу в HTML.
+        
+        Returns:
+            str: HTML-содержимое страницы
+        """
+        # Если контент уже отрендерен, возвращаем его
+        if self.rendered_content:
+            return self.rendered_content
+            
+        # Конвертируем Markdown в HTML
+        html_content = markdown(self.content)
+        
+        # Если есть шаблон, используем его
+        template_name = self.metadata.get('template')
+        if template_name:
+            try:
+                template_dir = Path('templates')
+                env = jinja2.Environment(
+                    loader=jinja2.FileSystemLoader(str(template_dir))
+                )
+                template = env.get_template(template_name)
+                
+                # Подготавливаем контекст для шаблона
+                context = {
+                    'content': html_content,
+                    'page': self,
+                    'metadata': self.metadata
+                }
+                
+                # Рендерим шаблон
+                self.rendered_content = template.render(**context)
+            except Exception as e:
+                print(f"Error rendering template {template_name}: {e}")
+                self.rendered_content = html_content
+        else:
+            self.rendered_content = html_content
+            
+        return self.rendered_content
