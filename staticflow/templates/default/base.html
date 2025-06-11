@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ static_url }}/css/code_highlight.css">
     
     <!-- Добавляем языковые метатеги для поисковых систем -->
-    <link rel="canonical" href="{{ site_url }}{{ page.url }}" />
+    <link rel="canonical" href="{{ site_url }}" />
     {% for lang, url in page.translations.items() %}
     <link rel="alternate" hreflang="{{ lang }}" href="{{ site_url }}{{ url }}" />
     {% endfor %}
@@ -16,23 +16,6 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <div class="container">
-            <nav>
-                <!-- Переключатель языков -->
-                {% if available_translations %}
-                    <div class="lang-dropdown">
-                        <button class="lang-dropbtn">{{ page.language }} <span class="arrow-down">▼</span></button>
-                        <div class="lang-dropdown-content">
-                            {% for lang, url in available_translations.items() %}
-                                <a href="{{ url }}" {% if lang == page.language %}class="active"{% endif %}>{{ lang }}</a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-            </nav>
-        </div>
-    </header>
     <main>
         <div class="content">
             {% block content %}{% endblock %}

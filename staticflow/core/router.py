@@ -46,7 +46,7 @@ class Router:
             True
         )
         self.default_language = config.get("default_language", "en")
-        self.default_page = 'index'
+        self.default_page = config.get("router", {}).get("DEFAULT_PAGE", "index")
         self.category_manager = CategoryManager()
         self._url_cache: Dict[str, str] = {}
         self._save_as_cache: Dict[str, str] = {}
@@ -95,13 +95,13 @@ class Router:
         # Если это дефолтная страница и запрос к корню сайта
         if (content_type == 'page' and 
                 metadata.get('slug') == self.default_page):
-            return ''
+            return '/'
 
         pattern = self.url_patterns.get(content_type)
         if not pattern:
             if 'slug' in metadata:
-                return f"{metadata['slug']}.html"
-            return ""
+                return f"/{metadata['slug']}"
+            return "/"
 
         # Handle directory structure
         if self.preserve_directory_structure and 'source_path' in metadata:
@@ -129,6 +129,10 @@ class Router:
                 url = multilingual_plugin.get_language_url(
                     url, metadata['language']
                 )
+
+        # Ensure URL starts with /
+        if not url.startswith('/'):
+            url = '/' + url
 
         self._url_cache[cache_key] = url
         return url
