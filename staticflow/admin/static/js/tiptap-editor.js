@@ -158,10 +158,12 @@ class TipTapEditor {
     getMarkdown() {
         const doc = this.editor.getJSON();
         let md = '';
-        let htmlChunks = [];
+        
         // Рекурсивная функция сериализации
         function serializeNode(node) {
             if (!node) return '';
+            
+            // Специальные блоки
             if (node.type === 'mermaidBlock') {
                 return `\n\n\`\`\`mermaid\n${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}\n\`\`\`\n\n`;
             }
@@ -175,41 +177,64 @@ class TipTapEditor {
             if (node.type === 'mathInline') {
                 return `$${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}$`;
             }
-            // Для обычных блоков возвращаем специальную метку, чтобы потом собрать html
+            
+            // Обработка заголовков
+            if (node.type === 'heading') {
+                const level = node.attrs?.level || 1;
+                const content = node.content && node.content.length ? node.content.map(n => n.text || '').join('') : '';
+                return `\n${'#'.repeat(level)} ${content}\n\n`;
+            }
+            
+            // Обработка параграфов
+            if (node.type === 'paragraph') {
+                const content = node.content && node.content.length ? node.content.map(n => n.text || '').join('') : '';
+                return `\n${content}\n\n`;
+            }
+            
+            // Для остальных блоков используем HTML
             return null;
         }
+
         if (doc.content && Array.isArray(doc.content)) {
             for (const node of doc.content) {
                 const customMd = serializeNode(node);
                 if (customMd !== null && customMd !== undefined && customMd !== '') {
                     md += customMd;
                 } else {
-                    // Собираем html для обычных блоков
-                    // Получаем HTML только для этого блока
-                    const html = this.editor.view.dom.ownerDocument.createElement('div');
-                    // Используем toDOM для node (если есть)
-                    try {
-                        const schema = this.editor.schema;
-                        const ProseMirrorNode = schema.nodeFromJSON(node);
-                        const fragment = this.editor.view.someProp('domSerializer')
-                            ? this.editor.view.someProp('domSerializer').serializeFragment(ProseMirrorNode.content)
-                            : null;
-                        if (fragment) {
-                            html.appendChild(fragment);
-                        } else {
-                            html.innerHTML = this.editor.getHTML(); // fallback
-                        }
-                    } catch (e) {
-                        html.innerHTML = this.editor.getHTML();
+                    // Создаем временный элемент для текущего блока
+                    const tempDiv = document.createElement('div');
+                    const schema = this.editor.schema;
+                    const ProseMirrorNode = schema.nodeFromJSON(node);
+                    
+                    // Сериализуем только текущий блок
+                    const fragment = this.editor.view.someProp('domSerializer')
+                        ? this.editor.view.someProp('domSerializer').serializeFragment(ProseMirrorNode.content)
+                        : null;
+                        
+                    if (fragment) {
+                        tempDiv.appendChild(fragment);
+                        const turndownService = new TurndownService({
+                            headingStyle: 'atx',
+                            codeBlockStyle: 'fenced',
+                            emDelimiter: '*',
+                            bulletListMarker: '-',
+                            hr: '---',
+                            strongDelimiter: '**',
+                            linkStyle: 'inlined'
+                        });
+                        
+                        // Добавляем правила для сохранения форматирования
+                        turndownService.addRule('preserveNewlines', {
+                            filter: ['br'],
+                            replacement: () => '\n'
+                        });
+                        
+                        md += turndownService.turndown(tempDiv.innerHTML);
                     }
-                    htmlChunks.push(html.innerHTML);
                 }
             }
         }
-        // Прогоняем все обычные блоки через Turndown одним куском
-        if (htmlChunks.length > 0) {
-            md += this.turndown.turndown(htmlChunks.join('\n\n'));
-        }
+        
         return md.trim();
     }
 
