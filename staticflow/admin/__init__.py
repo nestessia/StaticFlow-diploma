@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 from ..utils.logging import get_logger
+import uuid
 
 logger = get_logger("admin")
 
@@ -90,8 +91,6 @@ class AdminPanel:
         self.app.router.add_static('/static', final_static_path)
         if not use_cached:
             self.copy_static_to_output()
-        self.app.router.add_post('/preview', self.preview_post_handler)
-        self.app.router.add_get('/preview', self.preview_get_handler)
 
     async def handle_request(self, request):
         """Handle admin panel request."""
@@ -538,27 +537,5 @@ class AdminPanel:
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
-
-    async def preview_post_handler(self, request):
-        """Сохраняет черновик во временный файл и возвращает 204 (без редиректа)."""
-        data = await request.json()
-        tmp_path = Path('public/admin/preview_draft.json')
-        with tmp_path.open('w', encoding='utf-8') as f:
-            json.dump(data, f)
-        return web.Response(status=204)
-
-    async def preview_get_handler(self, request):
-        """Рендерит предпросмотр страницы как при генерации сайта."""
-        tmp_path = Path('public/admin/preview_draft.json')
-        if not tmp_path.exists():
-            return web.Response(text='Нет черновика для предпросмотра', status=404)
-        with tmp_path.open('r', encoding='utf-8') as f:
-            data = json.load(f)
-        content = data.get('content', '')
-        metadata = data.get('metadata', {})
-        from staticflow.core.page import Page
-        page = Page(Path('preview.md'), content, metadata)
-        html = self.engine.render_page(page)
-        return web.Response(text=html, content_type='text/html')
 
 __all__ = ['AdminPanel']

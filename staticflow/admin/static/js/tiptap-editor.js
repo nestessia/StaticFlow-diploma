@@ -34,6 +34,8 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import python from 'highlight.js/lib/languages/python'
 import { preprocessMarkdownHtml } from './markdown-preprocessor.js'
 import { DropIndicator } from './tiptap-drop-indicator.js'
+import { createColorBubbleMenu } from './tiptap-bubblemenu.js'
+import { BubbleMenu } from '@tiptap/extension-bubble-menu'
 
 lowlight.registerLanguage('js', javascript)
 lowlight.registerLanguage('javascript', javascript)
@@ -61,6 +63,8 @@ class TipTapEditor {
         } else {
             htmlContent = this.content || ''
         }
+        // Создаём bubble menu DOM-элемент
+        const colorBubbleMenu = createColorBubbleMenu(this.editor)
         this.editor = new Editor({
             element: this.element,
             extensions: [
@@ -114,6 +118,11 @@ class TipTapEditor {
                 MathInline,
                 MermaidBlock,
                 DropIndicator,
+                BubbleMenu.configure({
+                    element: colorBubbleMenu,
+                    tippyOptions: { duration: 150 },
+                    shouldShow: ({ editor }) => editor.isActive('textStyle') || editor.isActive('highlight') || editor.isActive('text'),
+                }),
             ],
             content: htmlContent,
             onUpdate: ({ editor }) => {

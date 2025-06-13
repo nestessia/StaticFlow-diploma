@@ -14,24 +14,6 @@ class TipTapToolbar {
     createToolbar() {
         const buttons = [
             {
-                icon: 'bold',
-                title: 'Жирный',
-                action: () => this.editor.chain().focus().toggleBold().run(),
-                isActive: () => this.editor.isActive('bold'),
-            },
-            {
-                icon: 'italic',
-                title: 'Курсив',
-                action: () => this.editor.chain().focus().toggleItalic().run(),
-                isActive: () => this.editor.isActive('italic'),
-            },
-            {
-                icon: 'strikethrough',
-                title: 'Зачеркнутый',
-                action: () => this.editor.chain().focus().toggleStrike().run(),
-                isActive: () => this.editor.isActive('strike'),
-            },
-            {
                 icon: 'code',
                 title: 'Код',
                 action: () => this.editor.chain().focus().toggleCode().run(),
@@ -125,24 +107,6 @@ class TipTapToolbar {
             },
             {
                 type: 'divider',
-            },
-            {
-                icon: 'align-left',
-                title: 'По левому краю',
-                action: () => this.editor.chain().focus().setTextAlign('left').run(),
-                isActive: () => this.editor.isActive({ textAlign: 'left' }),
-            },
-            {
-                icon: 'align-center',
-                title: 'По центру',
-                action: () => this.editor.chain().focus().setTextAlign('center').run(),
-                isActive: () => this.editor.isActive({ textAlign: 'center' }),
-            },
-            {
-                icon: 'align-right',
-                title: 'По правому краю',
-                action: () => this.editor.chain().focus().setTextAlign('right').run(),
-                isActive: () => this.editor.isActive({ textAlign: 'right' }),
             },
             {
                 icon: 'square-root-alt',
