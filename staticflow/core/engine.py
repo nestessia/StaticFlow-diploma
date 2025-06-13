@@ -6,6 +6,7 @@ from .config import Config
 from .site import Site
 from .page import Page
 from ..plugins.base import Plugin
+from ..parsers.extensions.video import makeExtension
 
 
 class Engine:
@@ -34,6 +35,7 @@ class Engine:
                 'fenced_code',
                 'tables',
                 'attr_list',
+                makeExtension(),
             ],
             extension_configs={
                 'fenced_code': fenced_code_config

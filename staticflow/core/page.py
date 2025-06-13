@@ -4,7 +4,6 @@ from datetime import datetime
 import yaml
 import os
 import jinja2
-from markdown import markdown
 
 
 class Page:
@@ -20,10 +19,18 @@ class Page:
         self.rendered_content: Optional[str] = None
         self.created_at = datetime.now()
         self.modified_at = datetime.now()
+        self._markdown_parser = None
 
         self.translations: Dict[str, str] = {}
         self.default_lang = default_lang
         self.language = self._determine_language()
+
+    @property
+    def markdown_parser(self):
+        if self._markdown_parser is None:
+            from staticflow.parsers import MarkdownParser
+            self._markdown_parser = MarkdownParser()
+        return self._markdown_parser
 
     def _determine_language(self) -> str:
         """Determine page language from metadata or directory."""
@@ -152,8 +159,8 @@ class Page:
         if self.rendered_content:
             return self.rendered_content
             
-        # Конвертируем Markdown в HTML
-        html_content = markdown(self.content)
+        # Конвертируем Markdown в HTML используя наш парсер
+        html_content = self.markdown_parser.parse(self.content)
         
         # Если есть шаблон, используем его
         template_name = self.metadata.get('template')

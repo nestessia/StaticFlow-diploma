@@ -1,22 +1,14 @@
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 from pathlib import Path
+import yaml
 from .base import Plugin
-from ..core.page import Page
 
+if TYPE_CHECKING:
+    from ..core.page import Page
 
 class MultilingualPlugin(Plugin):
-    """Plugin for multilingual support in StaticFlow.
+    """Плагин для поддержки многоязычности."""
     
-    This plugin provides multilingual support based on directory structure:
-    content/
-    ├── ru/              # Russian content
-    │   └── blog/
-    │       └── article.md
-    └── en/              # English content
-        └── blog/
-            └── article.md
-    """
-
     def __init__(self):
         super().__init__()
         self.metadata = Plugin(
@@ -27,8 +19,9 @@ class MultilingualPlugin(Plugin):
             requires_config=True
         )
         self.languages: List[str] = []
-        self.default_language: str = "en"
+        self.default_language = "en"
         self.language_config: Dict[str, Dict[str, Any]] = {}
+        self.translations: Dict[str, Dict[str, str]] = {}
 
     def initialize(self, config: Optional[Dict[str, Any]] = None) -> None:
         """Initialize the plugin with configuration."""
@@ -68,46 +61,46 @@ class MultilingualPlugin(Plugin):
             return False
         return True
 
-    def process_page(self, page: Page) -> None:
-        """Process page to handle multilingual content.
+    def process_page(self, page: 'Page') -> None:
+        """Обрабатывает страницу для поддержки многоязычности."""
+        # Получаем язык страницы из метаданных или пути
+        language = page.metadata.get(
+            'language', 
+            self._get_language_from_path(page.source_path)
+        )
         
-        This method:
-        1. Determines the language from the directory structure
-        2. Finds available translations
-        3. Updates page metadata with language information
-        """
-        if not page.source_path:
-            return
+        # Если это страница перевода, загружаем переводы
+        if language != self.default_language:
+            self._load_translations(language)
+            
+    def _get_language_from_path(self, path: Path) -> str:
+        """Определяет язык из пути файла."""
+        parts = path.parts
+        if len(parts) > 0 and len(parts[0]) == 2:
+            return parts[0]
+        return self.default_language
+        
+    def _load_translations(self, language: str) -> None:
+        """Загружает переводы для указанного языка."""
+        if language not in self.translations:
+            try:
+                with open(
+                    f"translations/{language}.yml", 
+                    'r', 
+                    encoding='utf-8'
+                ) as f:
+                    self.translations[language] = yaml.safe_load(f)
+            except FileNotFoundError:
+                self.translations[language] = {}
+                
+    def translate(self, key: str, language: str) -> str:
+        """Переводит ключ на указанный язык."""
+        if language not in self.translations:
+            self._load_translations(language)
+            
+        return self.translations[language].get(key, key)
 
-        # Determine language from directory structure
-        path_parts = page.source_path.parts
-        if len(path_parts) > 1:
-            first_dir = path_parts[0]
-            if 2 <= len(first_dir) <= 3 and first_dir.islower():
-                page.language = first_dir
-                page.metadata['language'] = first_dir
-
-        # Find translations
-        translations = {}
-        if page.source_path.parent.parent:
-            for lang in self.languages:
-                if lang != page.language:
-                    # Construct path to potential translation
-                    rel_path = page.source_path.relative_to(
-                        page.source_path.parent
-                    )
-                    trans_path = (
-                        page.source_path.parent.parent / 
-                        lang / 
-                        rel_path
-                    )
-                    if trans_path.exists():
-                        translations[lang] = trans_path
-
-        # Update page with translation information
-        page.translations = translations
-
-    def get_available_translations(self, page: Page) -> Dict[str, Path]:
+    def get_available_translations(self, page: 'Page') -> Dict[str, Path]:
         """Get available translations for a page.
         
         Returns a dictionary mapping language codes to their file paths.

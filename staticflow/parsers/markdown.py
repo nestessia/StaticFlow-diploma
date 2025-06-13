@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 import markdown
 from .base import ContentParser
 from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
+from .extensions.video import makeExtension
 
 
 class MarkdownParser(ContentParser):
@@ -41,7 +42,8 @@ class MarkdownParser(ContentParser):
             'pymdownx.superfences',
             'pymdownx.tabbed',
             'pymdownx.tasklist',
-            'pymdownx.tilde'
+            'pymdownx.tilde',
+            makeExtension(),
         ]
         self.extension_configs: Dict[str, Dict[str, Any]] = {
             'toc': {
@@ -82,47 +84,12 @@ class MarkdownParser(ContentParser):
         """Преобразует Markdown в HTML."""
         self._md.reset()
         html = self._md.convert(content)
-        
-        # Обработка callouts в стиле Notion
-        if self.get_option('callouts'):
-            html = self._process_callouts(html)
-            
-        # Обработка подсветки синтаксиса
+
         if self.get_option('syntax_highlight'):
             html = self.syntax_highlighter.process_content(html)
             
         return html
 
-    def _process_callouts(self, html: str) -> str:
-        """Преобразует блоки предупреждений в callouts."""
-        import re
-        
-        def callout_replacer(match):
-            type_map = {
-                'note': ('info', 'ℹ️'),
-                'warning': ('warning', '⚠️'),
-                'danger': ('error', '⛔'),
-                'important': ('important', '❗'),
-                'tip': ('tip', '💡'),
-                'attention': ('attention', '👀'),
-            }
-            ad_type = match.group(1).lower()
-            notion_type, icon = type_map.get(ad_type, ('info', 'ℹ️'))
-            title = match.group(2)
-            content = match.group(3)
-            return (
-                f'<div class="callout {notion_type}">'
-                f'<div class="callout-icon">{icon}</div>'
-                f'<div class="callout-content"><strong>{title}</strong> {content.strip()}</div>'
-                f'</div>'
-            )
-
-        return re.sub(
-            r'<div class="admonition (\w+)">.*?<p class="first admonition-title">(.*?)</p>(.*?)</div>',
-            callout_replacer,
-            html,
-            flags=re.DOTALL
-        )
 
     def add_extension(self, extension: str, config: Optional[Dict[str, Any]] = None) -> None:
         """Добавляет расширение Markdown."""

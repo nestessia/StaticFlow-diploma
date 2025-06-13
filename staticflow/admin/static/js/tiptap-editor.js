@@ -27,7 +27,6 @@ import {
   OrderedListDnd,
   TaskListDnd,
   ImageDnd,
-  VideoBlockDnd,
   AudioBlockDnd
 } from './tiptap-dnd-blocks.js'
 import javascript from 'highlight.js/lib/languages/javascript'
@@ -37,6 +36,7 @@ import { DropIndicator } from './tiptap-drop-indicator.js'
 import { createColorBubbleMenu } from './tiptap-bubblemenu.js'
 import { BubbleMenu } from '@tiptap/extension-bubble-menu'
 import { ImageBlock } from './tiptap-image.js'
+import { VideoBlock } from './tiptap-video.js'
 
 lowlight.registerLanguage('js', javascript)
 lowlight.registerLanguage('javascript', javascript)
@@ -87,7 +87,7 @@ class TipTapEditor {
                 OrderedListDnd,
                 TaskListDnd,
                 ImageDnd,
-                VideoBlockDnd,
+                VideoBlock,
                 AudioBlockDnd,
                 ImageBlock,
                 Link.configure({
@@ -185,6 +185,11 @@ class TipTapEditor {
                 const alt = node.attrs?.alt || '';
                 const title = node.attrs?.title || '';
                 return `\n\n![${alt}](${src}${title ? ` \"${title}\"` : ''})\n\n`;
+            }
+            if (node.type === 'videoBlock') {
+                const src = node.attrs?.src || '';
+                const title = node.attrs?.title || '';
+                return `\n\n!VIDEO(${src})\n\n`;
             }
             
             // Обработка заголовков

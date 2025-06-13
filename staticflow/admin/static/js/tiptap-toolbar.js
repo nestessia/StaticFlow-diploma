@@ -169,6 +169,16 @@ class TipTapToolbar {
                 },
             },
             {
+                icon: 'video',
+                title: 'Video',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'videoBlock',
+                        attrs: { src: '', title: '', controls: true }
+                    }).run();
+                },
+            },
+            {
                 icon: 'link',
                 title: 'Link',
                 action: () => {
