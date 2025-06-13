@@ -14,15 +14,6 @@ class TipTapToolbar {
     createToolbar() {
         const buttons = [
             {
-                icon: 'code',
-                title: 'Код',
-                action: () => this.editor.chain().focus().toggleCode().run(),
-                isActive: () => this.editor.isActive('code'),
-            },
-            {
-                type: 'divider',
-            },
-            {
                 icon: 'heading',
                 title: 'Header 1',
                 label: '1',
@@ -123,6 +114,7 @@ class TipTapToolbar {
                 action: () => {
                     this.editor.chain().focus().insertContentAt(0, {
                         type: 'codeBlock',
+                        attrs: { language: '' },
                         content: [{ type: 'text', text: ' ' }]
                     }).run();
                 },

@@ -8,6 +8,7 @@ module.exports = {
         'tiptap-dnd-nodeview': './static/js/tiptap-dnd-nodeview.js',
         'tiptap-paragraph-dnd': './static/js/tiptap-paragraph-dnd.js',
         'tiptap-drop-indicator': './static/js/tiptap-drop-indicator.js',
+        'tiptap-code-block': './static/js/tiptap-code-block.js',
         'tiptap-video': './static/js/tiptap-video.js',
         'tiptap-audio': './static/js/tiptap-audio.js',
         'tiptap-mermaid': './static/js/tiptap-mermaid.js',

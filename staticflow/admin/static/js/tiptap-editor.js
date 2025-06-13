@@ -19,10 +19,10 @@ import TurndownService from 'turndown'
 import { MathBlock, MathInline } from './tiptap-math.js'
 import { MermaidBlock } from './tiptap-mermaid.js'
 import { ParagraphDnd } from './tiptap-paragraph-dnd.js'
+import { CodeBlock } from './tiptap-code-block.js'
 import {
   HeadingDnd,
   BlockquoteDnd,
-  CodeBlockDnd,
   BulletListDnd,
   OrderedListDnd,
   TaskListDnd,
@@ -81,7 +81,7 @@ class TipTapEditor {
                 ParagraphDnd,
                 HeadingDnd,
                 BlockquoteDnd,
-                CodeBlockDnd.configure({ lowlight }),
+                CodeBlock.configure({ lowlight }),
                 BulletListDnd,
                 OrderedListDnd,
                 TaskListDnd,
@@ -156,7 +156,61 @@ class TipTapEditor {
     }
 
     getMarkdown() {
-        return this.turndown.turndown(this.editor.getHTML())
+        const doc = this.editor.getJSON();
+        let md = '';
+        let htmlChunks = [];
+        // Рекурсивная функция сериализации
+        function serializeNode(node) {
+            if (!node) return '';
+            if (node.type === 'mermaidBlock') {
+                return `\n\n\`\`\`mermaid\n${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}\n\`\`\`\n\n`;
+            }
+            if (node.type === 'codeBlock') {
+                const language = node.attrs?.language || '';
+                return `\n\n\`\`\`${language}\n${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}\n\`\`\`\n\n`;
+            }
+            if (node.type === 'mathBlock') {
+                return `\n\n$$\n${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}\n$$\n\n`;
+            }
+            if (node.type === 'mathInline') {
+                return `$${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}$`;
+            }
+            // Для обычных блоков возвращаем специальную метку, чтобы потом собрать html
+            return null;
+        }
+        if (doc.content && Array.isArray(doc.content)) {
+            for (const node of doc.content) {
+                const customMd = serializeNode(node);
+                if (customMd !== null && customMd !== undefined && customMd !== '') {
+                    md += customMd;
+                } else {
+                    // Собираем html для обычных блоков
+                    // Получаем HTML только для этого блока
+                    const html = this.editor.view.dom.ownerDocument.createElement('div');
+                    // Используем toDOM для node (если есть)
+                    try {
+                        const schema = this.editor.schema;
+                        const ProseMirrorNode = schema.nodeFromJSON(node);
+                        const fragment = this.editor.view.someProp('domSerializer')
+                            ? this.editor.view.someProp('domSerializer').serializeFragment(ProseMirrorNode.content)
+                            : null;
+                        if (fragment) {
+                            html.appendChild(fragment);
+                        } else {
+                            html.innerHTML = this.editor.getHTML(); // fallback
+                        }
+                    } catch (e) {
+                        html.innerHTML = this.editor.getHTML();
+                    }
+                    htmlChunks.push(html.innerHTML);
+                }
+            }
+        }
+        // Прогоняем все обычные блоки через Turndown одним куском
+        if (htmlChunks.length > 0) {
+            md += this.turndown.turndown(htmlChunks.join('\n\n'));
+        }
+        return md.trim();
     }
 
     getContentForSave() {
