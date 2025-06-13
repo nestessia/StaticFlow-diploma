@@ -32,6 +32,8 @@ import {
 } from './tiptap-dnd-blocks.js'
 import javascript from 'highlight.js/lib/languages/javascript'
 import python from 'highlight.js/lib/languages/python'
+import { preprocessMarkdownHtml } from './markdown-preprocessor.js'
+import { DropIndicator } from './tiptap-drop-indicator.js'
 
 lowlight.registerLanguage('js', javascript)
 lowlight.registerLanguage('javascript', javascript)
@@ -55,6 +57,7 @@ class TipTapEditor {
         let htmlContent = ''
         if (this.type === 'markdown') {
             htmlContent = this.content ? marked(this.content) : ''
+            htmlContent = preprocessMarkdownHtml(htmlContent)
         } else {
             htmlContent = this.content || ''
         }
@@ -110,6 +113,7 @@ class TipTapEditor {
                 MathBlock,
                 MathInline,
                 MermaidBlock,
+                DropIndicator,
             ],
             content: htmlContent,
             onUpdate: ({ editor }) => {

@@ -267,37 +267,104 @@
     pointer-events: none;
 }
 
+/* Улучшенные стили для drag-and-drop */
 .dnd-block {
     position: relative;
-    margin-bottom: 8px;
-    border-radius: 4px;
-    transition: box-shadow 0.2s;
+    margin: 0.5rem 0;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    padding: 0.25rem;
+    background: #ffffff;
+    border: 2px solid transparent;
 }
 
-.dnd-block:hover, .dnd-block.drag-over {
-    box-shadow: 0 0 0 2px #a5b4fc;
-    background: #f3f4f6;
+.dnd-block:hover {
+    background: #f8fafc;
+}
+
+.dnd-block.drag-over {
+    background: #f0f9ff;
+}
+
+.dnd-block.drag-over-top {
+    border-top: 2px solid #3b82f6;
+}
+
+.dnd-block.drag-over-bottom {
+    border-bottom: 2px solid #3b82f6;
 }
 
 .dnd-handle {
-    display: inline-block;
-    font-size: 20px;
-    color: #888;
-    padding: 4px 6px;
-    margin-right: 8px;
-    background: #f1f5f9;
-    border-radius: 4px;
-    border: 1px solid #e5e7eb;
-    cursor: grab;
-    user-select: none;
-    transition: background 0.2s, color 0.2s;
+    display: none !important;
+}
+
+.dnd-block:hover .dnd-handle {
+    opacity: 1;
+}
+
+.dnd-handle:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.dnd-handle:active {
+    cursor: grabbing;
+    transform: translateY(-50%) scale(0.95);
+    background: #cbd5e1;
+    color: #0f172a;
 }
 
 .dnd-block.dragging {
     opacity: 0.5;
+    background: #f0f9ff;
+    border-color: #3b82f6;
+    pointer-events: none;
+    user-select: none;
 }
 
-.dnd-handle:active {
-    color: #6366f1;
-    background: #e0e7ff;
+.dnd-block.dragging * {
+    pointer-events: none !important;
+}
+
+.dnd-content {
+    transition: all 0.2s ease-in-out;
+    pointer-events: all;
+    min-height: 24px;
+}
+
+/* Стили для плейсхолдера при перетаскивании */
+.dnd-placeholder {
+    position: relative;
+    z-index: 10000;
+    height: 20px !important;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    opacity: 0.85;
+    transition: background 0.2s, height 0.2s;
+    border: 2px dashed #2563eb;
+}
+
+@keyframes placeholder-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.drop-indicator {
+    height: 8px;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 4px;
+    margin: 0.25rem 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    opacity: 0.95;
+    transition: background 0.2s, height 0.2s;
+    border: 2px solid #2563eb;
+    width: 100%;
+    pointer-events: none;
 } 

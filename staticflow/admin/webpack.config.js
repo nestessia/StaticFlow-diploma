@@ -10,6 +10,7 @@ module.exports = {
         'tiptap-video': './static/js/tiptap-video.js',
         'tiptap-mermaid': './static/js/tiptap-mermaid.js',
         'tiptap-math': './static/js/tiptap-math.js',
+        'markdown-preprocessor': './static/js/markdown-preprocessor.js',
         'admin': './static/js/admin.js',
         'preview': './static/js/preview.js',
         'deploy': './static/js/deploy.js',
