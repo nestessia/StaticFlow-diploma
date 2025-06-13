@@ -284,6 +284,17 @@ def create(path: str):
                   encoding="utf-8") as f:
             f.write(load_default_styles())
 
+        try:
+            from staticflow.utils.pygments_utils import generate_pygments_css
+            style_name = config.get("syntax_highlight", {}).get("style", "monokai")
+            css_content = generate_pygments_css(style_name)
+
+            with open(project_path / "static/css/code_highlight.css", "w", 
+                     encoding="utf-8") as f:
+                f.write(css_content)
+        except Exception as e:
+            console.print(f"[yellow]Warning: Could not generate code highlighting CSS: {e}[/yellow]")
+
         console.print(Panel.fit(
             f"[green]Project '{site_name}' created successfully![/green]\n\n"
             f"cd {path}\n"

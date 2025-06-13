@@ -44,10 +44,7 @@ export const HeadingDnd = createDraggableExtension(Heading, 'dnd-heading-block',
 export const BlockquoteDnd = createDraggableExtension(Blockquote, 'dnd-blockquote-block', '❝')
 export const CodeBlockDnd = createDraggableExtension(CodeBlockLowlight, 'dnd-code-block', '⧉')
 export const BulletListDnd = createDraggableExtension(BulletList, 'dnd-bullet-list-block', '•')
-export const OrderedListDnd = createDraggableExtension(OrderedList, 'dnd-ordered-list-block', '1.', {
-    start: { default: 1 },
-    type: { default: 'decimal' }
-})
+export const OrderedListDnd = createDraggableExtension(OrderedList, 'dnd-ordered-list-block', '1.')
 export const TaskListDnd = createDraggableExtension(TaskList, 'dnd-task-list-block', '☐')
 export const ImageDnd = createDraggableExtension(Image, 'dnd-image-block', '🖼')
 export const VideoBlockDnd = createDraggableExtension(VideoBlock, 'dnd-video-block', '🎬')

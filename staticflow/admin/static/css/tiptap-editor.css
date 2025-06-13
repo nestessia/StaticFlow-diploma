@@ -527,20 +527,6 @@
 }
 .dnd-ordered-list-block ol {
     list-style-type: decimal;
-    counter-reset: item;
-}
-.dnd-ordered-list-block ol li {
-    counter-increment: item;
-    display: block;
-    position: relative;
-}
-.dnd-ordered-list-block ol li::before {
-    content: counter(item) ".";
-    position: absolute;
-    left: -1.5em;
-    width: 1.5em;
-    text-align: right;
-    color: #64748b;
 }
 
 /* Изображения */

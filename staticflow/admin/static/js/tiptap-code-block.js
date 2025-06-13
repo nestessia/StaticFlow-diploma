@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { createDndNodeView } from './tiptap-dnd-nodeview.js'
 
 const SUPPORTED_LANGUAGES = [
     'python',
