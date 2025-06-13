@@ -41,6 +41,10 @@ export const CodeBlock = Node.create({
     parseHTML() {
         return [
             {
+                tag: 'div.code-block',
+                getAttrs: element => ({ language: element.getAttribute('data-language') || '' })
+            },
+            {
                 tag: 'pre',
             },
         ]

@@ -24,6 +24,16 @@ export function preprocessMarkdownHtml(html) {
     return `<div class=\"mermaid-block\">${code.trim()}</div>`;
   });
 
+  // Code blocks: ```lang ... ```
+  html = html.replace(/<pre><code class=\"language-([a-zA-Z0-9_+-]+)\">([\s\S]+?)<\/code><\/pre>/g, (match, lang, code) => {
+    return `<div class=\"code-block\" data-language=\"${lang}\">${code.trim()}</div>`;
+  });
+
+  // Code blocks без языка
+  html = html.replace(/<pre><code>([\s\S]+?)<\/code><\/pre>/g, (match, code) => {
+    return `<div class=\"code-block\">${code.trim()}</div>`;
+  });
+
   console.log('HTML после препроцессора:', html);
   return html;
 } 
