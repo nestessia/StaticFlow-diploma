@@ -8,7 +8,6 @@ import json
 import re
 import shutil
 from ..utils.logging import get_logger
-import uuid
 
 logger = get_logger("admin")
 

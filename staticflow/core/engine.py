@@ -59,7 +59,17 @@ class Engine:
 
     def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
-        self.site.set_directories(source_dir, output_dir, templates_dir)
+        if isinstance(source_dir, str):
+            source_dir = Path(source_dir)
+        if isinstance(output_dir, str):
+            output_dir = Path(output_dir)
+        if isinstance(templates_dir, str):
+            templates_dir = Path(templates_dir)
+        self.site.set_directories(
+            source_dir,
+            output_dir,
+            templates_dir
+        )
 
     def build(self) -> None:
         """Build the site."""
