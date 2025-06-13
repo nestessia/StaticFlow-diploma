@@ -119,13 +119,15 @@ export const CodeBlock = Node.create({
 
             // Update language on change
             languageSelect.addEventListener('change', () => {
-                if (typeof getPos === 'function' && editor) {
-                    const pos = getPos()
-                    editor.commands.command(({ tr }) => {
-                        tr.setNodeAttribute(pos, 'language', languageSelect.value)
-                        return true
-                    })
-                }
+                setTimeout(() => {
+                    if (typeof getPos === 'function' && editor) {
+                        const pos = getPos()
+                        editor.commands.command(({ tr }) => {
+                            tr.setNodeAttribute(pos, 'language', languageSelect.value)
+                            return true
+                        })
+                    }
+                }, 150);
             })
 
             // Content
