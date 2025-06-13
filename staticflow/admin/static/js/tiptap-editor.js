@@ -36,6 +36,7 @@ import { preprocessMarkdownHtml } from './markdown-preprocessor.js'
 import { DropIndicator } from './tiptap-drop-indicator.js'
 import { createColorBubbleMenu } from './tiptap-bubblemenu.js'
 import { BubbleMenu } from '@tiptap/extension-bubble-menu'
+import { ImageBlock } from './tiptap-image.js'
 
 lowlight.registerLanguage('js', javascript)
 lowlight.registerLanguage('javascript', javascript)
@@ -88,6 +89,7 @@ class TipTapEditor {
                 ImageDnd,
                 VideoBlockDnd,
                 AudioBlockDnd,
+                ImageBlock,
                 Link.configure({
                     openOnClick: false,
                     HTMLAttributes: {

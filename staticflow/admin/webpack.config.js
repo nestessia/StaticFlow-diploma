@@ -11,12 +11,14 @@ module.exports = {
         'tiptap-code-block': './static/js/tiptap-code-block.js',
         'tiptap-video': './static/js/tiptap-video.js',
         'tiptap-audio': './static/js/tiptap-audio.js',
+        'tiptap-image': './static/js/tiptap-image.js',
         'tiptap-mermaid': './static/js/tiptap-mermaid.js',
         'tiptap-math': './static/js/tiptap-math.js',
         'markdown-preprocessor': './static/js/markdown-preprocessor.js',
         'admin': './static/js/admin.js',
         'deploy': './static/js/deploy.js',
         'tiptap-bubblemenu': './static/js/tiptap-bubblemenu.js',
+
     },
     output: {
         path: path.resolve(__dirname, 'static/dist'),

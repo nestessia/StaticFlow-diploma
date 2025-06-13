@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 from ..utils.logging import get_logger
+import uuid
 
 logger = get_logger("admin")
 
@@ -81,6 +82,9 @@ class AdminPanel:
         self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
+        self.app.router.add_post('/api/upload', self.api_upload_handler)
+        
+        # Статические файлы админки
         static_path = Path(__file__).parent / 'static'
         if not static_path.exists():
             static_path.mkdir(parents=True)
@@ -88,6 +92,13 @@ class AdminPanel:
         use_cached = cached_static_path.exists()
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
+        
+        # Статические медиафайлы теперь из output_dir/media
+        media_path = self.output_dir / 'media'
+        if not media_path.exists():
+            media_path.mkdir(parents=True)
+        self.app.router.add_static('/media', media_path)
+        
         if not use_cached:
             self.copy_static_to_output()
 
@@ -532,6 +543,59 @@ class AdminPanel:
             import traceback
             traceback.print_exc()
             return False
+
+    async def api_upload_handler(self, request):
+        """Handle file upload requests."""
+        try:
+            reader = await request.multipart()
+            field = await reader.next()
+            
+            if not field or field.name != 'file':
+                return web.json_response({
+                    'success': False,
+                    'error': 'No file field in request'
+                }, status=400)
+
+            filename = field.filename
+            if not filename:
+                return web.json_response({
+                    'success': False,
+                    'error': 'No filename provided'
+                }, status=400)
+
+            # Создаем директорию media в output_dir если её нет
+            media_dir = self.output_dir / 'media'
+            media_dir.mkdir(parents=True, exist_ok=True)
+
+            # Генерируем уникальное имя файла
+            ext = Path(filename).suffix
+            unique_filename = f"{uuid.uuid4().hex}{ext}"
+            file_path = media_dir / unique_filename
+
+            # Сохраняем файл
+            with open(file_path, 'wb') as f:
+                while True:
+                    chunk = await field.read_chunk()
+                    if not chunk:
+                        break
+                    f.write(chunk)
+
+            # Возвращаем URL для доступа к файлу
+            url = f"/media/{unique_filename}"
+            
+            return web.json_response({
+                'success': True,
+                'url': url
+            })
+
+        except Exception as e:
+            logger.error(f"Error in api_upload_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
 
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""

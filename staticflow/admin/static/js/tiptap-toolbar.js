@@ -162,13 +162,10 @@ class TipTapToolbar {
                 icon: 'image',
                 title: 'Image',
                 action: () => {
-                    const url = window.prompt('Image URL:');
-                    if (url) {
-                        this.editor.chain().focus().insertContentAt(0, {
-                            type: 'image',
-                            attrs: { src: url }
-                        }).run();
-                    }
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'imageBlock',
+                        attrs: { src: '', alt: '', title: '' }
+                    }).run();
                 },
             },
             {
