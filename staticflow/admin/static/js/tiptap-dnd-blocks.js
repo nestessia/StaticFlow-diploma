@@ -9,7 +9,7 @@ import { VideoBlock } from './tiptap-video.js'
 import { AudioBlock } from './tiptap-audio.js'
 import { createDndNodeView } from './tiptap-dnd-nodeview.js'
 
-const createDraggableExtension = (Extension, className, icon) => {
+const createDraggableExtension = (Extension, className, icon, extraAttrs) => {
   return Extension.extend({
     draggable: true,
     selectable: true,
@@ -24,16 +24,23 @@ const createDraggableExtension = (Extension, className, icon) => {
               'data-node-id': attributes.id || Math.random().toString(36).substr(2, 9)
             }
           }
-        }
+        },
+        ...(extraAttrs || {})
       }
     },
     addNodeView() {
-      return createDndNodeView(className, icon)
+      return function (props) {
+        const nodeView = createDndNodeView(className, icon)(props)
+        if (className === 'dnd-heading-block' && props.node?.attrs?.level) {
+          nodeView.dom.setAttribute('data-level', props.node.attrs.level)
+        }
+        return nodeView
+      }
     }
   })
 }
 
-export const HeadingDnd = createDraggableExtension(Heading, 'dnd-heading-block', 'H')
+export const HeadingDnd = createDraggableExtension(Heading, 'dnd-heading-block', 'H', { level: { default: 1 } })
 export const BlockquoteDnd = createDraggableExtension(Blockquote, 'dnd-blockquote-block', '❝')
 export const CodeBlockDnd = createDraggableExtension(CodeBlockLowlight, 'dnd-code-block', '⧉')
 export const BulletListDnd = createDraggableExtension(BulletList, 'dnd-bullet-list-block', '•')
