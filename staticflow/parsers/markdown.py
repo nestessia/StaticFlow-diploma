@@ -2,7 +2,8 @@ from typing import Any, Dict, List, Optional
 import markdown
 from .base import ContentParser
 from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
-from .extensions.video import makeExtension
+from .extensions.video import makeExtension as makeVideoExtension
+from .extensions.audio import makeExtension as makeAudioExtension
 
 
 class MarkdownParser(ContentParser):
@@ -43,7 +44,8 @@ class MarkdownParser(ContentParser):
             'pymdownx.tabbed',
             'pymdownx.tasklist',
             'pymdownx.tilde',
-            makeExtension(),
+            makeVideoExtension(),
+            makeAudioExtension(),
         ]
         self.extension_configs: Dict[str, Dict[str, Any]] = {
             'toc': {
