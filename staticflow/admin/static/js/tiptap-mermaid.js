@@ -63,6 +63,48 @@ export const MermaidBlock = Node.create({
       textarea.value = node.textContent || 'graph TD;\nA-->B;'
       textarea.className = 'mermaid-input'
       textarea.placeholder = 'Введите код диаграммы mermaid...'
+      // --- Стилизация textarea ---
+      textarea.style.width = '100%';
+      textarea.style.minHeight = '100px';
+      textarea.style.fontFamily = 'monospace';
+      textarea.style.border = '1.5px solid #bdbdbd';
+      textarea.style.borderRadius = '8px';
+      textarea.style.padding = '10px';
+      textarea.style.background = '#f9f9f9';
+      textarea.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+      textarea.style.transition = 'border 0.2s, box-shadow 0.2s';
+      textarea.style.resize = 'vertical';
+      textarea.addEventListener('focus', () => {
+        textarea.style.border = '2px solid #1976d2';
+        textarea.style.boxShadow = '0 2px 12px rgba(25,118,210,0.08)';
+      });
+      textarea.addEventListener('blur', () => {
+        textarea.style.border = '1.5px solid #bdbdbd';
+        textarea.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+      });
+      // --- Автоувеличение высоты ---
+      function autoResize() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+      textarea.addEventListener('input', autoResize);
+      setTimeout(autoResize, 0);
+      // --- Debounce для обновления ---
+      let debounceTimer = null;
+      function updateEditorValue() {
+        editor.commands.command(({ tr }) => {
+          tr.insertText(textarea.value, getPos() + 1, getPos() + node.nodeSize - 1)
+          return true
+        })
+        render();
+      }
+      // --- Обновление только по Enter ---
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          updateEditorValue();
+        }
+      });
       contentDOM.appendChild(textarea)
       // Preview
       const preview = document.createElement('div')
@@ -83,13 +125,6 @@ export const MermaidBlock = Node.create({
         }
       }
       render()
-      textarea.addEventListener('input', () => {
-        render()
-        editor.commands.command(({ tr }) => {
-          tr.insertText(textarea.value, getPos() + 1, getPos() + node.nodeSize - 1)
-          return true
-        })
-      })
       // Drop logic
       wrapper.addEventListener('dragover', (event) => {
         event.preventDefault()
@@ -120,6 +155,9 @@ export const MermaidBlock = Node.create({
         dom: wrapper,
         contentDOM: null,
         stopEvent: (event) => {
+          if (event.target && event.target.classList && event.target.classList.contains('mermaid-input')) {
+            return true; // разрешить все события на textarea
+          }
           if (event && event.type && event.type.startsWith('drag')) return false;
           return undefined;
         }
