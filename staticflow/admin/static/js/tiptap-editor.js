@@ -191,6 +191,36 @@ class TipTapEditor {
                 return `\n${content}\n\n`;
             }
             
+            // Обработка таблиц
+            if (node.type === 'table') {
+                let markdown = '\n\n';
+                const rows = node.content || [];
+                
+                // Обработка заголовков
+                if (rows.length > 0) {
+                    const headerRow = rows[0];
+                    const headers = headerRow.content || [];
+                    markdown += '| ' + headers.map(header => {
+                        const cell = header.content?.[0]?.content?.[0]?.text || '';
+                        return cell.trim();
+                    }).join(' | ') + ' |\n';
+                    
+                    // Добавляем разделитель
+                    markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
+                    
+                    // Обработка остальных строк
+                    for (let i = 1; i < rows.length; i++) {
+                        const cells = rows[i].content || [];
+                        markdown += '| ' + cells.map(cell => {
+                            const text = cell.content?.[0]?.content?.[0]?.text || '';
+                            return text.trim();
+                        }).join(' | ') + ' |\n';
+                    }
+                }
+                
+                return markdown + '\n';
+            }
+            
             // Для остальных блоков используем HTML
             return null;
         }
@@ -227,6 +257,31 @@ class TipTapEditor {
                         turndownService.addRule('preserveNewlines', {
                             filter: ['br'],
                             replacement: () => '\n'
+                        });
+
+                        // Добавляем правило для таблиц
+                        turndownService.addRule('tables', {
+                            filter: ['table'],
+                            replacement: function (content, node) {
+                                const table = node;
+                                const rows = Array.from(table.querySelectorAll('tr'));
+                                let markdown = '\n\n';
+                                
+                                // Обработка заголовков
+                                const headers = Array.from(rows[0].querySelectorAll('th, td'));
+                                markdown += '| ' + headers.map(header => header.textContent.trim()).join(' | ') + ' |\n';
+                                
+                                // Добавляем разделитель
+                                markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
+                                
+                                // Обработка остальных строк
+                                for (let i = 1; i < rows.length; i++) {
+                                    const cells = Array.from(rows[i].querySelectorAll('td'));
+                                    markdown += '| ' + cells.map(cell => cell.textContent.trim()).join(' | ') + ' |\n';
+                                }
+                                
+                                return markdown + '\n';
+                            }
                         });
                         
                         md += turndownService.turndown(tempDiv.innerHTML);
