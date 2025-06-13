@@ -124,6 +124,8 @@ class AdminPanel:
                     return await self.api_deploy_config_handler(request)
                 elif path == '/api/deploy/start':
                     return await self.api_deploy_start_handler(request)
+                elif path == '/api/upload':
+                    return await self.api_upload_handler(request)
                 else:
                     return web.json_response({
                         'success': False,

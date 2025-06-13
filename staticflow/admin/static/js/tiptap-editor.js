@@ -179,6 +179,13 @@ class TipTapEditor {
             if (node.type === 'mathInline') {
                 return `$${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}$`;
             }
+            if (node.type === 'imageBlock') {
+                // ![alt](src "title")
+                const src = node.attrs?.src || '';
+                const alt = node.attrs?.alt || '';
+                const title = node.attrs?.title || '';
+                return `\n\n![${alt}](${src}${title ? ` \"${title}\"` : ''})\n\n`;
+            }
             
             // Обработка заголовков
             if (node.type === 'heading') {

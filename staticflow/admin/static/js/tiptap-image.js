@@ -161,6 +161,7 @@ export const ImageBlock = Node.create({
             const data = await resp.json()
             if (data.url) {
               urlInput.value = data.url
+              // Сразу обновляем node в редакторе
               updateImage(data.url, altInput.value.trim(), titleInput.value.trim())
             }
           } else {
