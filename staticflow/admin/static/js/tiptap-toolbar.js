@@ -23,21 +23,42 @@ class TipTapToolbar {
                 type: 'divider',
             },
             {
-                icon: 'heading-1',
-                title: 'Заголовок 1',
-                action: () => this.editor.chain().focus().toggleHeading({ level: 1 }).run(),
+                icon: 'heading',
+                title: 'Header 1',
+                label: '1',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'heading',
+                        attrs: { level: 1 },
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('heading', { level: 1 }),
             },
             {
-                icon: 'heading-2',
-                title: 'Заголовок 2',
-                action: () => this.editor.chain().focus().toggleHeading({ level: 2 }).run(),
+                icon: 'heading',
+                title: 'Header 2',
+                label: '2',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'heading',
+                        attrs: { level: 2 },
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('heading', { level: 2 }),
             },
             {
-                icon: 'heading-3',
-                title: 'Заголовок 3',
-                action: () => this.editor.chain().focus().toggleHeading({ level: 3 }).run(),
+                icon: 'heading',
+                title: 'Header 3',
+                label: '3',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'heading',
+                        attrs: { level: 3 },
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('heading', { level: 3 }),
             },
             {
@@ -45,35 +66,66 @@ class TipTapToolbar {
             },
             {
                 icon: 'list-ul',
-                title: 'Маркированный список',
-                action: () => this.editor.chain().focus().toggleBulletList().run(),
+                title: 'Unordered List',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'bulletList',
+                        content: [
+                            { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                        ]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('bulletList'),
             },
             {
                 icon: 'list-ol',
-                title: 'Нумерованный список',
-                action: () => this.editor.chain().focus().toggleOrderedList().run(),
+                title: 'Ordered List',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'orderedList',
+                        content: [
+                            { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                        ]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('orderedList'),
             },
             {
                 icon: 'tasks',
-                title: 'Список задач',
-                action: () => this.editor.chain().focus().toggleTaskList().run(),
+                title: 'Task List',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'taskList',
+                        content: [
+                            { type: 'taskItem', attrs: { checked: false }, content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                        ]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('taskList'),
             },
             {
                 type: 'divider',
             },
             {
-                icon: 'quote',
-                title: 'Цитата',
-                action: () => this.editor.chain().focus().toggleBlockquote().run(),
+                icon: 'quote-right',
+                title: 'Quote',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'blockquote',
+                        content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('blockquote'),
             },
             {
-                icon: 'code-block',
-                title: 'Блок кода',
-                action: () => this.editor.chain().focus().toggleCodeBlock().run(),
+                icon: 'code',
+                title: 'Code Block',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'codeBlock',
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
                 isActive: () => this.editor.isActive('codeBlock'),
             },
             {
@@ -81,26 +133,68 @@ class TipTapToolbar {
             },
             {
                 icon: 'table',
-                title: 'Таблица',
-                action: () => this.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+                title: 'Table',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'table',
+                        content: [
+                            {
+                                type: 'tableRow',
+                                content: [
+                                    { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                                ]
+                            },
+                            {
+                                type: 'tableRow',
+                                content: [
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                                ]
+                            },
+                            {
+                                type: 'tableRow',
+                                content: [
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] },
+                                    { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }] }
+                                ]
+                            }
+                        ]
+                    }).run();
+                },
             },
             {
                 icon: 'image',
-                title: 'Изображение',
+                title: 'Image',
                 action: () => {
-                    const url = window.prompt('URL изображения:')
+                    const url = window.prompt('Image URL:');
                     if (url) {
-                        this.editor.chain().focus().setImage({ src: url }).run()
+                        this.editor.chain().focus().insertContentAt(0, {
+                            type: 'image',
+                            attrs: { src: url }
+                        }).run();
                     }
                 },
             },
             {
                 icon: 'link',
-                title: 'Ссылка',
+                title: 'Link',
                 action: () => {
-                    const url = window.prompt('URL:')
+                    const url = window.prompt('URL:');
                     if (url) {
-                        this.editor.chain().focus().setLink({ href: url }).run()
+                        this.editor.chain().focus().insertContentAt(0, {
+                            type: 'paragraph',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: url,
+                                    marks: [{ type: 'link', attrs: { href: url } }]
+                                }
+                            ]
+                        }).run();
                     }
                 },
                 isActive: () => this.editor.isActive('link'),
@@ -110,13 +204,23 @@ class TipTapToolbar {
             },
             {
                 icon: 'square-root-alt',
-                title: 'Вставить формулу (KaTeX)',
-                action: () => this.editor.chain().focus().insertContent({ type: 'mathBlock', content: '' }).run(),
+                title: 'Formula (KaTeX)',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'mathBlock',
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
             },
             {
                 icon: 'project-diagram',
-                title: 'Вставить диаграмму (Mermaid)',
-                action: () => this.editor.chain().focus().insertContent({ type: 'mermaidBlock', content: 'graph TD;\nA-->B;' }).run(),
+                title: 'Diagram (Mermaid)',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'mermaidBlock',
+                        content: [{ type: 'text', text: 'graph TD;\nA-->B;' }]
+                    }).run();
+                },
             },
         ]
 
@@ -129,14 +233,13 @@ class TipTapToolbar {
                 const buttonElement = document.createElement('button')
                 buttonElement.type = 'button'
                 buttonElement.className = 'toolbar-button'
-                buttonElement.innerHTML = `<i class="fas fa-${button.icon}"></i>`
+                buttonElement.innerHTML = `<i class="fas fa-${button.icon}"></i>${button.label ? `<span class="toolbar-label">${button.label}</span>` : ''}`
                 buttonElement.title = button.title
                 buttonElement.addEventListener('click', (e) => {
                     e.preventDefault()
                     button.action()
                 })
 
-                // Обновляем состояние кнопки при изменении редактора
                 this.editor.on('update', () => {
                     if (button.isActive) {
                         buttonElement.classList.toggle('is-active', button.isActive())
@@ -153,5 +256,4 @@ class TipTapToolbar {
     }
 }
 
-// Экспортируем класс для использования
 window.TipTapToolbar = TipTapToolbar 

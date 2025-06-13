@@ -38,6 +38,22 @@ export const MermaidBlock = Node.create({
       handle.addEventListener('dragend', () => {
         wrapper.classList.remove('dragging')
       })
+      // Delete button
+      const deleteButton = document.createElement('button')
+      deleteButton.className = 'dnd-delete-btn'
+      deleteButton.innerHTML = '×'
+      deleteButton.title = 'Delete block'
+      deleteButton.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (typeof getPos === 'function' && editor) {
+          const pos = getPos()
+          editor.commands.command(({ tr }) => {
+            tr.delete(pos, pos + node.nodeSize)
+            return true
+          })
+        }
+      }
       // Content
       const contentDOM = document.createElement('div')
       contentDOM.className = 'dnd-content'
@@ -98,6 +114,7 @@ export const MermaidBlock = Node.create({
         }
       })
       wrapper.appendChild(handle)
+      wrapper.appendChild(deleteButton)
       wrapper.appendChild(contentDOM)
       return {
         dom: wrapper,

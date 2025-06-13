@@ -4,7 +4,6 @@ from .builtin import SEOPlugin, SitemapPlugin, RSSPlugin, MinifierPlugin
 from .syntax_highlight import SyntaxHighlightPlugin
 from .math import MathPlugin
 from .diagrams import MermaidPlugin
-from .notion_blocks import NotionBlocksPlugin
 from .media import MediaPlugin
 from .cdn import CDNPlugin
 from .multilingual import MultilingualPlugin
@@ -91,10 +90,6 @@ def initialize_plugins(engine) -> None:
     # Initialize diagrams plugin
     diagrams_plugin = MermaidPlugin()
     engine.add_plugin(diagrams_plugin, default_configs.get("diagrams"))
-
-    # Initialize notion blocks plugin
-    notion_plugin = NotionBlocksPlugin()
-    engine.add_plugin(notion_plugin, default_configs.get("notion_blocks"))
 
     # Initialize media plugin
     media_plugin = MediaPlugin()
