@@ -107,20 +107,7 @@
             
             // Добавляем панель инструментов
             document.getElementById('tiptap-toolbar').appendChild(toolbar.getElement());
-            
-            // Initialize highlight.js if available
-            if (window.hljs) {
-                console.log("Initializing highlight.js...");
-                try {
-                    hljs.configure({
-                        languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java', 'csharp', 'php', 'ruby', 'go', 'rust', 'swift']
-                    });
-                    hljs.highlightAll();
-                    console.log("highlight.js initialized successfully.");
-                } catch (e) {
-                    console.error("Error initializing highlight.js:", e);
-                }
-            }
+    
             
             // Добавляем обработчики событий для кнопок
             document.getElementById('save-btn').addEventListener('click', function() {

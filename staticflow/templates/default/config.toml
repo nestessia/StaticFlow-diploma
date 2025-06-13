@@ -62,7 +62,3 @@ languages = ["en", "ru"]
 url_prefix = true
 exclude_default_lang_prefix = false
 auto_redirect = true
-
-# Syntax highlighting settings
-[syntax_highlight]
-style = "monokai"  # Available options: "monokai", "default", "vs", "xcode", "colorful", "dracula", "github", etc.
