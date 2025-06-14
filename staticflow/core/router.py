@@ -38,8 +38,7 @@ class Router:
         )
         self.use_clean_urls = True  # Always use clean URLs
         self.use_language_prefixes = config.get(
-            "USE_LANGUAGE_PREFIXES", 
-            True
+            "USE_LANGUAGE_PREFIXES", True
         )
         self.exclude_default_lang_prefix = config.get(
             "EXCLUDE_DEFAULT_LANG_PREFIX", 
@@ -193,22 +192,29 @@ class Router:
         print(f"Content type: {content_type}")
         print(f"Metadata: {metadata}")
 
-        # Get the pattern for this content type
-        pattern = self.save_as_patterns.get(content_type, "{slug}.html")
+        # Особая логика для одиночных страниц (без подпапки)
+        if content_type == "page":
+            # Если нет категории или она пуста, кладём в корень
+            category = metadata.get("category")
+            if not category:
+                pattern = "{slug}.html"
+            else:
+                pattern = self.save_as_patterns.get(
+                    content_type, "{category}/{slug}/index.html"
+                )
+        else:
+            pattern = self.save_as_patterns.get(content_type, "{slug}.html")
         
         # Prepare variables for pattern formatting
         variables = metadata.copy()
         
         # Handle category path based on content type
         if content_type == "category" and "category_path" in metadata:
-            # For categories, use category_path from metadata
             variables["category"] = metadata["category_path"]
             variables["category_path"] = metadata["category_path"]
         elif content_type == "post" and "category" in metadata:
-            # For posts, use category from metadata
             variables["category_path"] = metadata["category"]
         elif "source_path" in metadata:
-            # For other content types, use directory structure
             source_path = Path(metadata["source_path"])
             if source_path.parent.name != "content":
                 directory = str(source_path.parent).replace("\\", "/")
@@ -223,7 +229,6 @@ class Router:
             save_as_path = pattern.format(**variables)
         except KeyError as e:
             print(f"Warning: Missing key in pattern: {e}")
-            # Fallback to simple slug pattern if category is missing
             save_as_path = f"{variables.get('slug', 'index')}.html"
             
         print(f"Save as path: {save_as_path}")
