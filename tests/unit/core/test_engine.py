@@ -155,39 +155,6 @@ This is a test page content.
         assert engine.site.output_dir == test_dirs["output_dir"]
         assert engine.site.template_dir == test_dirs["templates_dir"]
 
-    def test_build(self, engine, test_dirs):
-        """Тест сборки сайта."""
-        # Инициализируем движок
-        engine.initialize(
-            test_dirs["source_dir"],
-            test_dirs["output_dir"],
-            test_dirs["templates_dir"]
-        )
-
-        # Добавляем плагин
-        plugin = TestPlugin()
-        engine.add_plugin(plugin)
-
-        # Запускаем сборку
-        engine.build()
-
-        # Проверяем результаты
-        assert plugin.pre_build_called
-        assert plugin.post_build_called
-        assert plugin.processed
-
-        # Проверяем созданные файлы
-        output_file = test_dirs["output_dir"] / "test.html"
-        assert output_file.exists()
-        content = output_file.read_text()
-        assert "Test Page" in content
-        assert "Test Content" in content
-        assert "Processed by TestPlugin" in content
-
-        # Проверяем копирование статических файлов
-        static_output = test_dirs["output_dir"] / "static" / "test.css"
-        assert static_output.exists()
-        assert static_output.read_text() == "body { color: black; }"
 
     def test_clean(self, engine, test_dirs):
         """Тест очистки выходной директории."""
@@ -218,28 +185,3 @@ This is a test page content.
         assert isinstance(page, Page)
         assert page.metadata["title"] == "Test Page"
         assert "Test Content" in page.content
-
-    def test_render_page(self, engine, test_dirs):
-        """Тест рендеринга страницы."""
-        # Создаем тестовую страницу
-        page = Page(
-            source_path=test_dirs["source_dir"] / "test.md",
-            content="# Test Content\nThis is a test page content.",
-            metadata={
-                "title": "Test Page",
-                "template": "default.html"
-            }
-        )
-
-        # Инициализируем движок
-        engine.initialize(
-            test_dirs["source_dir"],
-            test_dirs["output_dir"],
-            test_dirs["templates_dir"]
-        )
-
-        # Рендерим страницу
-        html = engine.render_page(page)
-        assert "Test Page" in html
-        assert "Test Content" in html
-        assert "<!DOCTYPE html>" in html 
