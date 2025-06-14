@@ -17,13 +17,22 @@ import os
 
 class TestPerformance(unittest.TestCase):
     def setUp(self):
+        # Сохраняем текущую директорию
+        self.original_dir = os.getcwd()
+        
         self.temp_dir = tempfile.mkdtemp()
+        # Переходим во временную директорию
+        os.chdir(self.temp_dir)
+        
+        # Инициализируем переменные для сервера
+        self.server_runner = None
+        self.server_loop = None
         
         # Создаем необходимые директории
-        self.content_dir = Path(self.temp_dir) / 'content'
-        self.templates_dir = Path(self.temp_dir) / 'templates'
-        self.static_dir = Path(self.temp_dir) / 'static'
-        self.output_dir = Path(self.temp_dir) / 'output'
+        self.content_dir = Path('content')
+        self.templates_dir = Path('templates')
+        self.static_dir = Path('static')
+        self.output_dir = Path('output')
         
         dirs = [
             self.content_dir,
@@ -53,7 +62,7 @@ class TestPerformance(unittest.TestCase):
         config_data = {
             'site_name': 'Test Site',
             'site_description': 'Test site for performance testing',
-            'base_url': 'http://localhost:8000',
+            'base_url': 'http://localhost:8080',
             'source_dir': str(self.content_dir),
             'output_dir': str(self.output_dir),
             'template_dir': str(self.templates_dir),
@@ -63,7 +72,7 @@ class TestPerformance(unittest.TestCase):
             'default_language': 'en'
         }
         
-        config_path = Path(self.temp_dir) / 'config.toml'
+        config_path = Path('config.toml')
         with open(config_path, 'w', encoding='utf-8') as f:
             toml.dump(config_data, f)
         
@@ -74,6 +83,18 @@ class TestPerformance(unittest.TestCase):
         self.process = psutil.Process()
 
     def tearDown(self):
+        # Корректно останавливаем сервер, если он был запущен
+        if self.server_runner is not None:
+            async def cleanup():
+                await self.server_runner.cleanup()
+            
+            if self.server_loop is not None:
+                self.server_loop.run_until_complete(cleanup())
+                self.server_loop.close()
+        
+        # Возвращаемся в исходную директорию
+        os.chdir(self.original_dir)
+        
         # Очистка временных файлов
         for root, dirs, files in os.walk(self.temp_dir, topdown=False):
             for name in files:
@@ -104,6 +125,71 @@ template: page.html
             print("Предупреждения:", "\n".join(warnings))
         self.builder.build()
 
+    def start_server(self):
+        """Запускает сервер разработки."""
+        self.server_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.server_loop)
+        
+        async def run_server():
+            runner = web.AppRunner(self.server.app)
+            await runner.setup()
+            site = web.TCPSite(runner, 'localhost', 8080)
+            await site.start()
+            return runner
+        
+        self.server_runner = self.server_loop.run_until_complete(run_server())
+        time.sleep(1)  # Даем серверу время на запуск
+
+    def test_dev_server_response_time(self):
+        """Тест времени отклика сервера разработки (≤100 мс)"""
+        # Создаем тестовую страницу
+        self.create_test_page(
+            "index.md",
+            "Test Page",
+            "# Test Page\n\nTest content"
+        )
+        
+        self.validate_and_build()
+        self.start_server()
+        
+        try:
+            start_time = time.time()
+            requests.get("http://localhost:8080")
+            response_time = (time.time() - start_time) * 1000
+            
+            self.assertLessEqual(
+                response_time, 100,
+                f"Время отклика сервера ({response_time:.2f} мс) "
+                f"превышает допустимое (100 мс)"
+            )
+        except Exception as e:
+            self.fail(f"Ошибка при тестировании сервера: {e}")
+
+    def test_page_load_time(self):
+        """Тест времени загрузки страницы (≤2 секунды)"""
+        # Создаем тестовую страницу
+        self.create_test_page(
+            "test_page.md",
+            "Test Page",
+            "# Test Page\n\nTest content"
+        )
+        
+        self.validate_and_build()
+        self.start_server()
+        
+        try:
+            start_time = time.time()
+            requests.get("http://localhost:8080/test_page")
+            load_time = time.time() - start_time
+            
+            self.assertLessEqual(
+                load_time, 2,
+                f"Время загрузки страницы ({load_time:.2f} сек) "
+                f"превышает допустимое (2 сек)"
+            )
+        except Exception as e:
+            self.fail(f"Ошибка при тестировании сервера: {e}")
+
     def test_build_time(self):
         """Тест времени сборки сайта (≤30 секунд для 1000 страниц)"""
         # Создаем тестовые страницы
@@ -123,94 +209,6 @@ template: page.html
             f"Время сборки ({build_time:.2f} сек) превышает "
             f"допустимое (30 сек)"
         )
-
-    def test_dev_server_response_time(self):
-        """Тест времени отклика сервера разработки (≤100 мс)"""
-        # Создаем тестовую страницу
-        self.create_test_page(
-            "index.md",
-            "Test Page",
-            "# Test Page\n\nTest content"
-        )
-        
-        self.validate_and_build()
-        
-        # Запускаем сервер в отдельном потоке
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-        async def run_server():
-            runner = web.AppRunner(self.server.app)
-            await runner.setup()
-            site = web.TCPSite(runner, 'localhost', 8000)
-            await site.start()
-            return runner
-        
-        server_runner = loop.run_until_complete(run_server())
-        
-        try:
-            time.sleep(1)  # Даем серверу время на запуск
-            
-            start_time = time.time()
-            requests.get("http://localhost:8000")
-            response_time = (time.time() - start_time) * 1000
-            
-            self.assertLessEqual(
-                response_time, 100,
-                f"Время отклика сервера ({response_time:.2f} мс) "
-                f"превышает допустимое (100 мс)"
-            )
-        finally:
-            # Корректно останавливаем сервер
-            async def cleanup():
-                await server_runner.cleanup()
-            
-            loop.run_until_complete(cleanup())
-            loop.close()
-
-    def test_page_load_time(self):
-        """Тест времени загрузки страницы (≤2 секунды)"""
-        # Создаем тестовую страницу
-        self.create_test_page(
-            "test_page.md",
-            "Test Page",
-            "# Test Page\n\nTest content"
-        )
-        
-        self.validate_and_build()
-        
-        # Запускаем сервер в отдельном потоке
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-        async def run_server():
-            runner = web.AppRunner(self.server.app)
-            await runner.setup()
-            site = web.TCPSite(runner, 'localhost', 8000)
-            await site.start()
-            return runner
-        
-        server_runner = loop.run_until_complete(run_server())
-        
-        try:
-            time.sleep(1)  # Даем серверу время на запуск
-            
-            start_time = time.time()
-            requests.get("http://localhost:8000/test_page")
-            load_time = time.time() - start_time
-            
-            self.assertLessEqual(
-                load_time, 2,
-                f"Время загрузки страницы ({load_time:.2f} сек) "
-                f"превышает допустимое (2 сек)"
-            )
-        finally:
-            # Корректно останавливаем сервер
-            async def cleanup():
-                await server_runner.cleanup()
-            
-            loop.run_until_complete(cleanup())
-            loop.close()
 
     def test_content_file_processing_time(self):
         """Тест времени обработки файла контента (≤50 мс)"""

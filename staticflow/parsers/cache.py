@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional
 import hashlib
 import json
-import os
 import time
 from pathlib import Path
 import pickle
@@ -14,6 +13,8 @@ class ParserCache:
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.metadata_file = self.cache_dir / "metadata.json"
+        if not self.metadata_file.exists():
+            self.metadata_file.touch()
         self.metadata = self._load_metadata()
 
     def _load_metadata(self) -> Dict[str, Any]:
@@ -22,7 +23,7 @@ class ParserCache:
             try:
                 with open(self.metadata_file, 'r') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, IOError):
                 return {}
         return {}
 
@@ -52,17 +53,24 @@ class ParserCache:
             return None
 
         # Проверка времени жизни кэша
-        if time.time() - self.metadata[key]['timestamp'] > self.metadata[key]['ttl']:
+        cache_time = time.time() - self.metadata[key]['timestamp']
+        if cache_time > self.metadata[key]['ttl']:
             self.invalidate(key)
             return None
 
         try:
             with open(cache_path, 'rb') as f:
                 return pickle.load(f)
-        except:
+        except (pickle.UnpicklingError, IOError):
             return None
 
-    def set(self, content: str, options: Dict[str, Any], value: Any, ttl: int = 3600) -> None:
+    def set(
+        self,
+        content: str,
+        options: Dict[str, Any],
+        value: Any,
+        ttl: int = 3600
+    ) -> None:
         """Сохраняет данные в кэш."""
         key = self._get_cache_key(content, options)
         cache_path = self._get_cache_path(key)
@@ -109,7 +117,9 @@ class ParserCache:
 
     def get_stats(self) -> Dict[str, Any]:
         """Возвращает статистику кэша."""
-        total_size = sum(f.stat().st_size for f in self.cache_dir.glob("*.pkl"))
+        total_size = sum(
+            f.stat().st_size for f in self.cache_dir.glob("*.pkl")
+        )
         return {
             'entries': len(self.metadata),
             'total_size': total_size,
