@@ -13,14 +13,16 @@ console = Console()
 
 
 @click.command()
-@click.option('--config', '-c', default='config.toml', 
+@click.option('--config', '-c', default='config.toml',
               help='Path to config file')
 def build(config: str):
     """Build the static site"""
     try:
         config_path = Path(config)
         if not config_path.exists():
-            error_message = f"Config file not found: {config}. Check your directory."
+            error_message = (
+                f"Config file not found: {config}. Check your directory."
+            )
             logger.error(error_message)
             console.print(f"[red]Error:[/red] {error_message}")
             return

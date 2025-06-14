@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 import markdown
 from .base import ContentParser
 from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
@@ -9,9 +9,9 @@ from .extensions.audio import makeExtension as makeAudioExtension
 class MarkdownParser(ContentParser):
     """Парсер для Markdown контента."""
 
-    def __init__(self, extensions: Optional[List[str]] = None):
+    def __init__(self, extensions: Optional[List[Union[str, Any]]] = None) -> None:
         super().__init__()
-        self.extensions = extensions or [
+        self.extensions: List[Union[str, Any]] = extensions or [
             'fenced_code',
             'tables',
             'toc',
@@ -72,28 +72,28 @@ class MarkdownParser(ContentParser):
             'pymdownx.arithmatex': {
                 'generic': True
             },
-            'pymdownx.details': {
-                'types': ['note', 'warning', 'danger', 'important', 'tip', 'attention']
-            }
         }
-        self._md = markdown.Markdown(
+        self._md: markdown.Markdown = markdown.Markdown(
             extensions=self.extensions,
             extension_configs=self.extension_configs
         )
-        self.syntax_highlighter = SyntaxHighlightPlugin()
+        self.syntax_highlighter: SyntaxHighlightPlugin = SyntaxHighlightPlugin()
 
     def parse(self, content: str) -> str:
         """Преобразует Markdown в HTML."""
         self._md.reset()
-        html = self._md.convert(content)
+        html: str = self._md.convert(content)
 
         if self.get_option('syntax_highlight'):
             html = self.syntax_highlighter.process_content(html)
-            
+
         return html
 
-
-    def add_extension(self, extension: str, config: Optional[Dict[str, Any]] = None) -> None:
+    def add_extension(
+        self,
+        extension: str,
+        config: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Добавляет расширение Markdown."""
         if extension not in self.extensions:
             self.extensions.append(extension)
