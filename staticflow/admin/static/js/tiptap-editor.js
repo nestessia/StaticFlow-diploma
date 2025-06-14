@@ -191,6 +191,10 @@ class TipTapEditor {
                 const title = node.attrs?.title || '';
                 return `\n\n!VIDEO(${src})\n\n`;
             }
+            if (node.type === 'audioBlock') {
+                const src = node.attrs?.src || '';
+                return `\n\n!AUDIO(${src})\n\n`;
+            }
             
             // Обработка заголовков
             if (node.type === 'heading') {

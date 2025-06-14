@@ -539,12 +539,51 @@
 }
 
 /* Аудио */
+.dnd-audio-block {
+    width: 100%;
+    margin: 0.7em 0;
+    padding: 12px;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
 .dnd-audio-block audio {
     width: 100%;
     margin: 0.5em 0;
     outline: none;
     border-radius: 6px;
     background: #f0f9ff;
+}
+
+.audio-form {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.audio-form input[type="text"] {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.audio-form input[type="file"] {
+    padding: 4px;
+}
+
+.audio-form button {
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.audio-form button:hover {
+    background-color: #e0e0e0;
 }
 
 /* Видео */

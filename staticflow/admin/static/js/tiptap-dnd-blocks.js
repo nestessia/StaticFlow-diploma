@@ -6,7 +6,7 @@ import { OrderedList } from '@tiptap/extension-ordered-list'
 import { TaskList } from '@tiptap/extension-task-list'
 import { Image } from '@tiptap/extension-image'
 import { VideoBlock } from './tiptap-video.js'
-import { AudioBlock } from './tiptap-audio.js'
+import { AudioBlock } from './tiptap-audio'
 import { createDndNodeView } from './tiptap-dnd-nodeview.js'
 
 const createDraggableExtension = (Extension, className, icon, extraAttrs) => {
@@ -48,4 +48,7 @@ export const OrderedListDnd = createDraggableExtension(OrderedList, 'dnd-ordered
 export const TaskListDnd = createDraggableExtension(TaskList, 'dnd-task-list-block', '☐')
 export const ImageDnd = createDraggableExtension(Image, 'dnd-image-block', '🖼')
 export const VideoBlockDnd = createDraggableExtension(VideoBlock, 'dnd-video-block', '🎬')
-export const AudioBlockDnd = createDraggableExtension(AudioBlock, 'dnd-audio-block', '🎵') 
+export const AudioBlockDnd = AudioBlock.extend({
+  draggable: true,
+  selectable: true,
+}); 

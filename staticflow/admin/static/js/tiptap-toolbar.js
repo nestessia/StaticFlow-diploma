@@ -179,6 +179,16 @@ class TipTapToolbar {
                 },
             },
             {
+                icon: 'music',
+                title: 'Audio',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'audioBlock',
+                        attrs: { src: '', controls: true }
+                    }).run();
+                },
+            },
+            {
                 icon: 'link',
                 title: 'Link',
                 action: () => {
