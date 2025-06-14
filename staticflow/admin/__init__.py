@@ -8,36 +8,34 @@ import json
 import re
 import shutil
 from ..utils.logging import get_logger
+import uuid
 
-# Получаем логгер для данного модуля
 logger = get_logger("admin")
 
 
 class AdminPanel:
     """Admin panel for StaticFlow."""
-    
+
     def __init__(self, config: Config, engine: Engine):
         self.config = config
         self.engine = engine
+        self.output_dir = Path(self.config.get('output_dir'))
         self.app = web.Application()
         self.setup_routes()
         self.setup_templates()
-        
+
     def _safe_metadata(self, metadata):
         """Convert metadata to JSON-safe format."""
         if not metadata:
             return {}
-            
+
         result = {}
         for key, value in metadata.items():
             if key == 'date' and hasattr(value, 'isoformat'):
-                # Convert datetime to ISO string
                 result[key] = value.isoformat()
             elif isinstance(value, (str, int, float, bool, type(None))):
-                # These types are JSON-serializable
                 result[key] = value
             elif isinstance(value, list):
-                # Handle lists (e.g., tags)
                 safe_list = []
                 for item in value:
                     if isinstance(item, (str, int, float, bool)):
@@ -46,15 +44,13 @@ class AdminPanel:
                         safe_list.append(str(item))
                 result[key] = safe_list
             else:
-                # Convert other types to string
                 result[key] = str(value)
-                
+
         return result
-        
+
     def setup_templates(self):
         """Setup Jinja2 templates for admin panel and site preview (project-aware)."""
         from pathlib import Path
-        # Получаем путь к шаблонам из пользовательского конфига
         template_dir = self.config.get('template_dir', 'templates')
         if not isinstance(template_dir, Path):
             template_path = Path(template_dir)
@@ -73,21 +69,22 @@ class AdminPanel:
                 str(template_path)
             ])
         )
-        
+
     def setup_routes(self):
         """Setup admin panel routes."""
         self.app.router.add_get('', self.index_handler)
         self.app.router.add_get('/', self.index_handler)
         self.app.router.add_get('/content', self.index_handler)
-        self.app.router.add_get('/settings', self.settings_handler)
         self.app.router.add_post('/api/content', self.api_content_handler)
-        self.app.router.add_post('/api/settings', self.api_settings_handler)
         self.app.router.add_get('/block-editor', self.block_editor_handler)
         self.app.router.add_get('/block-editor/{path:.*}', self.block_editor_handler)
         self.app.router.add_get('/deploy', self.deploy_handler)
         self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
+        self.app.router.add_post('/api/upload', self.api_upload_handler)
+        
+        # Статические файлы админки
         static_path = Path(__file__).parent / 'static'
         if not static_path.exists():
             static_path.mkdir(parents=True)
@@ -95,53 +92,48 @@ class AdminPanel:
         use_cached = cached_static_path.exists()
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
-        if not use_cached:
-            self.copy_static_to_public()
-        # Новый серверный предпросмотр (без /admin, чтобы работало с проксированием)
-        self.app.router.add_post('/preview', self.preview_post_handler)
-        self.app.router.add_get('/preview', self.preview_get_handler)
         
+        # Статические медиафайлы теперь из output_dir/media
+        media_path = self.output_dir / 'media'
+        if not media_path.exists():
+            media_path.mkdir(parents=True)
+        self.app.router.add_static('/media', media_path)
+        
+        if not use_cached:
+            self.copy_static_to_output()
+
     async def handle_request(self, request):
         """Handle admin panel request."""
         logger.info(f"Admin request: {request.path}, method: {request.method}")
-        
-        # Remove /admin prefix from path
+
         path = request.path.replace('/admin', '', 1)
         if not path:
             path = '/'
-            
+
         logger.info(f"Modified path: {path}")
-        
-        # Прямое перенаправление для API запросов без клонирования
+
         if path.startswith('/api/'):
-            # GET запросы к API
             if request.method == 'GET':
                 if path == '/api/deploy/config':
                     return await self.api_deploy_config_get_handler(request)
-            
-            # POST запросы к API
+
             if request.method == 'POST':
-                # Маршрутизация API напрямую к обработчикам
                 if path == '/api/content':
                     return await self.api_content_handler(request)
-                elif path == '/api/settings':
-                    return await self.api_settings_handler(request)
                 elif path == '/api/deploy/config':
                     return await self.api_deploy_config_handler(request)
                 elif path == '/api/deploy/start':
                     return await self.api_deploy_start_handler(request)
+                elif path == '/api/upload':
+                    return await self.api_upload_handler(request)
                 else:
                     return web.json_response({
                         'success': False,
                         'error': f"Unknown API endpoint: {path}"
                     }, status=404)
-        
-        # Для GET запросов и всех остальных используем клонирование
+
         try:
-            # Клонируем запрос с новым URL
             subrequest = request.clone(rel_url=path)
-            
-            # Обрабатываем запрос через приложение админ-панели
             response = await self.app._handle(subrequest)
             return response
         except web.HTTPNotFound:
@@ -152,82 +144,64 @@ class AdminPanel:
             import traceback
             traceback.print_exc()
             return web.Response(status=500, text=str(e))
-        
+
     @aiohttp_jinja2.template('content.html')
     async def index_handler(self, request):
         """Handle admin panel index page."""
-        # Вместо перенаправления сразу возвращаем содержимое страницы content
         content_path = Path('content')
         files = []
-        
-        # Используем конфигурацию из engine для определения URL файлов
+
         engine = self.engine
         site = engine.site
         base_url = self.config.get('base_url', '')
-        
+
         for file in content_path.rglob('*.*'):
             if file.suffix in ['.md', '.html']:
-                rel_path = str(file.relative_to(content_path))
-                
-                # Получаем URL для файла
+                rel_path = str(file.relative_to(content_path)).replace('\\', '/')
+                print(f"DEBUG: rel_path={rel_path!r} for file={file}")
+                if not rel_path:
+                    continue
+
                 file_url = ""
                 try:
-                    # Загружаем страницу для получения ее метаданных
                     page = engine.load_page_from_file(file)
                     if page:
-                        # Получаем тип контента
                         content_type = site.determine_content_type(page)
-                        
-                        # Формируем URL
+
                         file_url = site.router.get_url(content_type, page.metadata)
-                        
-                        # Добавляем base_url
+
                         if file_url and not file_url.startswith('http'):
                             if not file_url.startswith('/'):
                                 file_url = '/' + file_url
                             file_url = f"{base_url.rstrip('/')}{file_url}"
                 except Exception as e:
                     logger.error(f"Error generating URL for {rel_path}: {e}")
-                
-                # Если не удалось получить URL, используем преобразование пути
+
                 if not file_url:
-                    file_url = f"{base_url.rstrip('/')}/{rel_path.replace('.md', '.html')}"
-                
-                # Добавляем информацию о файле
+                    file_url = f"{base_url.rstrip('/')}/" + re.sub(r'\.md$', '.html', rel_path)
+
                 files.append({
                     'path': rel_path,
                     'modified': file.stat().st_mtime,
                     'size': file.stat().st_size,
                     'url': file_url
                 })
-                
+
         static_dir = self.config.get("static_dir", "static")
         static_url = "/" + str(static_dir).strip("/")
         return {
             'files': files,
             'static_url': static_url,
         }
-        
-    @aiohttp_jinja2.template('settings.html')
-    async def settings_handler(self, request):
-        """Handle settings page."""
-        static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
-        return {
-            'config': self.config.config,
-            'static_url': static_url,
-        }
-        
+
     @aiohttp_jinja2.template('deploy.html')
     async def deploy_handler(self, request):
         """Handle deployment page."""
-        # Инициализируем GitHub Pages deployer
         from ..deploy.github_pages import GitHubPagesDeployer
         deployer = GitHubPagesDeployer()
-        
-        # Получаем статус и конфигурацию деплоя
+
         status = deployer.get_deployment_status()
-        
+
         static_dir = self.config.get("static_dir", "static")
         static_url = "/" + str(static_dir).strip("/")
         return {
@@ -235,185 +209,96 @@ class AdminPanel:
             'config': status['config'],
             'static_url': static_url,
         }
-        
+
     @aiohttp_jinja2.template('block_editor.html')
     async def block_editor_handler(self, request):
         """Handle block editor page."""
         path = request.match_info.get('path', '')
         page = None
         safe_metadata = {}
-        
+        error_message = None
+        import logging
+        logger = logging.getLogger("admin.block_editor_handler")
         if path:
             content_path = Path('content') / path
             logger.info(f"Attempting to load page from: {content_path}")
             if content_path.exists():
                 try:
-                    # Создаем объект Page из существующего файла
                     from ..core.page import Page
                     page = Page.from_file(content_path)
-                    
-                    # Устанавливаем правильный путь к исходному файлу
                     page.source_path = path
-                    
-                    # Добавляем время последнего изменения файла, если его нет
                     if not hasattr(page, 'modified'):
                         page.modified = content_path.stat().st_mtime
-                    # Преобразуем метаданные в JSON-безопасный формат
                     safe_metadata = self._safe_metadata(page.metadata)
                     logger.info(f"Successfully loaded page: {path}")
-                
                 except Exception as e:
                     logger.error(f"Error loading page: {e}")
                     import traceback
                     traceback.print_exc()
-        
+                    error_message = f"Ошибка загрузки файла: {e}"
+            else:
+                logger.error(f"File does not exist: {content_path}")
+                error_message = f"Файл не найден: {content_path}"
         return {
             'page': page,
-            'safe_metadata': safe_metadata
+            'safe_metadata': safe_metadata,
+            'error_message': error_message
         }
-    
+
     async def api_content_handler(self, request):
         """Handle content API requests."""
         try:
             data = await request.json()
-            
+
             if 'path' not in data:
                 return web.json_response({
                     'success': False,
                     'error': 'Missing path field'
                 }, status=400)
-                
+
             if 'content' not in data:
                 return web.json_response({
                     'success': False,
                     'error': 'Missing content field'
                 }, status=400)
-                
+
             path = data['path']
             content = data['content']
             metadata = data.get('metadata', {})
-            
-            # Handle new page creation
+
             is_new_page = path == 'New Page'
             if is_new_page:
-                # Проверяем, если путь новой страницы уже содержит имя файла
                 if '.' in path and path != 'New Page':
-                    # Используем путь как есть
                     logger.info(f"Using provided path for new page: {path}")
                 else:
-                    # Используем имя файла из заголовка, если не указано явно
                     title = metadata.get('title', 'Untitled')
-                    # Create sanitized filename from title
                     filename = title.lower().replace(' ', '-')
-                    # Remove any character that's not alphanumeric, dash, or underscore
                     filename = re.sub(r'[^a-z0-9\-_]', '', filename)
-                    # Ensure we have a valid filename
                     if not filename:
                         filename = 'untitled'
-                    
-                    # Определяем формат файла из метаданных
+
                     output_format = metadata.get('format', 'markdown')
-                    
-                    # Выбираем правильное расширение файла в зависимости от формата
-                    if output_format == 'rst':
-                        extension = '.rst'
-                    elif output_format == 'asciidoc':
-                        extension = '.adoc'
-                    else:  # По умолчанию markdown
+
+                    if output_format == 'html':
+                        extension = '.html'
+                    else:
                         extension = '.md'
-                    
-                    # Set path to new file in content directory with proper extension
+
                     path = f"{filename}{extension}"
-                
+
                 logger.info(f"Creating new page at: {path} with format: {metadata.get('format', 'markdown')}")
-            
-            # Normalize path to be relative to content directory
+
             if path.startswith('/'):
                 path = path[1:]
-                
+
             content_path = Path('content') / path
-            
-            # Проверяем если мы меняем формат существующего файла
+
             if not is_new_page and 'format' in metadata:
-                # Получаем текущее расширение и формат из метаданных
                 current_ext = Path(path).suffix
                 output_format = metadata.get('format', 'markdown')
-                
-                # Определяем новое расширение на основе формата
-                if output_format == 'rst':
-                    new_ext = '.rst'
-                elif output_format == 'asciidoc':
-                    new_ext = '.adoc'
-                else:
-                    new_ext = '.md'
-                
-                # Если расширение изменилось, создаем новый путь
-                if current_ext != new_ext:
-                    # Создаем новый путь с измененным расширением
-                    new_path = Path(path).with_suffix(new_ext)
-                    new_content_path = Path('content') / new_path
-                    
-                    # Проверяем, не существует ли уже файл с таким именем
-                    if new_content_path.exists():
-                        return web.json_response({
-                            'success': False,
-                            'error': f"File already exists: {new_path}"
-                        }, status=400)
-                    
-                    # Если старый файл существует, удаляем его после создания нового
-                    should_delete_old = content_path.exists()
-                    
-                    # Обновляем пути
-                    path = str(new_path)
-                    content_path = new_content_path
-                    
-                    logger.info(f"Changing file format: {current_ext} -> {new_ext}, new path: {path}")
-                    
-                    # После сохранения нового файла, удалим старый
-                    if should_delete_old:
-                        logger.info(f"Will delete old file after saving new one")
-            
-            # Ensure parent directories exist
+
             content_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Преобразуем контент в выбранный формат, если нужно
-            output_format = metadata.get('format', 'markdown')
-            if output_format != 'markdown' and content:
-                try:
-                    # Импортируем необходимые парсеры
-                    from ..parsers import MarkdownParser
-                    
-                    # Инициализируем markdown парсер для преобразования в HTML
-                    md_parser = MarkdownParser()
-                    
-                    # Сначала получаем HTML из Markdown
-                    html_content = md_parser.parse(content)
-                    
-                    # Преобразуем HTML в нужный формат
-                    if output_format == 'rst':
-                        # Импортируем HTML -> RST конвертер
-                        try:
-                            from html2rest import HTML2REST
-                            converter = HTML2REST()
-                            content = converter.convert(html_content)
-                            logger.info("Converted content from Markdown to reStructuredText")
-                        except ImportError:
-                            logger.warning("html2rest not installed. Keeping markdown format.")
-                    
-                    elif output_format == 'asciidoc':
-                        # Импортируем HTML -> AsciiDoc конвертер
-                        try:
-                            from html2asciidoc import convert
-                            content = convert(html_content)
-                            logger.info("Converted content from Markdown to AsciiDoc")
-                        except ImportError:
-                            logger.warning("html2asciidoc not installed. Keeping markdown format.")
-                    
-                except Exception as e:
-                    logger.error(f"Error converting content format: {e}")
-                    # Продолжаем с исходным контентом, если конвертация не удалась
-            
-            # Create frontmatter
+
             frontmatter = '---\n'
             for key, value in metadata.items():
                 if isinstance(value, list):
@@ -423,40 +308,17 @@ class AdminPanel:
                 else:
                     frontmatter += f"{key}: {value}\n"
             frontmatter += '---\n\n'
-            
-            # Write content to file with frontmatter
+
             with open(content_path, 'w', encoding='utf-8') as f:
                 f.write(frontmatter + content)
-                
-            # Если мы изменили формат, удаляем старый файл
-            if not is_new_page and 'format' in metadata:
-                current_ext = Path(path).suffix
-                old_ext = current_ext
-                if output_format == 'rst':
-                    old_ext = '.rst' if current_ext != '.rst' else '.md'
-                elif output_format == 'asciidoc':
-                    old_ext = '.adoc' if current_ext != '.adoc' else '.md'
-                elif output_format == 'markdown':
-                    old_ext = '.md' if current_ext != '.md' else '.rst'
-                
-                # Удаляем старый файл только если он существует и отличается от нового
-                old_path = Path(path).with_suffix(old_ext)
-                old_content_path = Path('content') / old_path
-                if old_content_path.exists() and old_content_path != content_path:
-                    try:
-                        old_content_path.unlink()
-                        logger.info(f"Deleted old file: {old_path}")
-                    except Exception as e:
-                        logger.error(f"Failed to delete old file: {e}")
-            
-            # Rebuild the site
+
             self.rebuild_site()
-            
+
             return web.json_response({
                 'success': True,
                 'path': path
             })
-            
+
         except json.JSONDecodeError as e:
             logger.error(f"Content JSON parse error: {e}")
             return web.json_response({
@@ -471,44 +333,16 @@ class AdminPanel:
                 'success': False,
                 'error': str(e)
             }, status=500)
-        
-    async def api_settings_handler(self, request):
-        """Handle settings API requests."""
-        try:
-            data = await request.json()
-            
-            for key, value in data.items():
-                self.config.set(key, value)
-                
-            self.config.save()
-            self.rebuild_site()
-            
-            return web.json_response({'status': 'ok'})
-        except json.JSONDecodeError as e:
-            logger.error(f"Settings JSON parse error: {e}")
-            return web.json_response({
-                'success': False,
-                'error': f"Invalid JSON: {e}"
-            }, status=400)
-        except Exception as e:
-            logger.error(f"Unexpected error in api_settings_handler: {e}")
-            import traceback
-            traceback.print_exc()
-            return web.json_response({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-            
+
+
     async def api_deploy_config_get_handler(self, request):
         """Handle deploy configuration GET API requests."""
         try:
-            # Инициализируем GitHub Pages deployer
             from ..deploy.github_pages import GitHubPagesDeployer
             deployer = GitHubPagesDeployer()
-            
-            # Получаем статус и конфигурацию деплоя
+
             status = deployer.get_deployment_status()
-            
+
             return web.json_response({
                 'success': True,
                 'status': status,
@@ -522,20 +356,17 @@ class AdminPanel:
                 'success': False,
                 'error': str(e)
             }, status=500)
-            
+
     async def api_deploy_config_handler(self, request):
         """Handle deploy configuration API requests."""
         try:
             data = await request.json()
-            
-            # Инициализируем GitHub Pages deployer
+
             from ..deploy.github_pages import GitHubPagesDeployer
             deployer = GitHubPagesDeployer()
-            
-            # Обновляем конфигурацию
+
             deployer.update_config(**data)
-            
-            # Проверяем, валидна ли конфигурация
+
             is_valid, errors, warnings = deployer.validate_config()
             
             return web.json_response({
@@ -559,31 +390,28 @@ class AdminPanel:
                 'error': str(e),
                 'message': 'Failed to save deployment configuration'
             }, status=500)
-            
+
     async def api_deploy_start_handler(self, request):
         """Handle deploy start API requests."""
         logger.info("=== Starting deployment process ===")
         try:
-            # Получаем данные из запроса
             data = {}
             try:
                 data = await request.json()
                 logger.info(f"Received deployment data: {data}")
             except json.JSONDecodeError:
-                # Если JSON не предоставлен, используем пустой словарь
                 logger.info("No JSON data provided in request")
                 pass
-                
-            # Получаем коммит-сообщение, если предоставлено
+
             commit_message = data.get('commit_message')
             logger.info(f"Using commit message: {commit_message or 'default'}")
-            
-            # Инициализируем GitHub Pages deployer
+
             from ..deploy.github_pages import GitHubPagesDeployer
             logger.info("Initializing GitHubPagesDeployer")
             deployer = GitHubPagesDeployer()
-            
-            # Проверяем, валидна ли конфигурация
+
+            repo_url = deployer.config.get("repo_url", "")
+
             logger.info("Validating deployment configuration")
             is_valid, errors, warnings = deployer.validate_config()
             if not is_valid:
@@ -592,35 +420,46 @@ class AdminPanel:
                     'success': False,
                     'message': f"Invalid configuration: {', '.join(errors)}"
                 }, status=400)
-                
-            # Сначала перестраиваем сайт
-            logger.info("Rebuilding site before deployment")
-            rebuild_success = self.rebuild_site()
-            if not rebuild_success:
-                logger.error("Failed to build site")
+
+            original_base_url = self.config.get("base_url")
+            original_static_url = self.config.get("static_url")
+            
+            try:
+                self._update_config_for_github_pages(repo_url)
+
+                logger.info("Rebuilding site before deployment")
+                rebuild_success = self.rebuild_site()
+                if not rebuild_success:
+                    logger.error("Failed to build site")
+                    return web.json_response({
+                        'success': False,
+                        'message': 'Failed to build site'
+                    }, status=500)
+
+                logger.info("Site successfully rebuilt, starting deployment")
+
+                logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
+                success, message = deployer.deploy(commit_message=commit_message)
+                logger.info(f"Deployment result: success={success}, message={message}")
+
+                status = deployer.get_deployment_status()
+
+                logger.info("=== Deployment process completed ===")
                 return web.json_response({
-                    'success': False,
-                    'message': 'Failed to build site'
-                }, status=500)
-            
-            logger.info("Site successfully rebuilt, starting deployment")
-                
-            # Деплоим сайт
-            logger.info(f"Deploying site with committer: {deployer.config.get('username')}")
-            success, message = deployer.deploy(commit_message=commit_message)
-            logger.info(f"Deployment result: success={success}, message={message}")
-            
-            # Получаем обновленный статус
-            status = deployer.get_deployment_status()
-            
-            logger.info("=== Deployment process completed ===")
-            return web.json_response({
-                'success': success,
-                'message': message,
-                'timestamp': status.get('last_deployment'),
-                'history': status.get('history', []),
-                'warnings': warnings
-            })
+                    'success': success,
+                    'message': message,
+                    'timestamp': status.get('last_deployment'),
+                    'history': status.get('history', []),
+                    'warnings': warnings
+                })
+            finally:
+                logger.info("Восстанавливаем оригинальные настройки конфигурации")
+                self.config.set("base_url", original_base_url)
+                self.config.set("static_url", original_static_url)
+                rebuild_success = self.rebuild_site()
+                if not rebuild_success:
+                    logger.warning("Не удалось пересобрать сайт после восстановления настроек")
+                logger.info(f"Конфигурация восстановлена: base_url={original_base_url}, static_url={original_static_url}")
         except Exception as e:
             logger.error(f"Critical error in api_deploy_start_handler: {e}")
             import traceback
@@ -629,30 +468,76 @@ class AdminPanel:
                 'success': False,
                 'message': f"Deployment failed: {str(e)}"
             }, status=500)
+
+    def _update_config_for_github_pages(self, repo_url):
+        """Обновляет конфигурацию для GitHub Pages"""
+
+        repo_name = self._extract_repo_name(repo_url)
+        if not repo_name:
+            logger.warning("Не удалось извлечь имя репозитория из URL, оставляем конфигурацию без изменений")
+            return
         
-    def copy_static_to_public(self):
-        """Копирует статические файлы админки в папку public для кэширования."""
+        logger.info(f"Обновляем конфигурацию для GitHub Pages репозитория: {repo_name}")
+
+        username = None
+        if repo_url.startswith("https://github.com/"):
+            parts = repo_url.split("https://github.com/")[1].split("/")
+            if len(parts) >= 1:
+                username = parts[0]
+        elif repo_url.startswith("git@github.com:"):
+            parts = repo_url.split("git@github.com:")[1].split("/")
+            if len(parts) >= 1:
+                username = parts[0]
+
+        if not username:
+            logger.warning("Не удалось извлечь имя пользователя из URL, оставляем конфигурацию без изменений")
+            return
+
+        base_url = f"https://{username}.github.io/{repo_name}"
+        logger.info(f"Устанавливаем base_url: {base_url}")
+
+        self.config.set("base_url", base_url)
+        self.config.set("static_url", f"{repo_name}/static/")
+
+        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_url={repo_name}/static/")
+
+    def _extract_repo_name(self, repo_url):
+        """Извлекает имя репозитория из URL GitHub"""
+        if not repo_url:
+            return None
+
+        if repo_url.startswith("https://github.com/"):
+            parts = repo_url.split("https://github.com/")[1].split("/")
+            if len(parts) >= 2:
+                return parts[1].replace(".git", "")
+
+        elif repo_url.startswith("git@github.com:"):
+            parts = repo_url.split("git@github.com:")[1].split("/")
+            if len(parts) >= 2:
+                return parts[1].replace(".git", "")
+
+        return None
+
+    def copy_static_to_output(self):
+        """Копирует статические файлы админки в папку output_dir для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
         if not source_static_path.exists():
             logger.info("Исходная директория статики не существует, нечего копировать")
             return
-            
-        dest_static_path = Path('public/admin/static')
-        
-        # Создаем директории, если они не существуют
+
+        dest_static_path = self.output_dir / 'admin' / 'static'
+
         dest_static_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Копируем статические файлы
+
         if dest_static_path.exists():
             shutil.rmtree(dest_static_path)
         shutil.copytree(source_static_path, dest_static_path)
-    
+
     def rebuild_site(self):
         """Rebuild the site using the engine."""
         try:
-            # Убедимся, что статика админки тоже обновлена
-            self.copy_static_to_public()
-            
+            self.copy_static_to_output()
+
             self.engine.build()
             return True
         except Exception as e:
@@ -660,32 +545,62 @@ class AdminPanel:
             import traceback
             traceback.print_exc()
             return False
+
+    async def api_upload_handler(self, request):
+        """Handle file upload requests."""
+        try:
+            reader = await request.multipart()
+            field = await reader.next()
             
+            if not field or field.name != 'file':
+                return web.json_response({
+                    'success': False,
+                    'error': 'No file field in request'
+                }, status=400)
+
+            filename = field.filename
+            if not filename:
+                return web.json_response({
+                    'success': False,
+                    'error': 'No filename provided'
+                }, status=400)
+
+            # Создаем директорию media в output_dir если её нет
+            media_dir = self.output_dir / 'media'
+            media_dir.mkdir(parents=True, exist_ok=True)
+
+            # Генерируем уникальное имя файла
+            ext = Path(filename).suffix
+            unique_filename = f"{uuid.uuid4().hex}{ext}"
+            file_path = media_dir / unique_filename
+
+            # Сохраняем файл
+            with open(file_path, 'wb') as f:
+                while True:
+                    chunk = await field.read_chunk()
+                    if not chunk:
+                        break
+                    f.write(chunk)
+
+            # Возвращаем URL для доступа к файлу
+            url = f"/media/{unique_filename}"
+            
+            return web.json_response({
+                'success': True,
+                'url': url
+            })
+
+        except Exception as e:
+            logger.error(f"Error in api_upload_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
 
-    async def preview_post_handler(self, request):
-        """Сохраняет черновик во временный файл и возвращает 204 (без редиректа)."""
-        data = await request.json()
-        tmp_path = Path('public/admin/preview_draft.json')
-        with tmp_path.open('w', encoding='utf-8') as f:
-            json.dump(data, f)
-        return web.Response(status=204)
-
-    async def preview_get_handler(self, request):
-        """Рендерит предпросмотр страницы как при генерации сайта."""
-        tmp_path = Path('public/admin/preview_draft.json')
-        if not tmp_path.exists():
-            return web.Response(text='Нет черновика для предпросмотра', status=404)
-        with tmp_path.open('r', encoding='utf-8') as f:
-            data = json.load(f)
-        content = data.get('content', '')
-        metadata = data.get('metadata', {})
-        from staticflow.core.page import Page
-        page = Page(Path('preview.md'), content, metadata)
-        html = self.engine.render_page(page)
-        return web.Response(text=html, content_type='text/html')
-
-# Экспортируем AdminPanel для доступа из других модулей
-__all__ = ['AdminPanel'] 
+__all__ = ['AdminPanel']

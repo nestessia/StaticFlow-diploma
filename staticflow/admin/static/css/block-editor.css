@@ -20,7 +20,7 @@
     max-width: 800px;
     min-height: 32px;
     border: 1px solid transparent;
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s, border 0.2s, background 0.2s, transform 0.18s;
     cursor: text;
 }
 
@@ -82,32 +82,33 @@
     background-color: #d5e9ff;
 }
 
+/* Блок, который перетаскивается */
 .sf-block-dragging {
-    opacity: 0.8 !important;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(35, 131, 226, 0.5);
-    pointer-events: none;
-    backdrop-filter: blur(2px);
-    transition: transform 0.05s ease-out;
-    background-color: white;
+    opacity: 0.85 !important;
+    box-shadow: 0 8px 32px rgba(35, 131, 226, 0.18), 0 1.5px 6px rgba(0,0,0,0.08);
+    border: 2px solid #2383e2;
+    transform: scale(1.03) rotate(-1deg);
+    z-index: 1001;
+    transition: box-shadow 0.2s, border 0.2s, transform 0.15s;
+    background: #fff;
 }
 
+/* Drop-индикатор между блоками */
 .sf-block-drop-indicator {
-    height: 3px;
-    background-color: #2383e2;
-    margin: 0 auto;
-    max-width: 800px;
+    height: 6px;
+    background: linear-gradient(90deg, #2383e2 0%, #4dabf7 100%);
     border-radius: 3px;
-    display: none;
-    animation: pulse 1.5s infinite;
-    z-index: 100;
-    box-shadow: 0 0 5px rgba(35, 131, 226, 0.3);
+    margin: 0 auto;
+    max-width: 760px;
+    box-shadow: 0 2px 8px rgba(35, 131, 226, 0.12);
+    display: block !important;
+    animation: dropPulse 1.2s infinite;
 }
 
-@keyframes pulse {
-    0% { opacity: 0.6; }
+@keyframes dropPulse {
+    0% { opacity: 0.7; }
     50% { opacity: 1; }
-    100% { opacity: 0.6; }
+    100% { opacity: 0.7; }
 }
 
 /* Контролы блока (удаление, перемещение) */

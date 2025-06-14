@@ -307,14 +307,11 @@
                 }
             });
         }
-        
-        // Handle deploy button click
+
         if (deployBtn) {
             deployBtn.addEventListener('click', async function() {
-                // Get commit message if provided
                 const commitMessage = commitMessageInput.value.trim();
-                
-                // Change button to loading state
+
                 const originalBtnText = deployBtn.textContent;
                 deployBtn.innerHTML = '<span class="spinner"></span> Deploying...';
                 deployBtn.disabled = true;
@@ -335,22 +332,18 @@
                     
                     if (response.ok && data.success) {
                         statusMsg.textContent = 'Deployment successful!';
-                        
-                        // Update last deployment time
+
                         if (data.timestamp) {
                             lastDeploymentTime.textContent = formatDate(data.timestamp);
                         }
-                        
-                        // Add to history table
+
                         if (data.history && data.history.length > 0) {
                             const latestDeployment = data.history[0];
-                            
-                            // Clear "no history" row if present
+
                             if (historyTable.querySelector('td[colspan="2"]')) {
                                 historyTable.innerHTML = '';
                             }
-                            
-                            // Add new row to the top
+
                             const newRow = document.createElement('tr');
                             newRow.innerHTML = `
                                 <td>${formatDate(latestDeployment.timestamp)}</td>
@@ -359,8 +352,7 @@
                             
                             historyTable.insertBefore(newRow, historyTable.firstChild);
                         }
-                        
-                        // Clear commit message field
+
                         commitMessageInput.value = '';
                         
                         alert('Site deployed successfully!');

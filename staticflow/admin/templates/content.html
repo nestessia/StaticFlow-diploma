@@ -49,19 +49,20 @@
                 <div class="content-info">
                     <h3>
                         <span class="file-icon" x-text="file.path.endsWith('.md') ? '📄' : '🌐'"></span>
-                        <a :href="file.url || ('/' + file.path.replace('.md', '.html').replace('.html.html', '.html'))" 
-                           class="file-link" 
-                           target="_blank" 
+                        <a :href="(file.url && file.url !== '') ? file.url : ('/' + file.path.replace(/\.md$/, '.html'))"
+                           class="file-link"
+                           target="_blank"
                            x-text="file.path"></a>
                     </h3>
                     <div class="file-meta">
                         <span>Modified: <span x-text="formatDate(file.modified)"></span></span>
-                        <span x-if="file.size">Size: <span x-text="formatSize(file.size)"></span></span>
+                        <template x-if="file && file.size">
+                            <span>Size: <span x-text="formatSize(file.size)"></span></span>
+                        </template>
                     </div>
                 </div>
                 <div class="content-actions">
                     <a :href="'/admin/block-editor/' + file.path" class="btn btn-primary">Edit</a>
-                    <button @click="deleteFile(file)" class="btn btn-danger">Delete</button>
                 </div>
             </div>
         </template>
@@ -102,6 +103,7 @@ function contentManager() {
         
         get filteredFiles() {
             return this.files
+                .filter(file => file && file.path)
                 .filter(file => {
                     if (this.filterType === 'all') return true;
                     return file.path.endsWith(this.filterType);
@@ -157,59 +159,8 @@ function contentManager() {
             }
             
             return `${size.toFixed(1)} ${units[unit]}`;
-        },
-        
-        async deleteFile(file) {
-            if (!confirm(`Are you sure you want to delete ${file.path}?`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        path: file.path
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    alert('File deleted successfully!');
-                    window.location.reload();
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-            }
         }
     };
-}
-
-function deleteContent(path) {
-    if (confirm(`Are you sure you want to delete ${path}?`)) {
-        fetch('/admin/api/content', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'delete',
-                path: path
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                window.location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
-    }
 }
 </script>
 {% endblock %} 
