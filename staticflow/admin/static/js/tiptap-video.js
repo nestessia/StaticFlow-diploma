@@ -90,13 +90,6 @@ export const VideoBlock = Node.create({
       titleInput.style.marginBottom = '8px'
       form.appendChild(titleInput)
 
-      // Кнопка вставки
-      const setBtn = document.createElement('button')
-      setBtn.type = 'button'
-      setBtn.textContent = 'Insert'
-      setBtn.style.padding = '4px 8px'
-      form.appendChild(setBtn)
-
       // Показываем видео только если src есть
       if (node.attrs.src) {
         const video = document.createElement('video')
@@ -137,11 +130,10 @@ export const VideoBlock = Node.create({
         }
       }
 
-      // Обработка вставки по URL
-      setBtn.onclick = () => {
+      // Обработка вставки по URL (автоматически при изменении поля)
+      urlInput.onblur = () => {
         const src = urlInput.value.trim()
         const title = titleInput.value.trim()
-        
         if (src) {
           updateVideo(src, title)
         }
@@ -175,6 +167,12 @@ export const VideoBlock = Node.create({
           console.error('Ошибка при загрузке файла:', error)
           alert('Ошибка при загрузке файла')
         }
+      }
+
+      // Обновление title по потере фокуса
+      titleInput.onblur = () => {
+        const src = urlInput.value.trim()
+        updateVideo(src, titleInput.value.trim())
       }
 
       // Обработка переключения режимов

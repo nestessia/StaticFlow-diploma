@@ -42,6 +42,19 @@ lowlight.registerLanguage('js', javascript)
 lowlight.registerLanguage('javascript', javascript)
 lowlight.registerLanguage('python', python)
 
+// Функция для замены !AUDIO(...) и !VIDEO(...) на HTML-теги
+function preprocessMediaBlocks(html) {
+  // AUDIO
+  html = html.replace(/!AUDIO\((.*?)\)/g, (match, src) => {
+    return `<audio controls src="${src.trim()}"></audio>`;
+  });
+  // VIDEO
+  html = html.replace(/!VIDEO\((.*?)\)/g, (match, src) => {
+    return `<video controls src="${src.trim()}"></video>`;
+  });
+  return html;
+}
+
 class TipTapEditor {
     constructor(selector, content = '', type = 'markdown') {
         this.element = document.querySelector(selector)
@@ -60,6 +73,7 @@ class TipTapEditor {
         let htmlContent = ''
         if (this.type === 'markdown') {
             htmlContent = this.content ? marked(this.content) : ''
+            htmlContent = preprocessMediaBlocks(htmlContent);
             htmlContent = preprocessMarkdownHtml(htmlContent)
         } else {
             htmlContent = this.content || ''
