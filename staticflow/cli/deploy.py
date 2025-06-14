@@ -134,15 +134,16 @@ def setup_github_pages(repo_url=None, branch=None, username=None, email=None, to
 
 def run_github_pages_deploy(message=None):
     """Run GitHub Pages deployment."""
+    # Import the deployer here to avoid circular imports
     from ..deploy.github_pages import GitHubPagesDeployer
-    from ..core.config import Config
-    config = Config.load()
-    output_dir = config.get('output_dir', 'public')
-    deployer = GitHubPagesDeployer(site_path=output_dir)
+    
+    deployer = GitHubPagesDeployer()
+    
     # Check if the site is built
-    site_path = Path(output_dir)
+    site_path = Path("public")
     if not site_path.exists() or not any(site_path.iterdir()):
         console.print("[bold yellow]Site not built or empty. Building site...[/bold yellow]")
+        # Simple build logic - could be replaced with a call to the engine
         os.system("staticflow build")
     
     # Validate the configuration
