@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="{{ page.language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+    <link rel="stylesheet" href="{{ static_url }}/css/code_highlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="canonical" href="{{ site_url }}" />
+    {% for lang, url in page.translations.items() %}
+    <link rel="alternate" hreflang="{{ lang }}" href="{{ site_url }}{{ url }}" />
+    {% endfor %}
+    
+    {% block head %}{% endblock %}
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-light: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+            background-color: var(--bg-light);
+        }
+
+        .navbar {
+            background: var(--bg-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 2.5rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .navbar-brand img.logo-sf {
+            height: 2.6rem;
+            width: 2.6rem;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            min-width: unset;
+            font-size: 1rem;
+        }
+
+        .navbar-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+        }
+
+        .navbar-item.active {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+            font-weight: 700;
+            box-shadow: 0 2px 8px 0 rgb(37 99 235 / 0.08);
+        }
+
+        .navbar-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background-color: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .navbar-toggle:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1100px) {
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-menu {
+                display: none;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-item {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem 1rem;
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background: var(--bg-color);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Анимации для интерактивных элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar-item, .navbar-brand {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Улучшенный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+                StaticFlow
+            </a>
+            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="navbar-menu" id="navbar-menu">
+                <li><a href="/about.html" class="navbar-item {% if page.url == '/about.html' %}active{% endif %}">
+                    <i class="fas fa-info-circle"></i> О проекте
+                </a></li>
+                <li><a href="/installation.html" class="navbar-item {% if page.url == '/installation.html' %}active{% endif %}">
+                    <i class="fas fa-download"></i> Установка
+                </a></li>
+                <li><a href="/quickstart.html" class="navbar-item {% if page.url == '/quickstart.html' %}active{% endif %}">
+                    <i class="fas fa-rocket"></i> Быстрый старт
+                </a></li>
+                <li><a href="/templates.html" class="navbar-item {% if page.url == '/templates.html' %}active{% endif %}">
+                    <i class="fas fa-paint-brush"></i> Шаблоны
+                </a></li>
+                <li><a href="/blocks.html" class="navbar-item {% if page.url == '/blocks.html' %}active{% endif %}">
+                    <i class="fas fa-palette"></i> Блочный редактор
+                </a></li>
+                <li><a href="/plugins.html" class="navbar-item {% if page.url == '/plugins.html' %}active{% endif %}">
+                    <i class="fas fa-puzzle-piece"></i> Плагины
+                </a></li>
+                <li><a href="/deploy.html" class="navbar-item {% if page.url == '/deploy.html' %}active{% endif %}">
+                    <i class="fas fa-cloud-upload-alt"></i> Деплой
+                </a></li>
+                <li><a href="/api.html" class="navbar-item {% if page.url == '/api.html' %}active{% endif %}">
+                    <i class="fas fa-code"></i> API
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+        </div>
+    </footer>
+
+    <script>
+        // Улучшенная обработка мобильного меню
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navbarMenu = document.getElementById('navbar-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            navbarMenu.classList.toggle('active');
+            navbarToggle.setAttribute('aria-expanded', isMenuOpen);
+            navbarToggle.innerHTML = isMenuOpen ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bars"></i>';
+        }
+
+        navbarToggle.addEventListener('click', toggleMenu);
+
+        // Закрытие меню при клике на пункт меню
+        document.querySelectorAll('.navbar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Закрытие меню при изменении размера окна
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768 && isMenuOpen) {
+                    toggleMenu();
+                }
+            }, 250);
+        });
+
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню при скролле
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        document.querySelectorAll('.navbar-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 

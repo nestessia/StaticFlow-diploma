@@ -6,6 +6,8 @@ from .config import Config
 from .site import Site
 from .page import Page
 from ..plugins.base import Plugin
+from ..parsers.extensions.video import makeExtension as makeVideoExtension
+from ..parsers.extensions.audio import makeExtension as makeAudioExtension
 
 
 class Engine:
@@ -34,6 +36,8 @@ class Engine:
                 'fenced_code',
                 'tables',
                 'attr_list',
+                makeVideoExtension(),
+                makeAudioExtension(),
             ],
             extension_configs={
                 'fenced_code': fenced_code_config
@@ -59,7 +63,17 @@ class Engine:
 
     def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
-        self.site.set_directories(source_dir, output_dir, templates_dir)
+        if isinstance(source_dir, str):
+            source_dir = Path(source_dir)
+        if isinstance(output_dir, str):
+            output_dir = Path(output_dir)
+        if isinstance(templates_dir, str):
+            templates_dir = Path(templates_dir)
+        self.site.set_directories(
+            source_dir,
+            output_dir,
+            templates_dir
+        )
 
     def build(self) -> None:
         """Build the site."""
@@ -82,7 +96,7 @@ class Engine:
         try:
             from ..admin import AdminPanel
             admin = AdminPanel(self.config, self)
-            admin.copy_static_to_public()
+            admin.copy_static_to_output()
         except Exception as e:
             print(f"Error copying admin static files: {e}")
 
@@ -198,8 +212,6 @@ class Engine:
             css_file = css_dir / "code_highlight.css"
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(css_content)
-
-            print(f"Generated code highlight CSS with '{style_name}' style")
 
         except Exception as e:
             print(f"Error generating code highlight CSS: {e}")

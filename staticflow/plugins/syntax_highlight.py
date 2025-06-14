@@ -14,21 +14,16 @@ logger = logging.getLogger("SyntaxHighlight")
 
 class SyntaxHighlightPlugin(Plugin):
     """Plugin for syntax highlighting code blocks in content."""
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         super().__init__(config)
         linenums = self.config.get('linenums', False)
-        
-        logger.info("Initializing SyntaxHighlightPlugin")
-        
-        # Получаем стиль из глобального конфига сайта, если он есть
+
         style = self.config.get('style', 'monokai')
         if (hasattr(self, 'engine') and self.engine 
                 and hasattr(self.engine, 'config')):
             syntax_config = self.engine.config.get("syntax_highlight", {})
             style = syntax_config.get("style", style)
-        
-        logger.info(f"Using style: {style}")
         
         # Create formatter with explicit settings for tabulation
         self.formatter = HtmlFormatter(
@@ -311,9 +306,7 @@ class SyntaxHighlightPlugin(Plugin):
         """Process content and highlight code blocks."""
         if not content or len(content) < 10:
             return content
-        
-        logger.info("Starting syntax highlighting processing")
-        
+
         # Function for highlighting code with tab/newline preservation
         def highlight_block(code, lang):
             try:
@@ -389,8 +382,6 @@ class SyntaxHighlightPlugin(Plugin):
             else:
                 # Detect language by content
                 lang = self._detect_language_from_code(code)
-            
-            logger.info(f"Processing HTML code block: {lang}")
             return highlight_block(code, lang)
         
         # Find HTML code blocks

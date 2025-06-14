@@ -1,46 +1,103 @@
 [tool.poetry]
 name = "staticflow"
-version = "0.1.7"
-description = "Modern static site generator framework"
-authors = ["nestessia <nestessia@mail.ru>"]
+version = "0.1.0"
+description = "Static site generator with modern features"
+authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
 packages = [{include = "staticflow"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pyyaml = "^6.0.1"
-toml = "^0.10.2"
-jinja2 = "^3.1.5"
+python = ">=3.9,<4.0"
+click = "^8.1.7"
+jinja2 = "^3.1.2"
 markdown = "^3.5.1"
-python-frontmatter = "^1.1.0"
-pillow = "^10.2.0"
-watchdog = "^3.0.0"
-click = "^8.1.8"
-rich = "^13.9.0"
-aiofiles = "^23.2.1"
-python-slugify = "^8.0.4"
+toml = "^0.10.2"
+rich = "^13.7.0"
 aiohttp = "^3.9.1"
 aiohttp-jinja2 = "^1.5.1"
-pygments = "^2.17.2"
-beautifulsoup4 = "^4.12.3"
-csscompressor = "^0.9.5"
-jsmin = "^3.0.1"
-geocoder = "^1.38.1"
-pycountry = "^24.6.1"
-cryptography = "^36.0.0"
-opencv-python-headless = "^4.8.1"
+watchdog = "^3.0.0"
+psutil = "^5.9.8"
+requests = "^2.31.0"
+pyyaml = "^6.0"
+python-frontmatter = "^1.0.0"
+bleach = "^6.0.0"
+pymdown-extensions = "^10.0.0"
+python-slugify = "^8.0.0"
+beautifulsoup4 = "^4.12.0"
+lxml = "^4.9.0"
+aiofiles = "^23.0.0"
+python-multipart = "^0.0.6"
+websockets = "^11.0.0"
+typer = "^0.9.0"
+pydantic = "^2.0.0"
+fastapi = "^0.100.0"
+uvicorn = "^0.23.0"
+python-dotenv = "^1.0.0"
+cryptography = "^41.0.0"
+bcrypt = "^4.0.0"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+python-magic = "^0.4.27"
+pillow = "^10.0.0"
+markupsafe = "^2.1.0"
+html5lib = "^1.1"
+cachetools = "^6.0.0"
+diskcache = "^5.6.0"
+tomli-w = "^1.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
-pytest-asyncio = "^0.23.2"
 pytest-cov = "^4.1.0"
-black = "^24.2.0"
+black = "^23.12.1"
 isort = "^5.13.2"
+flake8 = "^7.0.0"
 mypy = "^1.8.0"
+bandit = "^1.7.0"
+safety = "^2.3.0"
+pre-commit = "^3.3.0"
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.2.0"
+mkdocstrings = "^0.22.0"
+mkdocstrings-python = "^0.8.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.scripts]
-staticflow = "staticflow.cli:cli"
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 79
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["staticflow"]
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]

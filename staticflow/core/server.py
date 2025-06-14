@@ -14,11 +14,11 @@ logger = get_logger("core.server")
 
 console = Console()
 
-REQUIRED_DIRECTORIES = ['content', 'templates', 'static', 'public']
+REQUIRED_DIRECTORIES = ['content', 'templates', 'static']
 REQUIRED_FILES = ['config.toml']
 
 
-def validate_project_structure():
+def validate_project_structure(config):
     """Validate project structure and permissions."""
     errors = []
     warnings = []
@@ -72,7 +72,7 @@ class Server:
             self.engine = engine
 
         source_dir = Path(self.config.get('source_dir', 'content'))
-        output_dir = Path(self.config.get('output_dir', 'public'))
+        output_dir = self.config.get('output_dir')
         template_dir = Path(self.config.get('template_dir', 'templates'))
         self.engine.initialize(source_dir, output_dir, template_dir)
 
@@ -82,7 +82,7 @@ class Server:
         if dev_mode:
             initialize_plugins(self.engine)
 
-            errors, warnings = validate_project_structure()
+            errors, warnings = validate_project_structure(self.config)
 
             if errors:
                 error_msg = "\n".join([
@@ -97,7 +97,7 @@ class Server:
                     "├── content/",
                     "├── templates/",
                     "├── static/",
-                    "├── public/",
+                    f"├── {self.config.get('output_dir', 'output')}/",
                     "└── config.toml"
                 ])
                 logger.error(error_msg)
@@ -119,16 +119,6 @@ class Server:
                     title="[yellow]Project Structure Warnings[/yellow]",
                     border_style="yellow"
                 ))
-
-            with console.status("[bold blue]Building site..."):
-                try:
-                    self.engine.build()
-                    logger.info("Site built successfully!")
-                except Exception as e:
-                    error_msg = f"Error building site: {str(e)}"
-                    logger.error(error_msg)
-                    console.print(f"[red]{error_msg}[/red]")
-                    raise SystemExit(1)
 
         self.setup_routes()
         self.setup_templates()
@@ -188,7 +178,7 @@ class Server:
         if path == '/':
             path = '/index.html'
 
-        output_dir = self.config.get('output_dir', 'public')
+        output_dir = self.config.get('output_dir')
         if not isinstance(output_dir, Path):
             output_path = Path(output_dir)
         else:
@@ -234,7 +224,6 @@ class Server:
         """Run the server."""
         if self.dev_mode:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Server running at {server_url}")
             console.print(
                 Panel.fit(
                     f"[green]Server running at[/green] {server_url}\n"
@@ -250,5 +239,4 @@ class Server:
             )
         else:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Production server running at {server_url}")
             web.run_app(self.app, host=self.host, port=self.port)

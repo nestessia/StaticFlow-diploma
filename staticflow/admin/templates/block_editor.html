@@ -5,37 +5,13 @@
 {% block page_title %}Block Editor{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/admin/static/css/block-editor.css">
-<style>
-    .filename-input-container {
-        display: flex;
-        margin-bottom: 10px;
-    }
-    
-    #filename-input {
-        flex-grow: 1;
-        padding: 5px;
-        border: 1px solid #ddd;
-        border-right: none;
-        border-radius: 4px 0 0 4px;
-        font-size: 14px;
-    }
-    
-    #file-extension {
-        width: auto;
-        padding: 5px;
-        border: 1px solid #ddd;
-        border-radius: 0 4px 4px 0;
-        background-color: #f5f5f5;
-        font-size: 14px;
-    }
-</style>
+<link rel="stylesheet" href="/admin/static/css/tiptap-editor.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" crossorigin="anonymous" type="text/javascript"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -65,12 +41,14 @@
         </div>
         <div class="editor-actions">
             <button class="btn" id="save-btn">Save</button>
-            <button class="btn btn-secondary" id="preview-btn">Preview</button>
         </div>
     </div>
 
     <div class="editor-container">
-        <div id="block-editor"></div>
+        <div id="tiptap-editor" class="tiptap-editor">
+            <div id="tiptap-toolbar"></div>
+            <div id="tiptap-content" class="tiptap-content"></div>
+        </div>
     </div>
 
     <div class="editor-metadata">
@@ -99,35 +77,37 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/admin/static/js/block-editor.js"></script>
+<script src="/admin/static/dist/tiptap-editor.js"></script>
+<script src="/admin/static/dist/tiptap-toolbar.js"></script>
 <script>
-// Инициализируем mermaid для диаграмм
-mermaid.initialize({ startOnLoad: true });
+    // Инициализируем mermaid для диаграмм
+    mermaid.initialize({ startOnLoad: true });
 
-// Сохраняем данные страницы
-var pageData = {
-    content: {% if page %}{{ page.content|tojson }}{% else %}null{% endif %},
-    path: {% if page %}{{ page.source_path|tojson }}{% else %}"New Page"{% endif %},
-    title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}"Untitled Page"{% endif %},
-    metadata: {
-        title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}""{% endif %},
-        date: {% if safe_metadata and safe_metadata.date %}{{ safe_metadata.date|tojson }}{% else %}""{% endif %},
-        author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
-        tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
-        format: {% if safe_metadata and safe_metadata.format %}{{ safe_metadata.format|tojson }}{% else %}"markdown"{% endif %},
-    }
-};
+    // Сохраняем данные страницы
+    const pageData = {
+        content: {% if page %}{{ page.content|tojson }}{% else %}null{% endif %},
+        path: {% if page %}{{ page.source_path|tojson }}{% else %}"New Page"{% endif %},
+        title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}"Untitled Page"{% endif %},
+        metadata: {
+            title: {% if safe_metadata and safe_metadata.title %}{{ safe_metadata.title|tojson }}{% else %}""{% endif %},
+            date: {% if safe_metadata and safe_metadata.date %}{{ safe_metadata.date|tojson }}{% else %}""{% endif %},
+            author: {% if safe_metadata and safe_metadata.author %}{{ safe_metadata.author|tojson }}{% else %}""{% endif %},
+            tags: {% if safe_metadata and safe_metadata.tags %}{{ ','.join(safe_metadata.tags)|tojson }}{% else %}""{% endif %},
+            format: {% if safe_metadata and safe_metadata.format %}{{ safe_metadata.format|tojson }}{% else %}"markdown"{% endif %},
+            template: {% if safe_metadata and safe_metadata.template %}{{ safe_metadata.template|tojson }}{% else %}"page.html"{% endif %}
+        },
+        type: {% if page and page.source_path and page.source_path.endswith('.html') %}"html"{% else %}"markdown"{% endif %}
+    };
 
-// Инициализация редактора
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for block editor scripts to be fully loaded before initializing
-    document.addEventListener('blockEditorLoaded', function() {
+    // Инициализация редактора
+    document.addEventListener('DOMContentLoaded', function() {
         try {
             // Инициализация редактора
-            var editor = new BlockEditor('#block-editor', pageData.content);
+            const editor = new TipTapEditor('#tiptap-content', pageData.content, pageData.type);
+            const toolbar = new TipTapToolbar(editor.editor);
             
-            // Make editor variable accessible to the editor instance
-            editor.editor = editor.editorContainer;
+            // Добавляем панель инструментов
+            document.getElementById('tiptap-toolbar').appendChild(toolbar.getElement());
             
             // Initialize highlight.js if available
             if (window.hljs) {
@@ -141,35 +121,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch (e) {
                     console.error("Error initializing highlight.js:", e);
                 }
-            } else {
-                console.warn("highlight.js is not available! Make sure to include the library in the page.");
-                console.info("Attempting to load highlight.js dynamically...");
-                // Add script dynamically if needed
-                loadHighlightJs();
             }
             
             // Добавляем обработчики событий для кнопок
             document.getElementById('save-btn').addEventListener('click', function() {
                 savePage(editor);
-            });
-            
-            document.getElementById('preview-btn').addEventListener('click', function() {
-                previewPage(editor);
-            });
-            
-            // Обработка клавиатурных сокращений
-            document.addEventListener('keydown', function(e) {
-                // Ctrl+S или Cmd+S для сохранения
-                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                    e.preventDefault();
-                    savePage(editor);
-                }
-                
-                // Ctrl+P или Cmd+P для предпросмотра
-                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-                    e.preventDefault();
-                    previewPage(editor);
-                }
             });
             
             const pageTitleInput = document.getElementById('page-title');
@@ -195,255 +151,51 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error initializing editor:", error);
         }
     });
-});
 
-// Function to dynamically load highlight.js
-function loadHighlightJs() {
-    // Check if highlight.js is already being loaded or exists
-    if (window.hljs || document.querySelector('script[src*="highlight.js"]')) {
-        console.log("highlight.js is already loaded or being loaded");
-        return;
-    }
-    
-    console.log("Attempting to load highlight.js dynamically...");
-    
-    try {
-        // Create and add the main script
-        const script = document.createElement('script');
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js";
-        script.crossOrigin = "anonymous";
-        script.type = "text/javascript";
-        script.onload = function() {
-            console.log("highlight.js loaded successfully");
-            
-            // Initialize after loading
-            if (window.hljs) {
-                try {
-                    hljs.configure({
-                        languages: ['python', 'javascript', 'typescript', 'css', 'html', 'json', 'bash', 'cpp', 'java']
-                    });
-                    hljs.highlightAll();
-                    
-                    // Apply highlighting to any code blocks that may already exist
-                    const codeBlocks = document.querySelectorAll('pre code');
-                    if (codeBlocks.length > 0) {
-                        console.log(`Applying highlighting to ${codeBlocks.length} existing code blocks`);
-                        codeBlocks.forEach(block => {
-                            try {
-                                hljs.highlightElement(block);
-                            } catch (e) {
-                                console.warn("Failed to highlight code block:", e);
-                            }
-                        });
+    // Функция сохранения страницы
+    async function savePage(editor) {
+        const content = editor.getContentForSave();
+        const title = document.getElementById('page-title').value;
+        const filename = document.getElementById('filename-input')?.value || pageData.path;
+        const date = document.getElementById('meta-date').value;
+        const author = document.getElementById('meta-author').value;
+        const tags = document.getElementById('meta-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+        try {
+            const response = await fetch('/admin/api/content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    path: filename,
+                    content: content,
+                    metadata: {
+                        title: title,
+                        date: date,
+                        author: author,
+                        tags: tags,
+                        format: pageData.type,
+                        template: pageData.metadata.template
                     }
-                    
-                    // Success message
-                    console.info("highlight.js is now available!");
-                } catch (e) {
-                    console.error("Error initializing highlight.js after loading:", e);
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    alert('Страница успешно сохранена!');
+                } else {
+                    alert('Ошибка при сохранении: ' + (result.error || 'Неизвестная ошибка'));
                 }
             } else {
-                console.warn("highlight.js still not available after loading script!");
+                const errorText = await response.text();
+                alert('Ошибка при сохранении: ' + (errorText || response.statusText));
             }
-        };
-        script.onerror = function(e) {
-            console.error("Failed to load highlight.js:", e);
-        };
-        
-        // Create and add the CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css";
-        link.crossOrigin = "anonymous";
-        
-        // Append to document
-        document.head.appendChild(link);
-        document.head.appendChild(script);
-    } catch (e) {
-        console.error("Error during dynamic loading of highlight.js:", e);
-    }
-}
-
-// Format the date in ISO format compatible with datetime-local input
-function formatDateForISO(dateValue) {
-    let formattedDate;
-    if (dateValue) {
-        // Parse the date and ensure correct ISO format with 'T' separator
-        const date = new Date(dateValue);
-        formattedDate = date.toISOString().split('.')[0];  // Remove milliseconds
-    } else {
-        // Create a new date in the correct format
-        formattedDate = new Date().toISOString().split('.')[0];  // Remove milliseconds
-    }
-    return formattedDate;
-}
-
-// Функция сохранения страницы
-function savePage(editor) {
-    try {
-        const content = editor.getContent();
-        const title = document.getElementById('page-title').value;
-        let path = document.querySelector('.file-path').textContent;
-        
-        // Если это новая страница, используем пользовательское имя файла
-        if (path === 'New Page') {
-            const filename = document.getElementById('filename-input').value.trim();
-            if (!filename) {
-                alert("Пожалуйста, укажите имя файла для сохранения страницы");
-                document.getElementById('filename-input').focus();
-                return;
-            }
-            // Валидация имени файла (только буквы, цифры, дефисы, подчеркивания и расширение)
-            if (!/^[a-zA-Z0-9\-_]+\.(md|html)$/.test(filename)) {
-                alert("Имя файла должно заканчиваться на .md или .html и содержать только буквы, цифры, дефисы и знаки подчеркивания");
-                document.getElementById('filename-input').focus();
-                return;
-            }
-            path = filename;
-        }
-        
-        if (!content) {
-            console.error("Content is empty");
-            alert("Error: Content is empty");
-            return;
-        }
-        
-        if (!path) {
-            console.error("Path is empty");
-            alert("Error: Path is empty");
-            return;
-        }
-        
-        // Format the date using our helper function
-        const dateValue = document.getElementById('meta-date').value;
-        const formattedDate = formatDateForISO(dateValue);
-        
-        // Определяем формат только по расширению имени файла
-        let format = 'markdown';
-        if (path.endsWith('.html')) {
-            format = 'html';
-        }
-        
-        const metadata = {
-            title: title || "Untitled",
-            date: formattedDate,
-            author: document.getElementById('meta-author').value || "",
-            tags: document.getElementById('meta-tags').value
-                  ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
-                  : [],
-            format: format,
-        };
-        
-        // Создаем объект запроса
-        const requestData = {
-            path: path,
-            content: content,
-            metadata: metadata
-        };
-        
-        // Преобразуем в JSON
-        const jsonData = JSON.stringify(requestData);
-        
-        console.log("Saving page with path:", path);
-        console.log("Content length:", content.length, "bytes");
-        console.log("Metadata:", metadata);
-        
-        // Отправляем через fetch
-        fetch('/admin/api/content', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: jsonData
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.error("Response error text:", text);
-                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Response data:", data);
-            if (data.success) {
-                alert('Page saved successfully!');
-                if (data.path && path === 'New Page') {
-                    document.querySelector('.file-path').textContent = data.path;
-                }
-            } else {
-                alert('Error saving page: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error saving page:', error);
-            alert('Error saving page: ' + error.toString());
-        });
-    } catch (error) {
-        console.error('Error in savePage function:', error);
-        alert('Error preparing page for save: ' + error.toString());
-    }
-}
-
-// Функция предпросмотра страницы
-function previewPage(editor) {
-    try {
-        const content = editor.getContent();
-        const title = document.getElementById('page-title').value;
-        const dateValue = document.getElementById('meta-date').value;
-        const formattedDate = formatDateForISO(dateValue);
-        
-        // Определяем формат только по расширению имени файла
-        let format = 'markdown';
-        let path = document.querySelector('.file-path').textContent;
-        if (path === 'New Page') {
-            const filename = document.getElementById('filename-input').value.trim();
-            if (filename.endsWith('.html')) {
-                format = 'html';
-            }
-        } else if (path.endsWith('.html')) {
-            format = 'html';
+            alert('Ошибка при сохранении: ' + error.message);
         }
-        
-        const metadata = {
-            title: title || "Untitled",
-            date: formattedDate,
-            author: document.getElementById('meta-author').value || "",
-            tags: document.getElementById('meta-tags').value
-                  ? document.getElementById('meta-tags').value.split(',').map(t => t.trim())
-                  : [],
-            format: format,
-        };
-        
-        fetch('/admin/preview', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                content: content,
-                metadata: metadata
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
-                });
-            }
-            // После успешного POST открываем предпросмотр по URL
-            window.open('/admin/preview', '_blank');
-        })
-        .catch(error => {
-            console.error('Error previewing page:', error);
-            alert('Error previewing page: ' + error.message);
-        });
-    } catch (error) {
-        console.error('Error in previewPage function:', error);
-        alert('Error preparing page for preview: ' + error.message);
     }
-}
 </script>
 {% endblock %} 

@@ -25,7 +25,7 @@ class GitHubPagesDeployer:
     Deployer class for GitHub Pages integration
     """
     
-    def __init__(self, site_path: str = "public"):
+    def __init__(self, site_path: str = "output"):
         """
         Initialize the GitHub Pages deployer
         

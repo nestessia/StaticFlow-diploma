@@ -117,6 +117,10 @@ class MediaPlugin(Plugin):
         self.media_dir = None
         if engine := getattr(self, "engine", None):
             if output_dir := getattr(engine.site, "output_dir", None):
+                if isinstance(output_dir, str):
+                    output_dir = Path(output_dir)
+                if isinstance(self.config["output_dir"], str):
+                    self.config["output_dir"] = Path(self.config["output_dir"])
                 self.media_dir = output_dir / self.config["output_dir"]
                 self.media_dir.mkdir(parents=True, exist_ok=True)
             
@@ -402,46 +406,41 @@ class MediaPlugin(Plugin):
                         # Skip if format is "original" but we're not processing original size
                         if fmt == "original" and size_name != "original":
                             continue
-                            
-                        # Determine output format
+
                         output_format = fmt.upper() if fmt != "original" else orig_format
-                        
-                        # Determine file extension
+
                         ext = fmt.lower() if fmt != "original" else source_path.suffix[1:].lower()
-                        
-                        # Create filename
+
                         if size_name == "original" and fmt == "original":
                             filename = f"{base_name}{source_path.suffix}"
                         else:
                             filename = f"{base_name}-{size_name}.{ext}"
-                        
-                        # Save path
+
                         save_path = media_subdir / filename
-                        
+
                         with io.BytesIO() as output:
                             save_quality = size_config.quality
-                            
+
                             if output_format == "JPEG" or output_format == "WEBP":
                                 resized_img.save(
-                                    output, 
-                                    format=output_format, 
-                                    quality=save_quality, 
+                                    output,
+                                    format=output_format,
+                                    quality=save_quality,
                                     optimize=True
                                 )
                             elif output_format == "PNG":
                                 resized_img.save(
-                                    output, 
-                                    format=output_format, 
-                                    compress_level=9, 
+                                    output,
+                                    format=output_format,
+                                    compress_level=9,
                                     optimize=True
                                 )
                             else:
                                 resized_img.save(output, format=output_format)
-                                
+
                             with open(save_path, "wb") as f:
                                 f.write(output.getvalue())
-                        
-                        # Формируем ссылку с учетом base_url
+
                         if rel_dir:
                             rel_path = (
                                 f"{base_url}/{self.config['output_dir']}"
@@ -452,18 +451,15 @@ class MediaPlugin(Plugin):
                                 f"{base_url}/{self.config['output_dir']}"
                                 f"/{filename}"
                             )
-                        
-                        # Store only the most relevant version under the size name
+
                         if size_name not in result:
                             result[size_name] = rel_path
-                        
-                        # Make medium size the default
+
                         if size_name == "medium" and fmt != "original":
                             result["default"] = rel_path
                         elif size_name == "original" and "default" not in result:
                             result["default"] = rel_path
-                
-                # Generate placeholder if enabled
+
                 if self.config["generate_placeholders"]:
                     placeholder_size = self.config["placeholder_size"]
                     placeholder_height = int(orig_height * (placeholder_size / orig_width))
@@ -471,13 +467,11 @@ class MediaPlugin(Plugin):
                         (placeholder_size, placeholder_height), 
                         Image.LANCZOS
                     )
-                    
-                    # Save placeholder
+
                     placeholder_filename = f"{base_name}-placeholder.webp"
                     placeholder_path = media_subdir / placeholder_filename
                     placeholder.save(placeholder_path, format="WEBP", quality=30)
-                    
-                    # Формируем ссылку с учетом base_url
+
                     if rel_dir:
                         placeholder_url = (
                             f"{base_url}/{self.config['output_dir']}"
@@ -489,61 +483,52 @@ class MediaPlugin(Plugin):
                             f"/{placeholder_filename}"
                         )
                     result["placeholder"] = placeholder_url
-                
-                # Cache and return result
+
                 self.processed_media[cache_key] = result
                 return result
-                
+
         except Exception as e:
             print(f"Error processing image {source_path}: {e}")
             return None
-    
+
     def _process_video(self, source_path: Path) -> Optional[Dict[str, Any]]:
         """Process a video file."""
         if not self.media_dir or not source_path.exists():
             return None
-        
-        # Skip if already processed
+
         cache_key = str(source_path)
         if cache_key in self.processed_media:
             return self.processed_media[cache_key]
-        
+
         try:
-            # Create results dictionary
             result = {
                 "source": str(source_path)
             }
-            
-            # Get file hash for caching
+
             file_hash = ""
             if self.config["hash_filenames"]:
                 with open(source_path, "rb") as f:
                     file_hash = hashlib.md5(f.read()).hexdigest()
                     file_hash = file_hash[:self.config["hash_length"]]
-            
-            # Create media directory structure
+
             rel_dir = source_path.parent.name if not source_path.is_absolute() else ""
             media_subdir = self.media_dir / rel_dir
             media_subdir.mkdir(parents=True, exist_ok=True)
-            
-            # Create base filename
+
             base_name = source_path.stem
             if file_hash:
                 base_name = f"{base_name}-{file_hash}"
-            
-            # Получаем base_url из engine.config
+
             base_url = ""
             if hasattr(self, "engine") and hasattr(self.engine, "config"):
                 base_url = self.engine.config.get("base_url", "")
                 if base_url.endswith("/"):
                     base_url = base_url[:-1]
-            
-            # Copy video to media directory
+
             ext = source_path.suffix
             output_path = media_subdir / f"{base_name}{ext}"
             shutil.copy2(source_path, output_path)
-            
-            # Add to result
+
             if rel_dir:
                 rel_path = f"{base_url}/{self.config['output_dir']}/{rel_dir}/{base_name}{ext}"
             else:

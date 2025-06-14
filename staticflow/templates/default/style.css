@@ -425,4 +425,71 @@ body .mermaid * {
         width: 100%;
         position: relative;
     }
-} 
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    max-height: 600px;
+    object-fit: contain;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2rem 0;
+    background: #fff;
+    border-radius: 0.7rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    overflow: hidden;
+}
+
+thead {
+    background: #f3f6fa;
+}
+
+thead th {
+    color: var(--primary-color);
+    font-weight: 700;
+    padding: 1rem 0.7rem;
+    border-bottom: 2px solid var(--primary-color);
+    text-align: left;
+}
+
+tbody td {
+    padding: 0.8rem 0.7rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+tbody tr:hover {
+    background: #e8f0fe;
+    transition: background 0.2s;
+}
+
+table, th, td {
+    border: none;
+}
+
+/* Скругления только для внешних углов */
+table tr:first-child th:first-child {
+    border-top-left-radius: 0.7rem;
+}
+table tr:first-child th:last-child {
+    border-top-right-radius: 0.7rem;
+}
+table tr:last-child td:first-child {
+    border-bottom-left-radius: 0.7rem;
+}
+table tr:last-child td:last-child {
+    border-bottom-right-radius: 0.7rem;
+}

@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 from ..utils.logging import get_logger
+import uuid
 
 logger = get_logger("admin")
 
@@ -18,6 +19,7 @@ class AdminPanel:
     def __init__(self, config: Config, engine: Engine):
         self.config = config
         self.engine = engine
+        self.output_dir = Path(self.config.get('output_dir'))
         self.app = web.Application()
         self.setup_routes()
         self.setup_templates()
@@ -80,17 +82,25 @@ class AdminPanel:
         self.app.router.add_get('/api/deploy/config', self.api_deploy_config_get_handler)
         self.app.router.add_post('/api/deploy/config', self.api_deploy_config_handler)
         self.app.router.add_post('/api/deploy/start', self.api_deploy_start_handler)
+        self.app.router.add_post('/api/upload', self.api_upload_handler)
+        
+        # Статические файлы админки
         static_path = Path(__file__).parent / 'static'
         if not static_path.exists():
             static_path.mkdir(parents=True)
-        cached_static_path = Path('public/admin/static')
+        cached_static_path = Path('output/admin/static')
         use_cached = cached_static_path.exists()
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
+        
+        # Статические медиафайлы теперь из output_dir/media
+        media_path = self.output_dir / 'media'
+        if not media_path.exists():
+            media_path.mkdir(parents=True)
+        self.app.router.add_static('/media', media_path)
+        
         if not use_cached:
-            self.copy_static_to_public()
-        self.app.router.add_post('/preview', self.preview_post_handler)
-        self.app.router.add_get('/preview', self.preview_get_handler)
+            self.copy_static_to_output()
 
     async def handle_request(self, request):
         """Handle admin panel request."""
@@ -114,6 +124,8 @@ class AdminPanel:
                     return await self.api_deploy_config_handler(request)
                 elif path == '/api/deploy/start':
                     return await self.api_deploy_start_handler(request)
+                elif path == '/api/upload':
+                    return await self.api_upload_handler(request)
                 else:
                     return web.json_response({
                         'success': False,
@@ -506,14 +518,14 @@ class AdminPanel:
 
         return None
 
-    def copy_static_to_public(self):
-        """Копирует статические файлы админки в папку public для кэширования."""
+    def copy_static_to_output(self):
+        """Копирует статические файлы админки в папку output_dir для кэширования."""
         source_static_path = Path(__file__).parent / 'static'
         if not source_static_path.exists():
             logger.info("Исходная директория статики не существует, нечего копировать")
             return
 
-        dest_static_path = Path('public/admin/static')
+        dest_static_path = self.output_dir / 'admin' / 'static'
 
         dest_static_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -524,7 +536,7 @@ class AdminPanel:
     def rebuild_site(self):
         """Rebuild the site using the engine."""
         try:
-            self.copy_static_to_public()
+            self.copy_static_to_output()
 
             self.engine.build()
             return True
@@ -534,30 +546,61 @@ class AdminPanel:
             traceback.print_exc()
             return False
 
+    async def api_upload_handler(self, request):
+        """Handle file upload requests."""
+        try:
+            reader = await request.multipart()
+            field = await reader.next()
+            
+            if not field or field.name != 'file':
+                return web.json_response({
+                    'success': False,
+                    'error': 'No file field in request'
+                }, status=400)
+
+            filename = field.filename
+            if not filename:
+                return web.json_response({
+                    'success': False,
+                    'error': 'No filename provided'
+                }, status=400)
+
+            # Создаем директорию media в output_dir если её нет
+            media_dir = self.output_dir / 'media'
+            media_dir.mkdir(parents=True, exist_ok=True)
+
+            # Генерируем уникальное имя файла
+            ext = Path(filename).suffix
+            unique_filename = f"{uuid.uuid4().hex}{ext}"
+            file_path = media_dir / unique_filename
+
+            # Сохраняем файл
+            with open(file_path, 'wb') as f:
+                while True:
+                    chunk = await field.read_chunk()
+                    if not chunk:
+                        break
+                    f.write(chunk)
+
+            # Возвращаем URL для доступа к файлу
+            url = f"/media/{unique_filename}"
+            
+            return web.json_response({
+                'success': True,
+                'url': url
+            })
+
+        except Exception as e:
+            logger.error(f"Error in api_upload_handler: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
     def start(self, host: str = 'localhost', port: int = 8001):
         """Start the admin panel server."""
         web.run_app(self.app, host=host, port=port)
-
-    async def preview_post_handler(self, request):
-        """Сохраняет черновик во временный файл и возвращает 204 (без редиректа)."""
-        data = await request.json()
-        tmp_path = Path('public/admin/preview_draft.json')
-        with tmp_path.open('w', encoding='utf-8') as f:
-            json.dump(data, f)
-        return web.Response(status=204)
-
-    async def preview_get_handler(self, request):
-        """Рендерит предпросмотр страницы как при генерации сайта."""
-        tmp_path = Path('public/admin/preview_draft.json')
-        if not tmp_path.exists():
-            return web.Response(text='Нет черновика для предпросмотра', status=404)
-        with tmp_path.open('r', encoding='utf-8') as f:
-            data = json.load(f)
-        content = data.get('content', '')
-        metadata = data.get('metadata', {})
-        from staticflow.core.page import Page
-        page = Page(Path('preview.md'), content, metadata)
-        html = self.engine.render_page(page)
-        return web.Response(text=html, content_type='text/html')
 
 __all__ = ['AdminPanel']

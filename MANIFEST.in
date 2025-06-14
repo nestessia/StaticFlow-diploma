@@ -1,0 +1,15 @@
+include LICENSE
+include README.md
+include requirements.txt
+include staticflow/admin/package.json
+include staticflow/admin/webpack.config.js
+recursive-include staticflow/admin/static/dist *
+recursive-include staticflow/admin/static/css *
+recursive-include staticflow/admin/templates *
+recursive-include staticflow/core *
+recursive-include staticflow/utils *
+recursive-include staticflow/cli *
+recursive-include staticflow/deploy *
+recursive-include staticflow/plugins *
+recursive-include staticflow/themes *
+recursive-include staticflow/tests * 

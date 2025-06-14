@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Развертывание</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="canonical" href="http://localhost:8000" />
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
+        
+<script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+        });
+        </script>
+        <style>
+        /* Простые стили для диаграмм */
+        .mermaid {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        </style>
+            <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-light: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+            background-color: var(--bg-light);
+        }
+
+        .navbar {
+            background: var(--bg-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 2.5rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .navbar-brand img.logo-sf {
+            height: 2.6rem;
+            width: 2.6rem;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            min-width: unset;
+            font-size: 1rem;
+        }
+
+        .navbar-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+        }
+
+        .navbar-item.active {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+            font-weight: 700;
+            box-shadow: 0 2px 8px 0 rgb(37 99 235 / 0.08);
+        }
+
+        .navbar-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background-color: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .navbar-toggle:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1100px) {
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-menu {
+                display: none;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-item {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem 1rem;
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background: var(--bg-color);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Анимации для интерактивных элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar-item, .navbar-brand {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Улучшенный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+                StaticFlow
+            </a>
+            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="navbar-menu" id="navbar-menu">
+                <li><a href="/about.html" class="navbar-item ">
+                    <i class="fas fa-info-circle"></i> О проекте
+                </a></li>
+                <li><a href="/installation.html" class="navbar-item ">
+                    <i class="fas fa-download"></i> Установка
+                </a></li>
+                <li><a href="/quickstart.html" class="navbar-item ">
+                    <i class="fas fa-rocket"></i> Быстрый старт
+                </a></li>
+                <li><a href="/templates.html" class="navbar-item ">
+                    <i class="fas fa-paint-brush"></i> Шаблоны
+                </a></li>
+                <li><a href="/blocks.html" class="navbar-item ">
+                    <i class="fas fa-palette"></i> Блочный редактор
+                </a></li>
+                <li><a href="/plugins.html" class="navbar-item ">
+                    <i class="fas fa-puzzle-piece"></i> Плагины
+                </a></li>
+                <li><a href="/deploy.html" class="navbar-item ">
+                    <i class="fas fa-cloud-upload-alt"></i> Деплой
+                </a></li>
+                <li><a href="/api.html" class="navbar-item ">
+                    <i class="fas fa-code"></i> API
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content">
+    <h1>Развертывание</h1><p>В этом разделе мы рассмотрим различные способы развертывания сайта, созданного с помощью StaticFlow.</p><h2>Подготовка к развертыванию</h2><h3>Сборка сайта</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>build</span><span class="line" id="L2"></span></pre></div></div><p>Это создаст статические файлы в директории <code>output/</code>.</p><h3>Проверка сборки</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>serve<span class="w"></span>--build-dir<span class="w"></span>output</span><span class="line" id="L2"></span></pre></div></div><h2>Варианты хостинга</h2><h3>GitHub Pages</h3><ol><li>Создайте репозиторий <code>username.github.io</code></li><li>Настройте GitHub Actions:</li></ol><div class="code-block language-yaml"><div class="language-tag">yaml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># .github/workflows/deploy.yml</span></span><span class="line" id="L2"><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Deploy to GitHub Pages</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="nt">on</span><span class="p">:</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nt">push</span><span class="p">:</span></span><span class="line" id="L6"><span class="ws"></span><span class="w"></span><span class="nt">branches</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">[</span><span class="w"></span><span class="nv">main</span><span class="w"></span><span class="p p-Indicator">]</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="nt">jobs</span><span class="p">:</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="nt">build-and-deploy</span><span class="p">:</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="nt">runs-on</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span></span><span class="line" id="L11"><span class="ws"></span><span class="w"></span><span class="nt">steps</span><span class="p">:</span></span><span class="line" id="L12"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span></span><span class="line" id="L13"></span><span class="line" id="L14"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Set up Python</span></span><span class="line" id="L15"><span class="ws"></span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v2</span></span><span class="line" id="L16"><span class="ws"></span><span class="w"></span><span class="nt">with</span><span class="p">:</span></span><span class="line" id="L17"><span class="ws"></span><span class="w"></span><span class="nt">python-version</span><span class="p">:</span><span class="w"></span><span class="s">'3.8'</span></span><span class="line" id="L18"></span><span class="line" id="L19"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span></span><span class="line" id="L20"><span class="ws"></span><span class="w"></span><span class="nt">run</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">|</span></span><span class="line" id="L21"><span class="ws"></span><span class="w"></span><span class="no">python -m pip install --upgrade pip</span></span><span class="line" id="L22"><span class="ws"></span><span class="w"></span><span class="no">pip install staticflow</span></span><span class="line" id="L23"></span><span class="line" id="L24"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Build site</span></span><span class="line" id="L25"><span class="ws"></span><span class="w"></span><span class="nt">run</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">staticflow build</span></span><span class="line" id="L26"></span><span class="line" id="L27"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Deploy to GitHub Pages</span></span><span class="line" id="L28"><span class="ws"></span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">peaceiris/actions-gh-pages@v3</span></span><span class="line" id="L29"><span class="ws"></span><span class="w"></span><span class="nt">with</span><span class="p">:</span></span><span class="line" id="L30"><span class="ws"></span><span class="w"></span><span class="nt">github_token</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span></span><span class="line" id="L31"><span class="ws"></span><span class="w"></span><span class="nt">publish_dir</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">./output</span></span><span class="line" id="L32"></span></pre></div></div><h3>Netlify</h3><ol><li>Создайте <code>netlify.toml</code>:</li></ol><div class="code-block language-toml"><div class="language-tag">toml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">[build]</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="n">command</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"staticflow build"</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="n">publish</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"output"</span></span><span class="line" id="L4"></span><span class="line" id="L5"><span class="k">[build.environment]</span></span><span class="line" id="L6"><span class="ws"></span><span class="w"></span><span class="n">PYTHON_VERSION</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"3.8"</span></span><span class="line" id="L7"></span></pre></div></div><ol><li>Настройте деплой:</li><li>Подключите репозиторий к Netlify</li><li>Укажите команду сборки: <code>staticflow build</code></li><li>Укажите директорию публикации: <code>output</code></li></ol><h3>Vercel</h3><ol><li>Создайте <code>vercel.json</code>:</li></ol><div class="code-block language-json"><div class="language-tag">json</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="p">{</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="nt">"version"</span><span class="p">:</span><span class="w"></span><span class="mi">2</span><span class="p">,</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="nt">"builds"</span><span class="p">:</span><span class="w"></span><span class="p">[</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="p">{</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nt">"src"</span><span class="p">:</span><span class="w"></span><span class="s2">"package.json"</span><span class="p">,</span></span><span class="line" id="L6"><span class="ws"></span><span class="w"></span><span class="nt">"use"</span><span class="p">:</span><span class="w"></span><span class="s2">"@vercel/static-build"</span><span class="p">,</span></span><span class="line" id="L7"><span class="ws"></span><span class="w"></span><span class="nt">"config"</span><span class="p">:</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L8"><span class="ws"></span><span class="w"></span><span class="nt">"buildCommand"</span><span class="p">:</span><span class="w"></span><span class="s2">"staticflow build"</span><span class="p">,</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="nt">"outputDirectory"</span><span class="p">:</span><span class="w"></span><span class="s2">"output"</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L11"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L12"><span class="ws"></span><span class="w"></span><span class="p">]</span></span><span class="line" id="L13"><span class="p">}</span></span><span class="line" id="L14"></span></pre></div></div><ol><li>Создайте <code>package.json</code>:</li></ol><div class="code-block language-json"><div class="language-tag">json</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="p">{</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="nt">"name"</span><span class="p">:</span><span class="w"></span><span class="s2">"my-staticflow-site"</span><span class="p">,</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="nt">"version"</span><span class="p">:</span><span class="w"></span><span class="s2">"1.0.0"</span><span class="p">,</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="nt">"scripts"</span><span class="p">:</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nt">"build"</span><span class="p">:</span><span class="w"></span><span class="s2">"staticflow build"</span></span><span class="line" id="L6"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L7"><span class="p">}</span></span><span class="line" id="L8"></span></pre></div></div><h3>Amazon S3</h3><ol><li>Установите AWS CLI:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>pip<span class="w"></span>install<span class="w"></span>awscli</span><span class="line" id="L2"></span></pre></div></div><ol><li>Настройте AWS:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>aws<span class="w"></span>configure</span><span class="line" id="L2"></span></pre></div></div><ol><li>Создайте скрипт деплоя:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="ch">#!/bin/bash</span></span><span class="line" id="L2">staticflow<span class="w"></span>build</span><span class="line" id="L3">aws<span class="w"></span>s3<span class="w"></span>sync<span class="w"></span>output/<span class="w"></span>s3://your-bucket-name/<span class="w"></span>--delete</span><span class="line" id="L4"></span></pre></div></div><h3>Nginx</h3><ol><li>Установите Nginx:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>apt-get<span class="w"></span>install<span class="w"></span>nginx</span><span class="line" id="L2"></span></pre></div></div><ol><li>Настройте виртуальный хост:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">server</span><span class="w"></span><span class="w"></span><span class="p">{</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="kn">listen</span><span class="w"></span><span class="mi">80</span><span class="p">;</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="kn">server_name</span><span class="w"></span><span class="s">your-domain.com</span><span class="p">;</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="kn">root</span><span class="w"></span><span class="s">/path/to/your/output</span><span class="p">;</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="kn">index</span><span class="w"></span><span class="s">index.html</span><span class="p">;</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span><span class="w"></span><span class="kn">location</span><span class="w"></span><span class="s">/</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L8"><span class="ws"></span><span class="w"></span><span class="kn">try_files</span><span class="w"></span><span class="nv">$uri</span><span class="w"></span><span class="nv">$uri/</span><span class="w"></span><span class="s">/index.html</span><span class="p">;</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L10"><span class="p">}</span></span><span class="line" id="L11"></span></pre></div></div><ol><li>Скопируйте файлы:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>cp<span class="w"></span>-r<span class="w"></span>output/*<span class="w"></span>/var/www/html/</span><span class="line" id="L2"></span></pre></div></div><h2>Настройка домена</h2><h3>DNS настройки</h3><ol><li>Добавьте A-запись:</li></ol><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>your-domain.com. A your-server-ip</span><span class="line" id="L2"></span></pre></div></div><ol><li>Добавьте CNAME-запись для www:</li></ol><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>www.your-domain.com. CNAME your-domain.com.</span><span class="line" id="L2"></span></pre></div></div><h3>SSL сертификат</h3><h4>Let's Encrypt</h4><ol><li>Установите Certbot:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>apt-get<span class="w"></span>install<span class="w"></span>certbot<span class="w"></span>python3-certbot-nginx</span><span class="line" id="L2"></span></pre></div></div><ol><li>Получите сертификат:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>certbot<span class="w"></span>--nginx<span class="w"></span>-d<span class="w"></span>your-domain.com<span class="w"></span>-d<span class="w"></span>www.your-domain.com</span><span class="line" id="L2"></span></pre></div></div><h2>Мониторинг</h2><h3>Логи</h3><ol><li>Настройте логирование в Nginx:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">access_log</span><span class="w"></span><span class="w"></span><span class="s">/var/log/nginx/your-domain.access.log</span><span class="p">;</span></span><span class="line" id="L2"><span class="k">error_log</span><span class="w"></span><span class="w"></span><span class="s">/var/log/nginx/your-domain.error.log</span><span class="p">;</span></span><span class="line" id="L3"></span></pre></div></div><ol><li>Настройте ротацию логов:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">logrotate</span><span class="w"></span><span class="w"></span><span class="s">/etc/logrotate.d/nginx</span></span><span class="line" id="L2"></span></pre></div></div><h3>Метрики</h3><ol><li>Установите Prometheus:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>apt-get<span class="w"></span>install<span class="w"></span>prometheus</span><span class="line" id="L2"></span></pre></div></div><ol><li>Настройте Node Exporter:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>apt-get<span class="w"></span>install<span class="w"></span>prometheus-node-exporter</span><span class="line" id="L2"></span></pre></div></div><ol><li>Настройте Grafana:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>sudo<span class="w"></span>apt-get<span class="w"></span>install<span class="w"></span>grafana</span><span class="line" id="L2"></span></pre></div></div><h2>Резервное копирование</h2><h3>Автоматическое резервное копирование</h3><ol><li>Создайте скрипт:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="ch">#!/bin/bash</span></span><span class="line" id="L2"><span class="nv">BACKUP_DIR</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"/path/to/backups"</span></span><span class="line" id="L3"><span class="nv">SITE_DIR</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"/path/to/site"</span></span><span class="line" id="L4"><span class="nv">DATE</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="k">$(</span>date<span class="w"></span>+%Y-%m-%d<span class="k">)</span></span><span class="line" id="L5"></span><span class="line" id="L6">tar<span class="w"></span>-czf<span class="w"></span><span class="s2">"</span><span class="nv">$BACKUP_DIR</span><span class="s2">/site-</span><span class="nv">$DATE</span><span class="s2">.tar.gz"</span><span class="w"></span><span class="s2">"</span><span class="nv">$SITE_DIR</span><span class="s2">"</span></span><span class="line" id="L7"></span></pre></div></div><ol><li>Добавьте в crontab:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="m">0</span><span class="w"></span><span class="m">0</span><span class="w"></span>*<span class="w"></span>*<span class="w"></span>*<span class="w"></span>/path/to/backup.sh</span><span class="line" id="L2"></span></pre></div></div><h3>Восстановление</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>tar<span class="w"></span>-xzf<span class="w"></span>site-2024-03-20.tar.gz<span class="w"></span>-C<span class="w"></span>/path/to/restore</span><span class="line" id="L2"></span></pre></div></div><h2>Оптимизация</h2><h3>Сжатие</h3><ol><li>Включите gzip в Nginx:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">gzip</span><span class="w"></span><span class="w"></span><span class="no">on</span><span class="p">;</span></span><span class="line" id="L2"><span class="k">gzip_types</span><span class="w"></span><span class="w"></span><span class="s">text/plain</span><span class="w"></span><span class="s">text/css</span><span class="w"></span><span class="s">application/json</span><span class="w"></span><span class="s">application/javascript</span><span class="w"></span><span class="s">text/xml</span><span class="w"></span><span class="s">application/xml</span><span class="w"></span><span class="s">application/xml+rss</span><span class="w"></span><span class="s">text/javascript</span><span class="p">;</span></span><span class="line" id="L3"></span></pre></div></div><h3>Кэширование</h3><ol><li>Настройте кэширование в Nginx:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">location</span><span class="w"></span><span class="w"></span><span class="p">~</span><span class="sr">*</span><span class="w"></span><span class="s">\.(jpg|jpeg|png|gif|ico|css|js)</span>$<span class="w"></span><span class="p">{</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="kn">expires</span><span class="w"></span><span class="s">30d</span><span class="p">;</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="kn">add_header</span><span class="w"></span><span class="s">Cache-Control</span><span class="w"></span><span class="s">"public,</span><span class="w"></span><span class="s">no-transform"</span><span class="p">;</span></span><span class="line" id="L4"><span class="p">}</span></span><span class="line" id="L5"></span></pre></div></div><h3>CDN</h3><ol><li>Настройте Cloudflare:</li><li>Добавьте ваш домен</li><li>Обновите DNS записи</li><li>Включите SSL</li><li>Настройте кэширование</li></ol><h2>Безопасность</h2><h3>Заголовки безопасности</h3><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">add_header</span><span class="w"></span><span class="w"></span><span class="s">X-Frame-Options</span><span class="w"></span><span class="s">"SAMEORIGIN"</span><span class="p">;</span></span><span class="line" id="L2"><span class="k">add_header</span><span class="w"></span><span class="w"></span><span class="s">X-XSS-Protection</span><span class="w"></span><span class="s">"1</span><span class="p">;</span><span class="w"></span><span class="k">mode=block"</span><span class="p">;</span></span><span class="line" id="L3"><span class="k">add_header</span><span class="w"></span><span class="w"></span><span class="s">X-Content-Type-Options</span><span class="w"></span><span class="s">"nosniff"</span><span class="p">;</span></span><span class="line" id="L4"><span class="k">add_header</span><span class="w"></span><span class="w"></span><span class="s">Strict-Transport-Security</span><span class="w"></span><span class="s">"max-age=31536000</span><span class="p">;</span><span class="w"></span><span class="k">includeSubDomains"</span><span class="p">;</span></span><span class="line" id="L5"></span></pre></div></div><h3>Защита от DDoS</h3><ol><li>Настройте rate limiting:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">limit_req_zone</span><span class="w"></span><span class="w"></span><span class="nv">$binary_remote_addr</span><span class="w"></span><span class="s">zone=one:10m</span><span class="w"></span><span class="s">rate=1r/s</span><span class="p">;</span></span><span class="line" id="L2"></span><span class="line" id="L3"><span class="k">location</span><span class="w"></span><span class="w"></span><span class="s">/</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="kn">limit_req</span><span class="w"></span><span class="s">zone=one</span><span class="w"></span><span class="s">burst=5</span><span class="p">;</span></span><span class="line" id="L5"><span class="p">}</span></span><span class="line" id="L6"></span></pre></div></div><h3>SSL/TLS</h3><ol><li>Настройте современные шифры:</li></ol><div class="code-block language-nginx"><div class="language-tag">nginx</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">ssl_protocols</span><span class="w"></span><span class="w"></span><span class="s">TLSv1.2</span><span class="w"></span><span class="s">TLSv1.3</span><span class="p">;</span></span><span class="line" id="L2"><span class="k">ssl_ciphers</span><span class="w"></span><span class="w"></span><span class="s">ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384</span><span class="p">;</span></span><span class="line" id="L3"></span></pre></div></div><h2>Автоматизация</h2><h3>CI/CD</h3><ol><li>Настройте GitHub Actions:</li></ol><div class="code-block language-yaml"><div class="language-tag">yaml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Deploy</span></span><span class="line" id="L2"></span><span class="line" id="L3"><span class="nt">on</span><span class="p">:</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="nt">push</span><span class="p">:</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nt">branches</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">[</span><span class="w"></span><span class="nv">main</span><span class="w"></span><span class="p p-Indicator">]</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="nt">jobs</span><span class="p">:</span></span><span class="line" id="L8"><span class="ws"></span><span class="w"></span><span class="nt">deploy</span><span class="p">:</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="nt">runs-on</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="nt">steps</span><span class="p">:</span></span><span class="line" id="L11"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span></span><span class="line" id="L12"></span><span class="line" id="L13"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Set up Python</span></span><span class="line" id="L14"><span class="ws"></span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v2</span></span><span class="line" id="L15"><span class="ws"></span><span class="w"></span><span class="nt">with</span><span class="p">:</span></span><span class="line" id="L16"><span class="ws"></span><span class="w"></span><span class="nt">python-version</span><span class="p">:</span><span class="w"></span><span class="s">'3.8'</span></span><span class="line" id="L17"></span><span class="line" id="L18"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span></span><span class="line" id="L19"><span class="ws"></span><span class="w"></span><span class="nt">run</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">|</span></span><span class="line" id="L20"><span class="ws"></span><span class="w"></span><span class="no">python -m pip install --upgrade pip</span></span><span class="line" id="L21"><span class="ws"></span><span class="w"></span><span class="no">pip install staticflow</span></span><span class="line" id="L22"></span><span class="line" id="L23"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Build</span></span><span class="line" id="L24"><span class="ws"></span><span class="w"></span><span class="nt">run</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">staticflow build</span></span><span class="line" id="L25"></span><span class="line" id="L26"><span class="ws"></span><span class="w"></span><span class="p p-Indicator">-</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Deploy</span></span><span class="line" id="L27"><span class="ws"></span><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">appleboy/ssh-action@master</span></span><span class="line" id="L28"><span class="ws"></span><span class="w"></span><span class="nt">with</span><span class="p">:</span></span><span class="line" id="L29"><span class="ws"></span><span class="w"></span><span class="nt">host</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.HOST }}</span></span><span class="line" id="L30"><span class="ws"></span><span class="w"></span><span class="nt">username</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.USERNAME }}</span></span><span class="line" id="L31"><span class="ws"></span><span class="w"></span><span class="nt">key</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.SSH_KEY }}</span></span><span class="line" id="L32"><span class="ws"></span><span class="w"></span><span class="nt">script</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">|</span></span><span class="line" id="L33"><span class="ws"></span><span class="w"></span><span class="no">cd /path/to/site</span></span><span class="line" id="L34"><span class="ws"></span><span class="w"></span><span class="no">git pull</span></span><span class="line" id="L35"><span class="ws"></span><span class="w"></span><span class="no">staticflow build</span></span><span class="line" id="L36"><span class="ws"></span><span class="w"></span><span class="no">sudo systemctl reload nginx</span></span><span class="line" id="L37"></span></pre></div></div><h3>Мониторинг деплоя</h3><ol><li>Настройте уведомления:</li><li>Email</li><li>Slack</li><li>Telegram</li><li><p>Discord</p></li><li><p>Добавьте проверки:</p></li><li>Тесты</li><li>Линтинг</li><li>Проверка безопасности</li></ol>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+        </div>
+    </footer>
+
+    <script>
+        // Улучшенная обработка мобильного меню
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navbarMenu = document.getElementById('navbar-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            navbarMenu.classList.toggle('active');
+            navbarToggle.setAttribute('aria-expanded', isMenuOpen);
+            navbarToggle.innerHTML = isMenuOpen ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bars"></i>';
+        }
+
+        navbarToggle.addEventListener('click', toggleMenu);
+
+        // Закрытие меню при клике на пункт меню
+        document.querySelectorAll('.navbar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Закрытие меню при изменении размера окна
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768 && isMenuOpen) {
+                    toggleMenu();
+                }
+            }, 250);
+        });
+
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню при скролле
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        document.querySelectorAll('.navbar-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 
