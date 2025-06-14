@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблоны и темы</title>
+    <link rel="stylesheet" href="/StaticFlow-diploma/static/css/style.css">
+    <link rel="stylesheet" href="/StaticFlow-diploma/static/css/code_highlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="canonical" href="https://nestessia.github.io/StaticFlow-diploma" />
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
+        
+<script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+        });
+        </script>
+        <style>
+        /* Простые стили для диаграмм */
+        .mermaid {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        </style>
+            <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-light: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+            background-color: var(--bg-light);
+        }
+
+        .navbar {
+            background: var(--bg-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 2.5rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .navbar-brand img.logo-sf {
+            height: 2.6rem;
+            width: 2.6rem;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            min-width: unset;
+            font-size: 1rem;
+        }
+
+        .navbar-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+        }
+
+        .navbar-item.active {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+            font-weight: 700;
+            box-shadow: 0 2px 8px 0 rgb(37 99 235 / 0.08);
+        }
+
+        .navbar-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background-color: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .navbar-toggle:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1100px) {
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-menu {
+                display: none;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-item {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem 1rem;
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background: var(--bg-color);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Анимации для интерактивных элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar-item, .navbar-brand {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Улучшенный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+                StaticFlow
+            </a>
+            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="navbar-menu" id="navbar-menu">
+                <li><a href="/about.html" class="navbar-item ">
+                    <i class="fas fa-info-circle"></i> О проекте
+                </a></li>
+                <li><a href="/installation.html" class="navbar-item ">
+                    <i class="fas fa-download"></i> Установка
+                </a></li>
+                <li><a href="/quickstart.html" class="navbar-item ">
+                    <i class="fas fa-rocket"></i> Быстрый старт
+                </a></li>
+                <li><a href="/templates.html" class="navbar-item ">
+                    <i class="fas fa-paint-brush"></i> Шаблоны
+                </a></li>
+                <li><a href="/blocks.html" class="navbar-item ">
+                    <i class="fas fa-palette"></i> Блочный редактор
+                </a></li>
+                <li><a href="/plugins.html" class="navbar-item ">
+                    <i class="fas fa-puzzle-piece"></i> Плагины
+                </a></li>
+                <li><a href="/deploy.html" class="navbar-item ">
+                    <i class="fas fa-cloud-upload-alt"></i> Деплой
+                </a></li>
+                <li><a href="/api.html" class="navbar-item ">
+                    <i class="fas fa-code"></i> API
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content">
+    <h1>Шаблоны</h1><p>В этом разделе мы рассмотрим, как работать с шаблонами в StaticFlow.</p><h2>Движок шаблонов</h2><p>StaticFlow использует Jinja2 как движок шаблонов. Jinja2 предоставляет мощный и гибкий способ создания HTML шаблонов.</p><h2>Структура шаблонов</h2><h3>Базовый шаблон</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cp">&lt;!DOCTYPE html&gt;</span></span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="ws"></span><span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{% block title %}{{ page.title }} - {{ config.site_name }}{% endblock %}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">meta</span><span class="na">name</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"description"</span><span class="na">content</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ page.description }}"</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="ws"></span><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/static/css/style.css"</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="ws"></span>{% block extra_head %}{% endblock %}</span><span class="line" id="L8"><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L10"><span class="ws"></span><span class="p">&lt;</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L11"><span class="ws"></span>{% include "partials/navigation.html" %}</span><span class="line" id="L12"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L13"></span><span class="line" id="L14"><span class="ws"></span><span class="p">&lt;</span><span class="nt">main</span><span class="p">&gt;</span></span><span class="line" id="L15"><span class="ws"></span>{% block content %}{% endblock %}</span><span class="line" id="L16"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span></span><span class="line" id="L17"></span><span class="line" id="L18"><span class="ws"></span><span class="p">&lt;</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L19"><span class="ws"></span>{% include "partials/footer.html" %}</span><span class="line" id="L20"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L21"></span><span class="line" id="L22"><span class="ws"></span>{% block extra_body %}{% endblock %}</span><span class="line" id="L23"><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L24"><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L25"></span></pre></div></div><h3>Шаблон страницы</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% extends "base.html" %}</span><span class="line" id="L2"></span><span class="line" id="L3">{% block content %}</span><span class="line" id="L4"><span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span>{% if page.date %}</span><span class="line" id="L8"><span class="ws"></span><span class="p">&lt;</span><span class="nt">time</span><span class="na">datetime</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ page.date.isoformat() }}"</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="ws"></span>{{ page.date.strftime('%d.%m.%Y') }}</span><span class="line" id="L10"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">time</span><span class="p">&gt;</span></span><span class="line" id="L11"><span class="ws"></span>{% endif %}</span><span class="line" id="L12"></span><span class="line" id="L13"><span class="ws"></span>{{ page.content }}</span><span class="line" id="L14"><span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L15">{% endblock %}</span><span class="line" id="L16"></span></pre></div></div><h2>Наследование шаблонов</h2><h3>Базовый шаблон</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2"><span class="cp">&lt;!DOCTYPE html&gt;</span></span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span>{% block head %}{% endblock %}</span><span class="line" id="L6"><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L8"><span class="ws"></span>{% block body %}{% endblock %}</span><span class="line" id="L9"><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L10"><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L11"></span></pre></div></div><h3>Наследование</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2">{% extends "base.html" %}</span><span class="line" id="L3"></span><span class="line" id="L4">{% block head %}</span><span class="line" id="L5"><span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span></span><span class="line" id="L6">{% endblock %}</span><span class="line" id="L7"></span><span class="line" id="L8">{% block body %}</span><span class="line" id="L9"><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span></span><span class="line" id="L10">{{ page.content }}</span><span class="line" id="L11">{% endblock %}</span><span class="line" id="L12"></span></pre></div></div><h2>Включение частичных шаблонов</h2><h3>Создание частичного шаблона</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">nav</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="ws"></span><span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="ws"></span><span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/"</span><span class="p">&gt;</span>Главная<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/blog"</span><span class="p">&gt;</span>Блог<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="ws"></span><span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/about"</span><span class="p">&gt;</span>О нас<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span></span><span class="line" id="L8"><span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span></span><span class="line" id="L9"></span></pre></div></div><h3>Использование</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% include "partials/navigation.html" %}</span><span class="line" id="L2"></span></pre></div></div><h2>Макросы</h2><h3>Определение макроса</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2">{% macro render_post(post) %}</span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="ws"></span><span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>{{ post.title }}<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">time</span><span class="p">&gt;</span>{{ post.date.strftime('%d.%m.%Y') }}<span class="p">&lt;/</span><span class="nt">time</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="ws"></span>{{ post.content }}</span><span class="line" id="L7"><span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L8">{% endmacro %}</span><span class="line" id="L9"></span></pre></div></div><h3>Использование макроса</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% from "macros.html" import render_post %}</span><span class="line" id="L2"></span><span class="line" id="L3">{% for post in posts %}</span><span class="line" id="L4"><span class="ws"></span>{{ render_post(post) }}</span><span class="line" id="L5">{% endfor %}</span><span class="line" id="L6"></span></pre></div></div><h2>Переменные и контекст</h2><h3>Доступные переменные</h3><ul><li><code>page</code> - текущая страница</li><li><code>config</code> - конфигурация сайта</li><li><code>site</code> - все страницы сайта</li><li><code>categories</code> - категории</li><li><code>tags</code> - теги</li><li><code>authors</code> - авторы</li></ul><h3>Пример использования</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span></span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Автор: {{ page.author }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Дата: {{ page.date.strftime('%d.%m.%Y') }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span></span><span class="line" id="L4"></span><span class="line" id="L5">{% if page.tags %}</span><span class="line" id="L6"><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Теги: </span><span class="line" id="L7"><span class="ws"></span>{% for tag in page.tags %}</span><span class="line" id="L8"><span class="ws"></span><span class="p">&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/tags/{{ tag }}"</span><span class="p">&gt;</span>{{ tag }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="ws"></span>{% endfor %}</span><span class="line" id="L10"><span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span></span><span class="line" id="L11">{% endif %}</span><span class="line" id="L12"></span></pre></div></div><h2>Фильтры</h2><h3>Встроенные фильтры</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{{ page.title|upper }}</span><span class="line" id="L2">{{ page.content|truncate(200) }}</span><span class="line" id="L3">{{ page.date|date('%d.%m.%Y') }}</span><span class="line" id="L4"></span></pre></div></div><h3>Пользовательские фильтры</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># plugins/custom_filters.py</span></span><span class="line" id="L2"><span class="k">def</span><span class="w"></span><span class="nf">markdown_to_html</span><span class="p">(</span><span class="n">text</span><span class="p">):</span></span><span class="line" id="L3"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">markdown</span><span class="o">.</span><span class="n">markdown</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></span><span class="line" id="L4"></span><span class="line" id="L5"><span class="k">def</span><span class="w"></span><span class="nf">register_filters</span><span class="p">(</span><span class="n">app</span><span class="p">):</span></span><span class="line" id="L6"><span class="ws"></span><span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s1">'markdown'</span><span class="p">]</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">markdown_to_html</span></span><span class="line" id="L7"></span></pre></div></div><h2>Условные операторы</h2><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% if page.draft %}</span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">div</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"draft-notice"</span><span class="p">&gt;</span>Черновик<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span></span><span class="line" id="L3">{% endif %}</span><span class="line" id="L4"></span><span class="line" id="L5">{% if page.tags %}</span><span class="line" id="L6"><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Теги: {{ page.tags|join(', ') }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span></span><span class="line" id="L7">{% else %}</span><span class="line" id="L8"><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Нет тегов<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span></span><span class="line" id="L9">{% endif %}</span><span class="line" id="L10"></span></pre></div></div><h2>Циклы</h2><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% for post in site.posts %}</span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="ws"></span><span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>{{ post.title }}<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="ws"></span>{{ post.content|truncate(200) }}</span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ post.url }}"</span><span class="p">&gt;</span>Читать далее<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L7">{% endfor %}</span><span class="line" id="L8"></span></pre></div></div><h2>Шаблоны для разных типов контента</h2><h3>Шаблон поста</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% extends "base.html" %}</span><span class="line" id="L2"></span><span class="line" id="L3">{% block content %}</span><span class="line" id="L4"><span class="p">&lt;</span><span class="nt">article</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"post"</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="ws"></span><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="ws"></span><span class="p">&lt;</span><span class="nt">div</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"meta"</span><span class="p">&gt;</span></span><span class="line" id="L8"><span class="ws"></span><span class="p">&lt;</span><span class="nt">time</span><span class="p">&gt;</span>{{ page.date.strftime('%d.%m.%Y') }}<span class="p">&lt;/</span><span class="nt">time</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="ws"></span>{% if page.author %}</span><span class="line" id="L10"><span class="ws"></span><span class="p">&lt;</span><span class="nt">span</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"author"</span><span class="p">&gt;</span>{{ page.author }}<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span></span><span class="line" id="L11"><span class="ws"></span>{% endif %}</span><span class="line" id="L12"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span></span><span class="line" id="L13"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L14"></span><span class="line" id="L15"><span class="ws"></span>{{ page.content }}</span><span class="line" id="L16"></span><span class="line" id="L17"><span class="ws"></span>{% if page.tags %}</span><span class="line" id="L18"><span class="ws"></span><span class="p">&lt;</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L19"><span class="ws"></span><span class="p">&lt;</span><span class="nt">div</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"tags"</span><span class="p">&gt;</span></span><span class="line" id="L20"><span class="ws"></span>{% for tag in page.tags %}</span><span class="line" id="L21"><span class="ws"></span><span class="p">&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/tags/{{ tag }}"</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"tag"</span><span class="p">&gt;</span>{{ tag }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span></span><span class="line" id="L22"><span class="ws"></span>{% endfor %}</span><span class="line" id="L23"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span></span><span class="line" id="L24"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L25"><span class="ws"></span>{% endif %}</span><span class="line" id="L26"><span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L27">{% endblock %}</span><span class="line" id="L28"></span></pre></div></div><h3>Шаблон категории</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% extends "base.html" %}</span><span class="line" id="L2"></span><span class="line" id="L3">{% block content %}</span><span class="line" id="L4"><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span></span><span class="line" id="L5"></span><span class="line" id="L6"><span class="p">&lt;</span><span class="nt">div</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"posts"</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="ws"></span>{% for post in page.posts %}</span><span class="line" id="L8"><span class="ws"></span><span class="p">&lt;</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="ws"></span><span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;&lt;</span><span class="nt">a</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ post.url }}"</span><span class="p">&gt;</span>{{ post.title }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span></span><span class="line" id="L10"><span class="ws"></span><span class="p">&lt;</span><span class="nt">time</span><span class="p">&gt;</span>{{ post.date.strftime('%d.%m.%Y') }}<span class="p">&lt;/</span><span class="nt">time</span><span class="p">&gt;</span></span><span class="line" id="L11"><span class="ws"></span>{{ post.content|truncate(200) }}</span><span class="line" id="L12"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span></span><span class="line" id="L13"><span class="ws"></span>{% endfor %}</span><span class="line" id="L14"><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span></span><span class="line" id="L15">{% endblock %}</span><span class="line" id="L16"></span></pre></div></div><h2>Плагины для шаблонов</h2><ul><li><code>staticflow-sass</code> - поддержка SASS/SCSS</li><li><code>staticflow-webpack</code> - сборка JavaScript</li><li><code>staticflow-images</code> - оптимизация изображений</li><li><code>staticflow-seo</code> - SEO оптимизация</li></ul><h1>Темы</h1><p>В этом разделе мы рассмотрим, как работать с темами в StaticFlow.</p><h2>Что такое тема?</h2><p>Тема в StaticFlow - это набор файлов, которые определяют внешний вид и функциональность сайта:</p><ul><li>HTML шаблоны</li><li>CSS стили</li><li>JavaScript файлы</li><li>Изображения и другие медиафайлы</li><li>Конфигурационные файлы</li></ul><h2>Структура темы</h2><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>theme/</span><span class="line" id="L2">├── templates/ # HTML шаблоны</span><span class="line" id="L3">│ ├── base.html # Базовый шаблон</span><span class="line" id="L4">│ ├── page.html # Шаблон страницы</span><span class="line" id="L5">│ ├── post.html # Шаблон поста</span><span class="line" id="L6">│ └── partials/ # Частичные шаблоны</span><span class="line" id="L7">├── static/ # Статические файлы</span><span class="line" id="L8">│ ├── css/ # Стили</span><span class="line" id="L9">│ ├── js/ # Скрипты</span><span class="line" id="L10">│ └── images/ # Изображения</span><span class="line" id="L11">├── media/ # Медиафайлы</span><span class="line" id="L12">└── theme.toml # Конфигурация темы</span><span class="line" id="L13"></span></pre></div></div><h2>Установка темы</h2><h3>Через pip</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>pip<span class="w"></span>install<span class="w"></span>staticflow-theme-default</span><span class="line" id="L2"></span></pre></div></div><h3>Из репозитория</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>git<span class="w"></span>clone<span class="w"></span>https://github.com/staticflow/themes/default.git<span class="w"></span>themes/default</span><span class="line" id="L2"></span></pre></div></div><h2>Использование темы</h2><h3>В конфигурации</h3><div class="code-block language-toml"><div class="language-tag">toml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># config.toml</span></span><span class="line" id="L2"><span class="n">theme</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"default"</span></span><span class="line" id="L3"></span></pre></div></div><h3>В шаблонах</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>{% extends "theme/default/templates/base.html" %}</span><span class="line" id="L2"></span></pre></div></div><h2>Создание своей темы</h2><h3>1. Создание структуры</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>mkdir<span class="w"></span>-p<span class="w"></span>my-theme/<span class="o">{</span>templates,static/<span class="o">{</span>css,js,images<span class="o">}</span>,media<span class="o">}</span></span><span class="line" id="L2">touch<span class="w"></span>my-theme/theme.toml</span><span class="line" id="L3"></span></pre></div></div><h3>2. Конфигурация темы</h3><div class="code-block language-toml"><div class="language-tag">toml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># theme.toml</span></span><span class="line" id="L2"><span class="n">name</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"My Theme"</span></span><span class="line" id="L3"><span class="n">version</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"1.0.0"</span></span><span class="line" id="L4"><span class="n">author</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"Your Name"</span></span><span class="line" id="L5"><span class="n">description</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"A custom theme for StaticFlow"</span></span><span class="line" id="L6"><span class="n">license</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"MIT"</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="k">[theme]</span></span><span class="line" id="L9"><span class="n">default_template</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"base.html"</span></span><span class="line" id="L10"></span></pre></div></div><h3>3. Базовый шаблон</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cp">&lt;!DOCTYPE html&gt;</span></span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="ws"></span><span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{% block title %}{{ page.title }}{% endblock %}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/static/css/style.css"</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="ws"></span>{% block extra_head %}{% endblock %}</span><span class="line" id="L7"><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L8"><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L9"><span class="ws"></span><span class="p">&lt;</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L10"><span class="ws"></span>{% include "partials/navigation.html" %}</span><span class="line" id="L11"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L12"></span><span class="line" id="L13"><span class="ws"></span><span class="p">&lt;</span><span class="nt">main</span><span class="p">&gt;</span></span><span class="line" id="L14"><span class="ws"></span>{% block content %}{% endblock %}</span><span class="line" id="L15"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span></span><span class="line" id="L16"></span><span class="line" id="L17"><span class="ws"></span><span class="p">&lt;</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L18"><span class="ws"></span>{% include "partials/footer.html" %}</span><span class="line" id="L19"><span class="ws"></span><span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L20"></span><span class="line" id="L21"><span class="ws"></span><span class="p">&lt;</span><span class="nt">script</span><span class="na">src</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/static/js/main.js"</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span></span><span class="line" id="L22"><span class="ws"></span>{% block extra_body %}{% endblock %}</span><span class="line" id="L23"><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L24"><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L25"></span></pre></div></div><h3>4. Стили</h3><div class="code-block language-css"><div class="language-tag">css</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c">/* static/css/style.css */</span></span><span class="line" id="L2"><span class="p">:</span><span class="nd">root</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="nv">--primary-color</span><span class="p">:</span><span class="w"></span><span class="mh">#007bff</span><span class="p">;</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="nv">--secondary-color</span><span class="p">:</span><span class="w"></span><span class="mh">#6c757d</span><span class="p">;</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nv">--background-color</span><span class="p">:</span><span class="w"></span><span class="mh">#ffffff</span><span class="p">;</span></span><span class="line" id="L6"><span class="ws"></span><span class="w"></span><span class="nv">--text-color</span><span class="p">:</span><span class="w"></span><span class="mh">#212529</span><span class="p">;</span></span><span class="line" id="L7"><span class="p">}</span></span><span class="line" id="L8"></span><span class="line" id="L9"><span class="nt">body</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="k">font-family</span><span class="p">:</span><span class="w"></span><span class="w"></span><span class="o">-</span><span class="w"></span><span class="n">apple-system</span><span class="p">,</span><span class="w"></span><span class="n">BlinkMacSystemFont</span><span class="p">,</span><span class="w"></span><span class="s2">"Segoe UI"</span><span class="p">,</span><span class="w"></span><span class="n">Roboto</span><span class="p">,</span><span class="w"></span><span class="s2">"Helvetica Neue"</span><span class="p">,</span><span class="w"></span><span class="n">Arial</span><span class="p">,</span><span class="w"></span><span class="kc">sans-serif</span><span class="p">;</span></span><span class="line" id="L11"><span class="ws"></span><span class="w"></span><span class="k">line-height</span><span class="p">:</span><span class="w"></span><span class="mf">1.6</span><span class="p">;</span></span><span class="line" id="L12"><span class="ws"></span><span class="w"></span><span class="k">color</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="nf">var</span><span class="p">(</span><span class="nv">--text-color</span><span class="p">);</span></span><span class="line" id="L13"><span class="ws"></span><span class="w"></span><span class="k">background-color</span><span class="p">:</span><span class="w"></span><span class="nf">var</span><span class="p">(</span><span class="nv">--background-color</span><span class="p">);</span></span><span class="line" id="L14"><span class="p">}</span></span><span class="line" id="L15"></span><span class="line" id="L16"><span class="c">/* ... другие стили ... */</span></span><span class="line" id="L17"></span></pre></div></div><h3>5. JavaScript</h3><div class="code-block language-javascript"><div class="language-tag">javascript</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1">// static/js/main.js</span></span><span class="line" id="L2"><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">'DOMContentLoaded'</span><span class="p">,</span><span class="w"></span><span class="k">function</span><span class="w"></span><span class="p">()</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="c1">// Инициализация темы</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="nx">initTheme</span><span class="p">();</span></span><span class="line" id="L5"><span class="p">});</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="k">function</span><span class="w"></span><span class="w"></span><span class="nx">initTheme</span><span class="p">()</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L8"><span class="ws"></span><span class="w"></span><span class="c1">// Код инициализации</span></span><span class="line" id="L9"><span class="p">}</span></span><span class="line" id="L10"></span></pre></div></div><h2>Наследование тем</h2><h3>Базовая тема</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2"><span class="cp">&lt;!DOCTYPE html&gt;</span></span><span class="line" id="L3"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L4"><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L5"><span class="ws"></span>{% block head %}{% endblock %}</span><span class="line" id="L6"><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span></span><span class="line" id="L7"><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L8"><span class="ws"></span>{% block body %}{% endblock %}</span><span class="line" id="L9"><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span></span><span class="line" id="L10"><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></span><span class="line" id="L11"></span></pre></div></div><h3>Расширение темы</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2">{% extends "base-theme/templates/base.html" %}</span><span class="line" id="L3"></span><span class="line" id="L4">{% block head %}</span><span class="line" id="L5"><span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{% block title %}{{ page.title }}{% endblock %}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span></span><span class="line" id="L6"><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"/static/css/custom.css"</span><span class="p">&gt;</span></span><span class="line" id="L7">{% endblock %}</span><span class="line" id="L8"></span><span class="line" id="L9">{% block body %}</span><span class="line" id="L10"><span class="p">&lt;</span><span class="nt">header</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"custom-header"</span><span class="p">&gt;</span></span><span class="line" id="L11"><span class="ws"></span>{% block header %}{% endblock %}</span><span class="line" id="L12"><span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span></span><span class="line" id="L13"></span><span class="line" id="L14"><span class="p">&lt;</span><span class="nt">main</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"custom-main"</span><span class="p">&gt;</span></span><span class="line" id="L15"><span class="ws"></span>{% block content %}{% endblock %}</span><span class="line" id="L16"><span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span></span><span class="line" id="L17"></span><span class="line" id="L18"><span class="p">&lt;</span><span class="nt">footer</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"custom-footer"</span><span class="p">&gt;</span></span><span class="line" id="L19"><span class="ws"></span>{% block footer %}{% endblock %}</span><span class="line" id="L20"><span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span></span><span class="line" id="L21">{% endblock %}</span><span class="line" id="L22"></span></pre></div></div><h2>Переопределение компонентов</h2><h3>Переопределение стилей</h3><div class="code-block language-css"><div class="language-tag">css</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c">/* my-theme/static/css/custom.css */</span></span><span class="line" id="L2"><span class="p">:</span><span class="nd">root</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="nv">--primary-color</span><span class="p">:</span><span class="w"></span><span class="mh">#ff0000</span><span class="p">;</span><span class="w"></span><span class="c">/* Переопределение цвета */</span></span><span class="line" id="L4"><span class="p">}</span></span><span class="line" id="L5"></span><span class="line" id="L6"><span class="p">.</span><span class="nc">custom-header</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L7"><span class="ws"></span><span class="w"></span><span class="c">/* Стили для кастомного хедера */</span></span><span class="line" id="L8"><span class="p">}</span></span><span class="line" id="L9"></span></pre></div></div><h3>Переопределение шаблонов</h3><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="cm"></span></span><span class="line" id="L2"><span class="p">&lt;</span><span class="nt">nav</span><span class="na">class</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"custom-nav"</span><span class="p">&gt;</span></span><span class="line" id="L3"><span class="ws"></span><span class="cm"></span></span><span class="line" id="L4"><span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span></span><span class="line" id="L5"></span></pre></div></div><h2>Плагины для тем</h2><ul><li><code>staticflow-theme-assets</code> - управление ресурсами темы</li><li><code>staticflow-theme-builder</code> - инструменты для создания тем</li><li><code>staticflow-theme-preview</code> - предпросмотр тем</li><li><code>staticflow-theme-export</code> - экспорт тем</li></ul><h2>Лучшие практики</h2><h3>Организация</h3><ol><li>Используйте модульную структуру</li><li>Разделяйте стили по компонентам</li><li>Минимизируйте зависимости</li><li>Документируйте компоненты</li></ol><h3>Производительность</h3><ol><li>Оптимизируйте изображения</li><li>Минифицируйте CSS и JavaScript</li><li>Используйте кэширование</li><li>Следите за размером бандла</li></ol><h3>Доступность</h3><ol><li>Используйте семантическую разметку</li><li>Обеспечьте поддержку клавиатурной навигации</li><li>Добавьте ARIA-атрибуты</li><li>Проверяйте контрастность</li></ol><h3>Адаптивность</h3><ol><li>Используйте медиа-запросы</li><li>Тестируйте на разных устройствах</li><li>Применяйте mobile-first подход</li><li>Оптимизируйте изображения</li></ol><h2>Публикация темы</h2><h3>Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте примеры</li></ol><h3>Публикация</h3><ol><li>Создайте репозиторий</li><li>Настройте CI/CD</li><li>Опубликуйте в PyPI</li><li>Добавьте в каталог тем</li></ol><h2>Обновление темы</h2><h3>Версионирование</h3><div class="code-block language-toml"><div class="language-tag">toml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># theme.toml</span></span><span class="line" id="L2"><span class="n">version</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"1.0.0"</span></span><span class="line" id="L3"></span></pre></div></div><h3>Миграции</h3><ol><li>Создайте миграционные скрипты</li><li>Документируйте изменения</li><li>Поддерживайте обратную совместимость</li><li>Тестируйте обновления</li></ol>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+        </div>
+    </footer>
+
+    <script>
+        // Улучшенная обработка мобильного меню
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navbarMenu = document.getElementById('navbar-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            navbarMenu.classList.toggle('active');
+            navbarToggle.setAttribute('aria-expanded', isMenuOpen);
+            navbarToggle.innerHTML = isMenuOpen ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bars"></i>';
+        }
+
+        navbarToggle.addEventListener('click', toggleMenu);
+
+        // Закрытие меню при клике на пункт меню
+        document.querySelectorAll('.navbar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Закрытие меню при изменении размера окна
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768 && isMenuOpen) {
+                    toggleMenu();
+                }
+            }, 250);
+        });
+
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню при скролле
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        document.querySelectorAll('.navbar-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 
