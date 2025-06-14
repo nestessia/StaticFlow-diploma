@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Установка</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/code_highlight.css">
+
+    <link rel="canonical" href="http://localhost:8000" />
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
+        
+<script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+        });
+        </script>
+        <style>
+        /* Простые стили для диаграмм */
+        .mermaid {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        </style>
+        </head>
+<body>
+    <main>
+        <div class="content">
+    <h1>Установка StaticFlow</h1><p>В этом разделе мы рассмотрим процесс установки StaticFlow и необходимые требования.</p><h2>Требования</h2><p>Для работы StaticFlow требуется:</p><ul><li>Python 3.8 или выше</li><li>pip (менеджер пакетов Python)</li><li>Git (опционально, для работы с репозиториями)</li></ul><h2>Установка через pip</h2><p>Самый простой способ установить StaticFlow - использовать pip:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>pip<span class="w"></span>install<span class="w"></span>staticflow</span><span class="line" id="L2"></span></pre></div></div><h2>Установка из исходного кода</h2><p>Если вы хотите установить последнюю версию из репозитория:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>git<span class="w"></span>clone<span class="w"></span>https://github.com/your-username/staticflow.git</span><span class="line" id="L2"><span class="nb">cd</span><span class="w"></span>staticflow</span><span class="line" id="L3">pip<span class="w"></span>install<span class="w"></span>-e<span class="w"></span>.</span><span class="line" id="L4"></span></pre></div></div><h2>Проверка установки</h2><p>После установки проверьте, что StaticFlow доступен:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>--version</span><span class="line" id="L2"></span></pre></div></div><h2>Создание нового проекта</h2><p>Чтобы создать новый проект:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>new<span class="w"></span>my-project</span><span class="line" id="L2"><span class="nb">cd</span><span class="w"></span>my-project</span><span class="line" id="L3"></span></pre></div></div><h2>Запуск сервера разработки</h2><p>Для локальной разработки:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>serve</span><span class="line" id="L2"></span></pre></div></div><p>Сайт будет доступен по адресу http://localhost:8000</p><h2>Обновление</h2><p>Для обновления до последней версии:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>pip<span class="w"></span>install<span class="w"></span>--upgrade<span class="w"></span>staticflow</span><span class="line" id="L2"></span></pre></div></div><h2>Устранение неполадок</h2><h3>Распространенные проблемы</h3><ol><li><strong>Ошибка "command not found"</strong></li><li>Убедитесь, что Python и pip установлены</li><li><p>Проверьте, что директория с исполняемыми файлами Python в PATH</p></li><li><p><strong>Проблемы с зависимостями</strong></p></li><li>Попробуйте создать новое виртуальное окружение</li><li><p>Обновите pip: <code>pip install --upgrade pip</code></p></li><li><p><strong>Ошибки при сборке</strong></p></li><li>Проверьте версию Python</li><li>Убедитесь, что все зависимости установлены</li></ol><h3>Получение помощи</h3><p>Если у вас возникли проблемы:
+- Проверьте <a href="https://github.com/your-username/staticflow/issues">GitHub Issues</a>
+- Задайте вопрос в <a href="https://discord.gg/staticflow">Discord сообществе</a>
+- Создайте новый issue с подробным описанием проблемы</p>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            &copy; documentation
+        </div>
+    </footer>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 
