@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to StaticFlow</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/code_highlight.css">
+
+    <link rel="canonical" href="http://localhost:8000" />
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                });
+            </script>
+        
+<script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+        });
+        </script>
+        <style>
+        /* Простые стили для диаграмм */
+        .mermaid {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        </style>
+        </head>
+<body>
+    <main>
+        <div class="content">
+    <p><img alt="" src="\media\staticflow.png"/></p><h1>Добро пожаловать в StaticFlow!</h1><p>StaticFlow - это современный фреймворк для генерации статических сайтов с гибким функционалом для создания конента.</p><h2>Возможности</h2><h3>1. Подсветка кода</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">def</span><span class="w"></span><span class="nf">hello_world</span><span class="p">():</span></span><span class="line" id="L2"><span class="ws"></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Привет, StaticFlow!"</span><span class="p">)</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="ws"></span><span class="k">if</span><span class="w"></span><span class="k">True</span><span class="w"></span><span class="p">:</span></span><span class="line" id="L5"><span class="ws"></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Tabs are working!"</span><span class="p">)</span></span><span class="line" id="L6"><span class="ws"></span><span class="k">for</span><span class="w"></span><span class="n">i</span><span class="ow">in</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span></span><span class="line" id="L7"><span class="ws"></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tab level </span><span class="si">{</span><span class="n">i</span><span class="w"></span><span class="o">+</span><span class="w"></span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></span><span class="line" id="L8"></span></pre></div></div><p>Here's some JavaScript with tabs:</p><div class="code-block language-javascript"><div class="language-tag">javascript</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">function</span><span class="w"></span><span class="w"></span><span class="nx">testFunction</span><span class="p">()</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Testing tabs"</span><span class="p">);</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="k">if</span><span class="w"></span><span class="w"></span><span class="p">(</span><span class="k">true</span><span class="w"></span><span class="p">)</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Nested level"</span><span class="p">);</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span><span class="w"></span><span class="k">for</span><span class="w"></span><span class="w"></span><span class="p">(</span><span class="k">let</span><span class="w"></span><span class="w"></span><span class="nx">i</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="mf">0</span><span class="p">;</span><span class="w"></span><span class="nx">i</span><span class="w"></span><span class="o">&lt;</span><span class="w"></span><span class="mf">3</span><span class="p">;</span><span class="w"></span><span class="nx">i</span><span class="w"></span><span class="o">++</span><span class="w"></span><span class="p">)</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L8"><span class="ws"></span><span class="w"></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx"><span class="sb"><code class="inline-code">Loop iteration ${i}</code></span></span><span class="p">);</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="p">}</span></span><span class="line" id="L11"><span class="p">}</span></span><span class="line" id="L12"></span></pre></div></div><h3>2. Математические формулы</h3><p>Inline формула: $E = mc^2$</p><p>Блочная формула: $ \int_0^\infty e^{-x} dx = 1 $</p><h3>3. Диаграммы</h3><h4>Блок-схема</h4><div class="mermaid">graph TD
+A[Старт] --&gt; B[Процесс]
+B --&gt; C{Условие?}
+C --&gt;|Да| D[Процесс 1]
+C --&gt;|Нет| E[Процесс 2]
+D --&gt; F[Конец]
+E --&gt; F
+</div><h4>Диаграмма последовательности</h4><div class="mermaid">sequenceDiagram
+Alice-&gt;&gt;John: Hello John
+John--&gt;&gt;Alice: Hi Alice
+</div><h4>Диаграмма состояний</h4><div class="mermaid">stateDiagram
+s1 --&gt; s2
+s2 --&gt; s3
+</div><h4>Диаграмма классов</h4><div class="mermaid">classDiagram
+Class01 &lt;|-- Class02
+Class03 *-- Class04
+</div><h2>Начало работы</h2><p>Создание контента:</p><p>Добавьте Markdown файлы в директорию content</p><p>Используйте front matter для метаданных</p><p>Настройка шаблонов:</p><p>Измените шаблоны в директории templates</p><p>Добавьте свои стили в static/css</p><p>Запуск сервера разработки:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>staticflow<span class="w"></span>serve</span><span class="line" id="L2"></span></pre></div></div>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            &copy; documentation
+        </div>
+    </footer>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 

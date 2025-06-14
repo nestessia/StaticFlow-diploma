@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title or "Untitled" }}{% endblock %}
+
+{% block head %}{{ page_head_content|safe }}{% endblock %}
+
+{% block content %}
+    {{ page_content|safe }}
+{% endblock %} 
