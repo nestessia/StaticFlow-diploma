@@ -1,5 +1,3 @@
-import pytest
-import logging
 from staticflow.utils.logging import get_logger, setup_logging
 from staticflow.utils.pygments_utils import generate_pygments_css
 
