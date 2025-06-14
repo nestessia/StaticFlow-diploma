@@ -213,8 +213,6 @@ class Engine:
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(css_content)
 
-            print(f"Generated code highlight CSS with '{style_name}' style")
-
         except Exception as e:
             print(f"Error generating code highlight CSS: {e}")
 

@@ -122,9 +122,7 @@ class Builder:
         output_dir = Path(self.config.get('output_dir'))
 
         try:
-            logger.info("Starting site build...")
             self.engine.build()
-            logger.info("Site build completed successfully")
             console.print(
                 Panel.fit(
                     "[green]Site build completed successfully[/green]\n"

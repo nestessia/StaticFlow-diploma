@@ -224,7 +224,6 @@ class Server:
         """Run the server."""
         if self.dev_mode:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Server running at {server_url}")
             console.print(
                 Panel.fit(
                     f"[green]Server running at[/green] {server_url}\n"
@@ -240,5 +239,4 @@ class Server:
             )
         else:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Production server running at {server_url}")
             web.run_app(self.app, host=self.host, port=self.port)

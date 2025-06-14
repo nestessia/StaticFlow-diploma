@@ -28,8 +28,6 @@ def build(config: str):
         builder = Builder(config=Config(config_path))
         builder.build()
 
-        console.print("[green]Build completed successfully![/green]")
-
     except Exception as e:
         error_message = f"Error building site: {str(e)}"
         full_traceback = traceback.format_exc()

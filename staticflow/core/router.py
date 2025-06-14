@@ -188,9 +188,6 @@ class Router:
         metadata: Dict[str, Any]
     ) -> Path:
         """Get output path for content."""
-        print("\nRouter debug:")
-        print(f"Content type: {content_type}")
-        print(f"Metadata: {metadata}")
 
         # Особая логика для одиночных страниц (без подпапки)
         if content_type == "page":
@@ -230,15 +227,12 @@ class Router:
         except KeyError as e:
             print(f"Warning: Missing key in pattern: {e}")
             save_as_path = f"{variables.get('slug', 'index')}.html"
-            
-        print(f"Save as path: {save_as_path}")
-        
+
         # Ensure the path is relative and uses forward slashes
         save_as_path = save_as_path.lstrip("/").replace("\\", "/")
         
         # Create the full output path
         output_path = output_dir / save_as_path
-        print(f"Final output path: {output_path}")
         
         return output_path
 
