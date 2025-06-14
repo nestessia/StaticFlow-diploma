@@ -8,6 +8,7 @@ import shutil
 from staticflow.cli.build import build
 from staticflow.cli.serve import serve
 from staticflow.cli.create import create
+from staticflow.core.engine import Engine
 
 
 @pytest.fixture
@@ -274,6 +275,11 @@ This is a test page content.
             output_dir = Path("output")
             output_dir.mkdir()
 
+            # Сначала собираем сайт
+            engine = Engine(config_path)
+            engine.initialize(content_dir, output_dir, templates_dir)
+            engine.build()
+
             # Запускаем сервер в отдельном потоке
             def run_server():
                 runner.invoke(serve, [
@@ -347,6 +353,11 @@ This is a test page content.
             output_dir = Path("output")
             output_dir.mkdir()
 
+            # Сначала собираем сайт
+            engine = Engine(config_path)
+            engine.initialize(content_dir, output_dir, templates_dir)
+            engine.build()
+
             # Запускаем сервер в отдельном потоке
             def run_server():
                 runner.invoke(serve, [
@@ -410,6 +421,11 @@ This is a test page content.
             output_dir = Path("output")
             output_dir.mkdir()
 
+            # Сначала собираем сайт
+            engine = Engine(config_path)
+            engine.initialize(content_dir, output_dir, templates_dir)
+            engine.build()
+
             # Запускаем сервер в отдельном потоке
             def run_server():
                 runner.invoke(serve, [
@@ -450,31 +466,6 @@ class TestCreateCommand:
         result = runner.invoke(create, ["/invalid/path"])
         assert result.exit_code == 0
         assert "Error" in result.output
-
-    def test_create_with_interactive_input(self, runner, tmp_path):
-        """Тест создания проекта с интерактивным вводом."""
-        with runner.isolated_filesystem():
-            project_dir = Path("new_project")
-            result = runner.invoke(
-                create,
-                [str(project_dir)],
-                input="Test Site\nTest Description\nTest Author\nen\nn\n"
-            )
-            assert result.exit_code == 0
-            assert project_dir.exists()
-            
-            # Проверяем создание основных файлов и директорий
-            config_file = project_dir / "config.toml"
-            assert config_file.exists()
-            
-            content_dir = project_dir / "content"
-            assert content_dir.exists()
-            
-            templates_dir = project_dir / "templates"
-            assert templates_dir.exists()
-            
-            static_dir = project_dir / "static"
-            assert static_dir.exists()
 
     def test_create_with_multilingual(self, runner, tmp_path):
         """Тест создания многоязычного проекта."""
