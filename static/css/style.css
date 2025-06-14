@@ -1,0 +1,306 @@
+/* Base styles */
+:root {
+    --primary-color: #3b82f6;
+    --text-color: #1f2937;
+    --bg-color: #ffffff;
+    --code-bg: #272822;
+    --code-color: #f8f8f2;
+    --border-color: #e5e7eb;
+    --container-width: 800px;
+    --page-margin: 2rem;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --page-margin: 1rem;
+    }
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background: var(--bg-color);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 var(--page-margin);
+}
+
+header {
+    background: var(--primary-color);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+main {
+    min-height: calc(100vh - 300px);
+    padding: 2rem var(--page-margin);
+    margin: 0 auto;
+    max-width: var(--container-width);
+}
+
+main .content {
+    width: 100%;
+}
+
+footer {
+    background: var(--code-bg);
+    color: var(--text-color);
+    padding: 2rem 0;
+    margin-top: 4rem;
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    margin: 1rem 0;
+}
+/* Улучшенные стили для Mermaid диаграмм */
+.mermaid {
+    display: block;
+    text-align: center;
+    background: white !important;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+    /* Предотвращаем переполнение */
+    max-width: 100%;
+    overflow-x: auto;
+    min-height: 50px;
+    position: relative;
+}
+
+/* Индикатор загрузки для диаграмм */
+.mermaid:empty::before {
+    content: "Загрузка диаграммы...";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--primary-color);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Стили для элементов подсветки синтаксиса внутри Mermaid */
+.mermaid .highlight,
+.mermaid pre,
+.mermaid code,
+.mermaid .code-block,
+.mermaid .language-tag {
+    /* Убираем скрытие элементов, чтобы диаграммы были видны */
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    color: inherit !important;
+}
+
+/* Скрыть все элементы подсветки синтаксиса внутри Mermaid */
+.mermaid .highlight *,
+.mermaid pre *,
+.mermaid code *,
+.mermaid .code-block * {
+    /* Не скрываем элементы, чтобы диаграмма отображалась */
+    font-family: inherit !important;
+    background: transparent !important;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto !important;
+    /* Центрируем диаграмму */
+    margin: 0 auto;
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Делаем элементы диаграммы видимыми */
+.mermaid g,
+.mermaid path,
+.mermaid text,
+.mermaid rect,
+.mermaid circle,
+.mermaid ellipse,
+.mermaid polygon,
+.mermaid polyline,
+.mermaid line {
+    visibility: visible !important;
+    display: inline !important;
+    /* Оптимизации рендеринга */
+    vector-effect: non-scaling-stroke;
+    shape-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
+}
+
+/* Оптимизация отображения больших диаграмм */
+@media (max-width: 768px) {
+    .mermaid svg {
+        max-width: 100% !important;
+        height: auto !important;
+        transform-origin: left top;
+        transform: scale(0.9);
+    }
+    
+    .mermaid {
+        padding: 1rem;
+    }
+}
+
+/* Дополнительно убедимся, что Mermaid имеет приоритет стилей */
+body .mermaid {
+    background: white !important;
+}
+
+body .mermaid * {
+    font-family: inherit !important;
+}
+
+/* Не применять классы подсветки в mermaid */
+.mermaid .language-mermaid::before,
+.mermaid.language-mermaid::before {
+    display: none !important;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    max-height: 600px;
+    object-fit: contain;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2rem 0;
+    background: #fff;
+    border-radius: 0.7rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    overflow: hidden;
+}
+
+thead {
+    background: #f3f6fa;
+}
+
+thead th {
+    color: var(--primary-color);
+    font-weight: 700;
+    padding: 1rem 0.7rem;
+    border-bottom: 2px solid var(--primary-color);
+    text-align: left;
+}
+
+tbody td {
+    padding: 0.8rem 0.7rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+tbody tr:hover {
+    background: #e8f0fe;
+    transition: background 0.2s;
+}
+
+table, th, td {
+    border: none;
+}
+
+/* Скругления только для внешних углов */
+table tr:first-child th:first-child {
+    border-top-left-radius: 0.7rem;
+}
+table tr:first-child th:last-child {
+    border-top-right-radius: 0.7rem;
+}
+table tr:last-child td:first-child {
+    border-bottom-left-radius: 0.7rem;
+}
+table tr:last-child td:last-child {
+    border-bottom-right-radius: 0.7rem;
+}
+
+.video {
+    width: 100%;
+    max-width: var(--container-width);
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+}
+
+video {
+    width: 100%;
+    max-width: var(--container-width);
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+}
+
+audio {
+    width: 100%;
+    max-width: var(--container-width);
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+}
+
+/* Стилизация аудио контролов */
+audio::-webkit-media-controls-panel {
+    background-color: #f3f6fa;
+}
+
+audio::-webkit-media-controls-play-button {
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+    color: var(--text-color);
+}
