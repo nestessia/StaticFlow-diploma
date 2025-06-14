@@ -55,6 +55,113 @@ function preprocessMediaBlocks(html) {
   return html;
 }
 
+// === Кастомный contextmenu тулбар для ссылок ===
+function createContextLinkToolbar(editor) {
+  let toolbar = document.createElement('div');
+  toolbar.className = 'context-link-toolbar';
+  toolbar.style.position = 'absolute';
+  toolbar.style.display = 'none';
+  toolbar.style.zIndex = 1000;
+  toolbar.style.background = '#fff';
+  toolbar.style.border = '1px solid #e5e7eb';
+  toolbar.style.borderRadius = '8px';
+  toolbar.style.boxShadow = '0 4px 16px rgba(59,130,246,0.10)';
+  toolbar.style.padding = '8px 12px';
+  toolbar.style.minWidth = '120px';
+  toolbar.style.fontSize = '15px';
+  toolbar.style.gap = '8px';
+  toolbar.style.display = 'flex';
+  toolbar.style.alignItems = 'center';
+
+  // Кнопка "Сделать ссылкой"
+  const linkBtn = document.createElement('button');
+  linkBtn.textContent = 'Сделать ссылкой';
+  linkBtn.style.padding = '4px 10px';
+  linkBtn.style.background = '#3b82f6';
+  linkBtn.style.color = '#fff';
+  linkBtn.style.border = 'none';
+  linkBtn.style.borderRadius = '5px';
+  linkBtn.style.cursor = 'pointer';
+  toolbar.appendChild(linkBtn);
+
+  // Инпут для URL (скрыт по умолчанию)
+  const urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.placeholder = 'Вставьте ссылку...';
+  urlInput.style.display = 'none';
+  urlInput.style.marginLeft = '8px';
+  urlInput.style.padding = '4px 8px';
+  urlInput.style.border = '1px solid #e5e7eb';
+  urlInput.style.borderRadius = '5px';
+  urlInput.style.width = '180px';
+  toolbar.appendChild(urlInput);
+
+  // Кнопка подтверждения (Enter)
+  const confirmBtn = document.createElement('button');
+  confirmBtn.textContent = 'OK';
+  confirmBtn.style.display = 'none';
+  confirmBtn.style.marginLeft = '6px';
+  confirmBtn.style.padding = '4px 10px';
+  confirmBtn.style.background = '#22c55e';
+  confirmBtn.style.color = '#fff';
+  confirmBtn.style.border = 'none';
+  confirmBtn.style.borderRadius = '5px';
+  confirmBtn.style.cursor = 'pointer';
+  toolbar.appendChild(confirmBtn);
+
+  document.body.appendChild(toolbar);
+
+  // Показать тулбар рядом с выделением
+  function showToolbar() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    // Позиционируем тулбар относительно окна
+    toolbar.style.left = (rect.left + window.scrollX) + 'px';
+    toolbar.style.top = (rect.bottom + window.scrollY + 4) + 'px'; // +4px чуть ниже выделения
+    toolbar.style.display = 'flex';
+    urlInput.style.display = 'none';
+    confirmBtn.style.display = 'none';
+    linkBtn.style.display = 'inline-block';
+  }
+
+  // Скрыть тулбар
+  function hideToolbar() {
+    toolbar.style.display = 'none';
+    urlInput.value = '';
+  }
+
+  // Клик вне тулбара — скрыть
+  document.addEventListener('mousedown', (e) => {
+    if (!toolbar.contains(e.target)) hideToolbar();
+  });
+
+  // Клик по "Сделать ссылкой"
+  linkBtn.onclick = () => {
+    linkBtn.style.display = 'none';
+    urlInput.style.display = 'inline-block';
+    confirmBtn.style.display = 'inline-block';
+    urlInput.focus();
+  };
+
+  // Подтверждение ссылки
+  function applyLink() {
+    const url = urlInput.value.trim();
+    if (url) {
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }
+    hideToolbar();
+  }
+  confirmBtn.onclick = applyLink;
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') applyLink();
+    if (e.key === 'Escape') hideToolbar();
+  });
+
+  return { showToolbar, hideToolbar };
+}
+
 class TipTapEditor {
     constructor(selector, content = '', type = 'markdown') {
         this.element = document.querySelector(selector)
@@ -154,6 +261,35 @@ class TipTapEditor {
                 },
             },
         })
+
+        // === Кастомный contextmenu тулбар ===
+        const contextToolbar = createContextLinkToolbar(this.editor);
+        const tiptapContent = document.querySelector('.tiptap-content');
+        if (tiptapContent) {
+            tiptapContent.addEventListener('contextmenu', (e) => {
+                // Проверяем, есть ли выделение и оно не пустое
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed) return;
+                // Проверяем, что выделение внутри нужного блока
+                const { state } = this.editor;
+                const { from, to } = state.selection;
+                let allowed = false;
+                state.doc.nodesBetween(from, to, (node, pos, parent) => {
+                    if ([
+                        'heading',
+                        'paragraph',
+                        'blockquote',
+                        'tableCell',
+                        'listItem'
+                    ].includes(node.type.name)) {
+                        allowed = true;
+                    }
+                });
+                if (!allowed) return;
+                e.preventDefault();
+                contextToolbar.showToolbar(); // Больше не передаём координаты мыши
+            });
+        }
     }
 
     onContentUpdate(html) {
@@ -178,7 +314,17 @@ class TipTapEditor {
         // Рекурсивная функция сериализации
         function serializeNode(node) {
             if (!node) return '';
-            
+            // Ссылки: если это текст с mark link
+            if (node.type === 'text' && node.marks && node.marks.length) {
+                const linkMark = node.marks.find(m => m.type === 'link' && m.attrs && m.attrs.href);
+                if (linkMark) {
+                    return `[${node.text}](${linkMark.attrs.href})`;
+                }
+            }
+            // Обычный текст
+            if (node.type === 'text') {
+                return node.text || '';
+            }
             // Специальные блоки
             if (node.type === 'mermaidBlock') {
                 return `\n\n\`\`\`mermaid\n${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}\n\`\`\`\n\n`;
@@ -194,7 +340,6 @@ class TipTapEditor {
                 return `$${node.content && node.content.length ? node.content.map(n => n.text || '').join('') : ''}$`;
             }
             if (node.type === 'imageBlock') {
-                // ![alt](src "title")
                 const src = node.attrs?.src || '';
                 const alt = node.attrs?.alt || '';
                 const title = node.attrs?.title || '';
@@ -213,13 +358,13 @@ class TipTapEditor {
             // Обработка заголовков
             if (node.type === 'heading') {
                 const level = node.attrs?.level || 1;
-                const content = node.content && node.content.length ? node.content.map(n => n.text || '').join('') : '';
+                const content = node.content && node.content.length ? node.content.map(serializeNode).join('') : '';
                 return `\n${'#'.repeat(level)} ${content}\n\n`;
             }
             
             // Обработка параграфов
             if (node.type === 'paragraph') {
-                const content = node.content && node.content.length ? node.content.map(n => n.text || '').join('') : '';
+                const content = node.content && node.content.length ? node.content.map(serializeNode).join('') : '';
                 return `\n${content}\n\n`;
             }
             
@@ -253,8 +398,12 @@ class TipTapEditor {
                 return markdown + '\n';
             }
             
-            // Для остальных блоков используем HTML
-            return null;
+            // Для всех остальных узлов с дочерними элементами
+            if (node.content && node.content.length) {
+                return node.content.map(serializeNode).join('');
+            }
+            // Если ничего не подошло — пусто
+            return '';
         }
 
         if (doc.content && Array.isArray(doc.content)) {
