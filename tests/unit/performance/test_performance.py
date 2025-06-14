@@ -5,13 +5,14 @@ import tempfile
 from pathlib import Path
 import requests
 from staticflow.core import Config, Engine
-from staticflow.core.builder import Builder
+from staticflow.core.builder import Builder, validate_project_structure
 from staticflow.core.server import Server
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import toml
 from aiohttp import web
+import os
 
 
 class TestPerformance(unittest.TestCase):
@@ -72,6 +73,15 @@ class TestPerformance(unittest.TestCase):
         self.server = Server(self.config, self.engine, dev_mode=True)
         self.process = psutil.Process()
 
+    def tearDown(self):
+        # Очистка временных файлов
+        for root, dirs, files in os.walk(self.temp_dir, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(self.temp_dir)
+
     def create_test_page(self, filename, title, content):
         """Создает тестовую страницу с заданными параметрами."""
         page_path = self.content_dir / filename
@@ -85,6 +95,15 @@ template: page.html
 """)
         return page_path
 
+    def validate_and_build(self):
+        """Проверяет структуру проекта и выполняет сборку."""
+        errors, warnings = validate_project_structure(self.config)
+        if errors:
+            self.fail("Ошибки в структуре проекта:\n" + "\n".join(errors))
+        if warnings:
+            print("Предупреждения:", "\n".join(warnings))
+        self.builder.build()
+
     def test_build_time(self):
         """Тест времени сборки сайта (≤30 секунд для 1000 страниц)"""
         # Создаем тестовые страницы
@@ -95,18 +114,15 @@ template: page.html
                 f"# Page {i}\n\nTest content for page {i}"
             )
         
-        try:
-            start_time = time.time()
-            self.builder.build()
-            build_time = time.time() - start_time
-            
-            self.assertLessEqual(
-                build_time, 30,
-                f"Время сборки ({build_time:.2f} сек) превышает "
-                f"допустимое (30 сек)"
-            )
-        except SystemExit:
-            self.fail("Builder.build() вызвал SystemExit")
+        start_time = time.time()
+        self.validate_and_build()
+        build_time = time.time() - start_time
+        
+        self.assertLessEqual(
+            build_time, 30,
+            f"Время сборки ({build_time:.2f} сек) превышает "
+            f"допустимое (30 сек)"
+        )
 
     def test_dev_server_response_time(self):
         """Тест времени отклика сервера разработки (≤100 мс)"""
@@ -117,10 +133,7 @@ template: page.html
             "# Test Page\n\nTest content"
         )
         
-        try:
-            self.builder.build()
-        except SystemExit:
-            self.fail("Builder.build() вызвал SystemExit")
+        self.validate_and_build()
         
         # Запускаем сервер в отдельном потоке
         loop = asyncio.new_event_loop()
@@ -164,10 +177,7 @@ template: page.html
             "# Test Page\n\nTest content"
         )
         
-        try:
-            self.builder.build()
-        except SystemExit:
-            self.fail("Builder.build() вызвал SystemExit")
+        self.validate_and_build()
         
         # Запускаем сервер в отдельном потоке
         loop = asyncio.new_event_loop()
@@ -230,19 +240,16 @@ template: page.html
                 f"# Page {i}\n\n{'Test content ' * 1000}"
             )
         
-        try:
-            initial_memory = self.process.memory_info().rss / 1024 / 1024
-            self.builder.build()
-            final_memory = self.process.memory_info().rss / 1024 / 1024
-            memory_usage = final_memory - initial_memory
-            
-            self.assertLessEqual(
-                memory_usage, 500,
-                f"Использование памяти ({memory_usage:.2f} МБ) "
-                f"превышает допустимое (500 МБ)"
-            )
-        except SystemExit:
-            self.fail("Builder.build() вызвал SystemExit")
+        initial_memory = self.process.memory_info().rss / 1024 / 1024
+        self.validate_and_build()
+        final_memory = self.process.memory_info().rss / 1024 / 1024
+        memory_usage = final_memory - initial_memory
+        
+        self.assertLessEqual(
+            memory_usage, 500,
+            f"Использование памяти ({memory_usage:.2f} МБ) "
+            f"превышает допустимое (500 МБ)"
+        )
 
     def test_cpu_usage(self):
         """Тест использования CPU (≤80%)"""
