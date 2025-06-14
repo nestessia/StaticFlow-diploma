@@ -139,13 +139,13 @@ Test content
         en_dir.mkdir()
         ru_dir = content_dir / "ru"
         ru_dir.mkdir()
-        
+
         # Создаем файлы
         en_file = en_dir / "test.md"
         en_file.write_text("# Test")
         ru_file = ru_dir / "test.md"
         ru_file.write_text("# Тест")
-        
+
         # Создаем страницу
         page = Page.from_file(en_file)
         translations = page.get_available_translations()
