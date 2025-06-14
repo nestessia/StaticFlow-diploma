@@ -6,6 +6,7 @@
     <title>Плагины</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
     
@@ -48,18 +49,356 @@
             border: 1px solid #e5e7eb;
         }
         </style>
-        </head>
+            <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-light: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+            background-color: var(--bg-light);
+        }
+
+        .navbar {
+            background: var(--bg-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 2.5rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .navbar-brand img.logo-sf {
+            height: 2.6rem;
+            width: 2.6rem;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            min-width: unset;
+            font-size: 1rem;
+        }
+
+        .navbar-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+        }
+
+        .navbar-item.active {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+            font-weight: 700;
+            box-shadow: 0 2px 8px 0 rgb(37 99 235 / 0.08);
+        }
+
+        .navbar-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background-color: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .navbar-toggle:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1100px) {
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-menu {
+                display: none;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-item {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem 1rem;
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background: var(--bg-color);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Анимации для интерактивных элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar-item, .navbar-brand {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Улучшенный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+                StaticFlow
+            </a>
+            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="navbar-menu" id="navbar-menu">
+                <li><a href="/project.html" class="navbar-item ">
+                    <i class="fas fa-info-circle"></i> О проекте
+                </a></li>
+                <li><a href="/installation.html" class="navbar-item ">
+                    <i class="fas fa-download"></i> Установка
+                </a></li>
+                <li><a href="/quickstart.html" class="navbar-item ">
+                    <i class="fas fa-rocket"></i> Быстрый старт
+                </a></li>
+                <li><a href="/content.html" class="navbar-item ">
+                    <i class="fas fa-file-alt"></i> Контент
+                </a></li>
+                <li><a href="/templates.html" class="navbar-item ">
+                    <i class="fas fa-paint-brush"></i> Шаблоны
+                </a></li>
+                <li><a href="/themes.html" class="navbar-item ">
+                    <i class="fas fa-palette"></i> Темы
+                </a></li>
+                <li><a href="/plugins.html" class="navbar-item ">
+                    <i class="fas fa-puzzle-piece"></i> Плагины
+                </a></li>
+                <li><a href="/deploy.html" class="navbar-item ">
+                    <i class="fas fa-cloud-upload-alt"></i> Деплой
+                </a></li>
+                <li><a href="/api.html" class="navbar-item ">
+                    <i class="fas fa-code"></i> API
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
     <main>
         <div class="content">
     <h1>Плагины</h1><p>В этом разделе мы рассмотрим систему плагинов StaticFlow и как создавать свои плагины.</p><h2>Что такое плагин?</h2><p>Плагин в StaticFlow - это расширение, которое добавляет новую функциональность или изменяет существующую. Плагины могут:</p><ul><li>Добавлять новые форматы контента</li><li>Расширять функциональность шаблонов</li><li>Добавлять новые команды CLI</li><li>Интегрировать внешние сервисы</li><li>Оптимизировать процесс сборки</li></ul><h2>Установка плагинов</h2><h3>Через pip</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>pip<span class="w"></span>install<span class="w"></span>staticflow-plugin-name</span><span class="line" id="L2"></span></pre></div></div><h3>В конфигурации</h3><div class="code-block language-toml"><div class="language-tag">toml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># config.toml</span></span><span class="line" id="L2"><span class="k">[PLUGINS]</span></span><span class="line" id="L3"><span class="n">enabled</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="p">[</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="s2">"plugin-name"</span><span class="p">,</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="s2">"another-plugin"</span></span><span class="line" id="L6"><span class="p">]</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="k">[PLUGIN_PLUGIN_NAME]</span></span><span class="line" id="L9"><span class="n">setting1</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"value1"</span></span><span class="line" id="L10"><span class="n">setting2</span><span class="w"></span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="w"></span><span class="s2">"value2"</span></span><span class="line" id="L11"></span></pre></div></div><h2>Создание плагина</h2><h3>1. Структура плагина</h3><div class="code-block language-scdoc"><div class="language-tag">scdoc</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>my-plugin/</span><span class="line" id="L2">├── staticflow_my_plugin/</span><span class="line" id="L3">│ ├── __init__.py</span><span class="line" id="L4">│ ├── plugin.py</span><span class="line" id="L5">│ └── utils.py</span><span class="line" id="L6">├── tests/</span><span class="line" id="L7">│ └── test_plugin.py</span><span class="line" id="L8">├── setup.py</span><span class="line" id="L9">├── README.md</span><span class="line" id="L10">└── LICENSE</span><span class="line" id="L11"></span></pre></div></div><h3>2. Основной код плагина</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># staticflow_my_plugin/plugin.py</span></span><span class="line" id="L2"><span class="kn">from</span><span class="nn">staticflow.plugins</span><span class="kn">import</span><span class="n">Plugin</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="k">class</span><span class="w"></span><span class="nc">MyPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L5"><span class="ws"></span><span class="n">name</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"my-plugin"</span></span><span class="line" id="L6"><span class="ws"></span><span class="n">version</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"1.0.0"</span></span><span class="line" id="L7"><span class="ws"></span><span class="n">description</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"Описание моего плагина"</span></span><span class="line" id="L8"></span><span class="line" id="L9"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span></span><span class="line" id="L10"><span class="ws"></span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></span><span class="line" id="L11"><span class="ws"></span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PLUGIN_MY_PLUGIN'</span><span class="p">,</span><span class="p">{})</span></span><span class="line" id="L12"></span><span class="line" id="L13"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_build_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></span><span class="line" id="L14"><span class="ws"></span><span class="c1"># Код, выполняемый перед сборкой</span></span><span class="line" id="L15"><span class="ws"></span><span class="k">pass</span><span class="w"></span></span><span class="line" id="L16"></span><span class="line" id="L17"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_build_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></span><span class="line" id="L18"><span class="ws"></span><span class="c1"># Код, выполняемый после сборки</span></span><span class="line" id="L19"><span class="ws"></span><span class="k">pass</span><span class="w"></span></span><span class="line" id="L20"></span><span class="line" id="L21"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_page_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">page</span><span class="p">,</span><span class="n">template</span><span class="p">):</span></span><span class="line" id="L22"><span class="ws"></span><span class="c1"># Модификация страницы перед рендерингом</span></span><span class="line" id="L23"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">page</span><span class="p">,</span><span class="n">template</span></span><span class="line" id="L24"></span></pre></div></div><h3>3. Регистрация плагина</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># staticflow_my_plugin/__init__.py</span></span><span class="line" id="L2"><span class="kn">from</span><span class="nn">.plugin</span><span class="kn">import</span><span class="n">MyPlugin</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="k">def</span><span class="w"></span><span class="nf">register</span><span class="p">(</span><span class="n">app</span><span class="p">):</span></span><span class="line" id="L5"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></span><span class="line" id="L6"></span></pre></div></div><h3>4. Настройка setup.py</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># setup.py</span></span><span class="line" id="L2"><span class="kn">from</span><span class="nn">setuptools</span><span class="kn">import</span><span class="n">setup</span><span class="p">,</span><span class="n">find_packages</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="n">setup</span><span class="p">(</span></span><span class="line" id="L5"><span class="ws"></span><span class="n">name</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"staticflow-my-plugin"</span><span class="p">,</span></span><span class="line" id="L6"><span class="ws"></span><span class="n">version</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"1.0.0"</span><span class="p">,</span></span><span class="line" id="L7"><span class="ws"></span><span class="n">packages</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">find_packages</span><span class="p">(),</span></span><span class="line" id="L8"><span class="ws"></span><span class="n">install_requires</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">[</span></span><span class="line" id="L9"><span class="ws"></span><span class="s2">"staticflow&gt;=1.0.0"</span><span class="p">,</span></span><span class="line" id="L10"><span class="ws"></span><span class="p">],</span></span><span class="line" id="L11"><span class="ws"></span><span class="n">entry_points</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L12"><span class="ws"></span><span class="s2">"staticflow.plugins"</span><span class="p">:</span><span class="p">[</span></span><span class="line" id="L13"><span class="ws"></span><span class="s2">"my-plugin = staticflow_my_plugin:register"</span><span class="p">,</span></span><span class="line" id="L14"><span class="ws"></span><span class="p">],</span></span><span class="line" id="L15"><span class="ws"></span><span class="p">},</span></span><span class="line" id="L16"><span class="ws"></span><span class="n">author</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"Your Name"</span><span class="p">,</span></span><span class="line" id="L17"><span class="ws"></span><span class="n">author_email</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"your.email@example.com"</span><span class="p">,</span></span><span class="line" id="L18"><span class="ws"></span><span class="n">description</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"Описание моего плагина"</span><span class="p">,</span></span><span class="line" id="L19"><span class="ws"></span><span class="n">long_description</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="nb">open</span><span class="p">(</span><span class="s2">"README.md"</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span></span><span class="line" id="L20"><span class="ws"></span><span class="n">long_description_content_type</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"text/markdown"</span><span class="p">,</span></span><span class="line" id="L21"><span class="ws"></span><span class="n">url</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"https://github.com/your-username/staticflow-my-plugin"</span><span class="p">,</span></span><span class="line" id="L22"><span class="ws"></span><span class="n">classifiers</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">[</span></span><span class="line" id="L23"><span class="ws"></span><span class="s2">"Development Status :: 4 - Beta"</span><span class="p">,</span></span><span class="line" id="L24"><span class="ws"></span><span class="s2">"Intended Audience :: Developers"</span><span class="p">,</span></span><span class="line" id="L25"><span class="ws"></span><span class="s2">"License :: OSI Approved :: MIT License"</span><span class="p">,</span></span><span class="line" id="L26"><span class="ws"></span><span class="s2">"Programming Language :: Python :: 3"</span><span class="p">,</span></span><span class="line" id="L27"><span class="ws"></span><span class="p">],</span></span><span class="line" id="L28"><span class="p">)</span></span><span class="line" id="L29"></span></pre></div></div><h2>Типы плагинов</h2><h3>Плагины контента</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">class</span><span class="w"></span><span class="nc">ContentPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_content_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">content</span><span class="p">):</span></span><span class="line" id="L3"><span class="ws"></span><span class="c1"># Модификация контента</span></span><span class="line" id="L4"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">content</span></span><span class="line" id="L5"></span><span class="line" id="L6"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_content_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">content</span><span class="p">):</span></span><span class="line" id="L7"><span class="ws"></span><span class="c1"># Обработка перед сохранением</span></span><span class="line" id="L8"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">content</span></span><span class="line" id="L9"></span></pre></div></div><h3>Плагины шаблонов</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">class</span><span class="w"></span><span class="nc">TemplatePlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_template_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">template</span><span class="p">,</span><span class="n">context</span><span class="p">):</span></span><span class="line" id="L3"><span class="ws"></span><span class="c1"># Модификация шаблона или контекста</span></span><span class="line" id="L4"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">template</span><span class="p">,</span><span class="n">context</span></span><span class="line" id="L5"></span><span class="line" id="L6"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">register_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">env</span><span class="p">):</span></span><span class="line" id="L7"><span class="ws"></span><span class="c1"># Регистрация пользовательских фильтров</span></span><span class="line" id="L8"><span class="ws"></span><span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s1">'my_filter'</span><span class="p">]</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">my_filter_function</span></span><span class="line" id="L9"></span></pre></div></div><h3>Плагины CLI</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">class</span><span class="w"></span><span class="nc">CLIPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">register_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cli</span><span class="p">):</span></span><span class="line" id="L3"><span class="ws"></span><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span></span><span class="line" id="L4"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">my_command</span><span class="p">():</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="sd">"""Описание команды"""</span></span><span class="line" id="L6"><span class="ws"></span><span class="c1"># Код команды</span></span><span class="line" id="L7"><span class="ws"></span><span class="k">pass</span><span class="w"></span></span><span class="line" id="L8"></span></pre></div></div><h3>Плагины сборки</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">class</span><span class="w"></span><span class="nc">BuildPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_build_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></span><span class="line" id="L3"><span class="ws"></span><span class="c1"># Подготовка к сборке</span></span><span class="line" id="L4"><span class="ws"></span><span class="k">pass</span><span class="w"></span></span><span class="line" id="L5"></span><span class="line" id="L6"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_build_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></span><span class="line" id="L7"><span class="ws"></span><span class="c1"># Очистка после сборки</span></span><span class="line" id="L8"><span class="ws"></span><span class="k">pass</span><span class="w"></span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="nf">on_asset_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">asset</span><span class="p">):</span></span><span class="line" id="L11"><span class="ws"></span><span class="c1"># Обработка ассетов</span></span><span class="line" id="L12"><span class="ws"></span><span class="k">return</span><span class="w"></span><span class="n">asset</span></span><span class="line" id="L13"></span></pre></div></div><h2>Хуки плагинов</h2><h3>Хуки жизненного цикла</h3><ul><li><code>on_init</code> - инициализация плагина</li><li><code>on_build_start</code> - начало сборки</li><li><code>on_build_end</code> - конец сборки</li><li><code>on_clean</code> - очистка</li></ul><h3>Хуки контента</h3><ul><li><code>on_content_load</code> - загрузка контента</li><li><code>on_content_save</code> - сохранение контента</li><li><code>on_page_render</code> - рендеринг страницы</li><li><code>on_post_render</code> - рендеринг поста</li></ul><h3>Хуки шаблонов</h3><ul><li><code>on_template_render</code> - рендеринг шаблона</li><li><code>on_template_compile</code> - компиляция шаблона</li><li><code>on_context_update</code> - обновление контекста</li></ul><h3>Хуки ассетов</h3><ul><li><code>on_asset_process</code> - обработка ассета</li><li><code>on_asset_save</code> - сохранение ассета</li><li><code>on_asset_clean</code> - очистка ассета</li></ul><h2>Конфигурация плагина</h2><h3>Настройки по умолчанию</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">class</span><span class="w"></span><span class="nc">MyPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="n">default_settings</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L3"><span class="ws"></span><span class="s1">'option1'</span><span class="p">:</span><span class="s1">'default1'</span><span class="p">,</span></span><span class="line" id="L4"><span class="ws"></span><span class="s1">'option2'</span><span class="p">:</span><span class="s1">'default2'</span><span class="p">,</span></span><span class="line" id="L5"><span class="ws"></span><span class="p">}</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span><span class="k">def</span><span class="w"></span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span></span><span class="line" id="L8"><span class="ws"></span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></span><span class="line" id="L9"><span class="ws"></span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L10"><span class="ws"></span><span class="w"></span><span class="o">**</span><span class="w"></span><span class="bp">self</span><span class="o">.</span><span class="n">default_settings</span><span class="p">,</span></span><span class="line" id="L11"><span class="ws"></span><span class="w"></span><span class="o">**</span><span class="w"></span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PLUGIN_MY_PLUGIN'</span><span class="p">,</span><span class="p">{})</span></span><span class="line" id="L12"><span class="ws"></span><span class="p">}</span></span><span class="line" id="L13"></span></pre></div></div><h3>Валидация настроек</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">def</span><span class="w"></span><span class="nf">validate_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">settings</span><span class="p">):</span></span><span class="line" id="L2"><span class="ws"></span><span class="n">required</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">[</span><span class="s1">'option1'</span><span class="p">,</span><span class="s1">'option2'</span><span class="p">]</span></span><span class="line" id="L3"><span class="ws"></span><span class="k">for</span><span class="w"></span><span class="n">option</span><span class="ow">in</span><span class="n">required</span><span class="p">:</span></span><span class="line" id="L4"><span class="ws"></span><span class="k">if</span><span class="w"></span><span class="n">option</span><span class="ow">not</span><span class="ow">in</span><span class="n">settings</span><span class="p">:</span></span><span class="line" id="L5"><span class="ws"></span><span class="k">raise</span><span class="w"></span><span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required setting: </span><span class="si">{</span><span class="n">option</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></span><span class="line" id="L6"></span></pre></div></div><h2>Тестирование плагинов</h2><h3>Модульные тесты</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="c1"># tests/test_plugin.py</span></span><span class="line" id="L2"><span class="kn">import</span><span class="nn">pytest</span></span><span class="line" id="L3"><span class="kn">from</span><span class="nn">staticflow_my_plugin</span><span class="kn">import</span><span class="n">MyPlugin</span></span><span class="line" id="L4"></span><span class="line" id="L5"><span class="k">def</span><span class="w"></span><span class="nf">test_plugin_initialization</span><span class="p">():</span></span><span class="line" id="L6"><span class="ws"></span><span class="n">plugin</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">mock_app</span><span class="p">)</span></span><span class="line" id="L7"><span class="ws"></span><span class="k">assert</span><span class="w"></span><span class="n">plugin</span><span class="o">.</span><span class="n">name</span><span class="w"></span><span class="o">==</span><span class="w"></span><span class="s2">"my-plugin"</span></span><span class="line" id="L8"><span class="ws"></span><span class="k">assert</span><span class="w"></span><span class="n">plugin</span><span class="o">.</span><span class="n">version</span><span class="w"></span><span class="o">==</span><span class="w"></span><span class="s2">"1.0.0"</span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="k">def</span><span class="w"></span><span class="nf">test_plugin_settings</span><span class="p">():</span></span><span class="line" id="L11"><span class="ws"></span><span class="n">plugin</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">mock_app</span><span class="p">)</span></span><span class="line" id="L12"><span class="ws"></span><span class="k">assert</span><span class="w"></span><span class="n">plugin</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">'option1'</span><span class="p">]</span><span class="w"></span><span class="o">==</span><span class="w"></span><span class="s1">'default1'</span></span><span class="line" id="L13"></span></pre></div></div><h3>Интеграционные тесты</h3><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><span class="k">def</span><span class="w"></span><span class="nf">test_plugin_integration</span><span class="p">():</span></span><span class="line" id="L2"><span class="ws"></span><span class="n">app</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">create_test_app</span><span class="p">()</span></span><span class="line" id="L3"><span class="ws"></span><span class="n">plugin</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></span><span class="line" id="L4"></span><span class="line" id="L5"><span class="ws"></span><span class="c1"># Тестирование функциональности</span></span><span class="line" id="L6"><span class="ws"></span><span class="n">result</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">plugin</span><span class="o">.</span><span class="n">process_content</span><span class="p">(</span><span class="s2">"test content"</span><span class="p">)</span></span><span class="line" id="L7"><span class="ws"></span><span class="k">assert</span><span class="w"></span><span class="n">result</span><span class="w"></span><span class="o">==</span><span class="w"></span><span class="s2">"processed test content"</span></span><span class="line" id="L8"></span></pre></div></div><h2>Публикация плагина</h2><h3>Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте тесты</li></ol><h3>Публикация в PyPI</h3><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span>python<span class="w"></span>setup.py<span class="w"></span>sdist<span class="w"></span>bdist_wheel</span><span class="line" id="L2">twine<span class="w"></span>upload<span class="w"></span>dist/*</span><span class="line" id="L3"></span></pre></div></div><h3>Обновление</h3><ol><li>Увеличьте версию</li><li>Обновите документацию</li><li>Добавьте миграции</li><li>Опубликуйте новую версию</li></ol><h2>Лучшие практики</h2><h3>Разработка</h3><ol><li>Следуйте PEP 8</li><li>Пишите тесты</li><li>Документируйте код</li><li>Используйте типизацию</li></ol><h3>Производительность</h3><ol><li>Оптимизируйте операции</li><li>Используйте кэширование</li><li>Минимизируйте зависимости</li><li>Следите за памятью</li></ol><h3>Безопасность</h3><ol><li>Валидируйте входные данные</li><li>Используйте безопасные настройки</li><li>Обрабатывайте ошибки</li><li>Следите за обновлениями</li></ol><h3>Совместимость</h3><ol><li>Поддерживайте версии Python</li><li>Тестируйте на разных версиях</li><li>Документируйте зависимости</li><li>Следите за изменениями API</li></ol>
         </div>
     </main>
+
     <footer>
         <div class="container">
-            &copy; documentation
+            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
         </div>
     </footer>
+
+    <script>
+        // Улучшенная обработка мобильного меню
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navbarMenu = document.getElementById('navbar-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            navbarMenu.classList.toggle('active');
+            navbarToggle.setAttribute('aria-expanded', isMenuOpen);
+            navbarToggle.innerHTML = isMenuOpen ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bars"></i>';
+        }
+
+        navbarToggle.addEventListener('click', toggleMenu);
+
+        // Закрытие меню при клике на пункт меню
+        document.querySelectorAll('.navbar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Закрытие меню при изменении размера окна
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768 && isMenuOpen) {
+                    toggleMenu();
+                }
+            }, 250);
+        });
+
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню при скролле
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        document.querySelectorAll('.navbar-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>

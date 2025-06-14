@@ -16,7 +16,7 @@ template: page.html
 1. Создайте новый проект:
 
 ```bash
-staticflow new my-blog
+staticflow create my-blog
 cd my-blog
 ```
 
@@ -153,17 +153,3 @@ staticflow build
 5. Настроить поиск
 6. Добавить комментарии
 
-## Полезные команды
-
-- `staticflow serve` - запуск сервера разработки
-- `staticflow build` - сборка сайта
-- `staticflow clean` - очистка директории output
-- `staticflow new-page` - создание новой страницы
-- `staticflow new-post` - создание нового поста
-
-## Дополнительные ресурсы
-
-- [Документация по шаблонам](templates.html)
-- [Руководство по контенту](content.html)
-- [Список плагинов](plugins.html)
-- [API документация](api.html)

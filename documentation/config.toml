@@ -8,7 +8,7 @@ output_dir = "output"
 static_dir = "static"
 media_dir = "media"
 templates_dir = "templates"
-default_template = "base.html"
+default_template = "page.html"
 
 [URL_PATTERNS]
 page = "{category}/{slug}"
