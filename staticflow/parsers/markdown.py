@@ -4,12 +4,17 @@ from .base import ContentParser
 from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
 from .extensions.video import makeExtension as makeVideoExtension
 from .extensions.audio import makeExtension as makeAudioExtension
+from datetime import datetime
+import frontmatter
 
 
 class MarkdownParser(ContentParser):
     """Парсер для Markdown контента."""
 
-    def __init__(self, extensions: Optional[List[Union[str, Any]]] = None) -> None:
+    def __init__(
+        self,
+        extensions: Optional[List[Union[str, Any]]] = None
+    ) -> None:
         super().__init__()
         self.extensions: List[Union[str, Any]] = extensions or [
             'fenced_code',
@@ -19,7 +24,6 @@ class MarkdownParser(ContentParser):
             'attr_list',
             'def_list',
             'footnotes',
-            'mdx_math',
             'pymdownx.highlight',
             'pymdownx.superfences',
             'pymdownx.arithmatex',
@@ -53,9 +57,6 @@ class MarkdownParser(ContentParser):
                 'permalink_class': 'headerlink',
                 'toc_depth': 3
             },
-            'fenced_code': {
-                'css_class': 'highlight'
-            },
             'pymdownx.highlight': {
                 'css_class': 'highlight',
                 'guess_lang': True
@@ -77,7 +78,9 @@ class MarkdownParser(ContentParser):
             extensions=self.extensions,
             extension_configs=self.extension_configs
         )
-        self.syntax_highlighter: SyntaxHighlightPlugin = SyntaxHighlightPlugin()
+        self.syntax_highlighter: SyntaxHighlightPlugin = (
+            SyntaxHighlightPlugin()
+        )
 
     def parse(self, content: str) -> str:
         """Преобразует Markdown в HTML."""
@@ -103,3 +106,33 @@ class MarkdownParser(ContentParser):
                 extensions=self.extensions,
                 extension_configs=self.extension_configs
             )
+
+    def validate(self, content: str) -> bool:
+        """Валидирует Markdown контент."""
+        if content is None:
+            return False
+        if not isinstance(content, str):
+            return False
+        if not content.strip():
+            return False
+        return True
+
+    def get_metadata(self, content: str) -> Dict[str, Any]:
+        """Получает метаданные из Markdown контента."""
+        try:
+            post = frontmatter.loads(content)
+            metadata = dict(post.metadata)
+            
+            # Преобразуем строковую дату в объект datetime
+            if 'date' in metadata and isinstance(metadata['date'], str):
+                try:
+                    metadata['date'] = datetime.strptime(
+                        metadata['date'], 
+                        '%Y-%m-%d'
+                    ).date()
+                except ValueError:
+                    pass
+                    
+            return metadata
+        except Exception:
+            return {}

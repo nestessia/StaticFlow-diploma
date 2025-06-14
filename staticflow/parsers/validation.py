@@ -26,63 +26,114 @@ class ContentValidator:
         self.level = level
         self.errors: List[ValidationError] = []
         self.warnings: List[ValidationError] = []
+        self._current_content: str = ""
 
     def validate_structure(self, content: str) -> bool:
-        """Проверяет структуру контента."""
-        # Проверка баланса тегов
+        """Валидирует структуру HTML."""
+        if not content:
+            return True
+            
+        self.errors = []
+        self._current_content = content
+        
+        # Проверяем баланс тегов
         tag_pattern = re.compile(r'<([^>]+)>')
         tags = tag_pattern.findall(content)
         stack = []
 
-        for i, tag in enumerate(tags):
+        for tag in tags:
             if tag.startswith('/'):
                 if not stack:
-                    self.add_error(f"Незакрытый тег {tag}", i)
+                    msg = f"Обнаружен закрывающий тег {tag} без открывающего"
+                    self.add_error(msg, content.find(tag))
                     return False
                 if stack[-1] != tag[1:]:
-                    self.add_error(f"Несоответствие тегов: {stack[-1]} и {tag}", i)
+                    msg = (
+                        f"Некорректная вложенность тегов: "
+                        f"{stack[-1]} и {tag}"
+                    )
+                    self.add_error(msg, content.find(tag))
                     return False
                 stack.pop()
             elif not tag.endswith('/'):
                 stack.append(tag)
 
         if stack:
-            self.add_error(f"Незакрытые теги: {', '.join(stack)}", len(tags))
+            msg = f"Обнаружены незакрытые теги: {', '.join(stack)}"
+            self.add_error(msg, content.find(stack[-1]))
             return False
-
-        return True
+            
+        # Проверяем наличие JavaScript
+        js_pattern = re.compile(r'javascript:', re.IGNORECASE)
+        js_match = js_pattern.search(content)
+        if js_match:
+            self.add_error("Обнаружен JavaScript в контенте", js_match.start())
+            
+        # Проверяем наличие скриптов
+        script_pattern = re.compile(r'<script[^>]*>.*?</script>', re.DOTALL | re.IGNORECASE)
+        script_match = script_pattern.search(content)
+        if script_match:
+            self.add_error("Обнаружен тег script", script_match.start())
+            
+        # Проверяем наличие iframe
+        iframe_pattern = re.compile(r'<iframe[^>]*>.*?</iframe>', re.DOTALL | re.IGNORECASE)
+        iframe_match = iframe_pattern.search(content)
+        if iframe_match:
+            self.add_error("Обнаружен тег iframe", iframe_match.start())
+            
+        return len(self.errors) == 0
 
     def validate_attributes(self, content: str) -> bool:
-        """Проверяет атрибуты элементов."""
-        # Проверка URL в атрибутах
-        url_pattern = re.compile(r'(?:href|src)=["\']([^"\']+)["\']')
-        urls = url_pattern.findall(content)
-
-        for url in urls:
-            if not self.is_valid_url(url):
-                self.add_error(f"Некорректный URL: {url}", content.find(url))
-
-        # Проверка стилевых атрибутов
-        style_pattern = re.compile(r'style=["\']([^"\']+)["\']')
-        styles = style_pattern.findall(content)
-
-        for style in styles:
-            if not self.is_valid_style(style):
-                self.add_error(f"Некорректный стиль: {style}", content.find(style))
-
+        """Валидирует атрибуты HTML тегов."""
+        if not content:
+            return True
+            
+        self.errors = []
+        self._current_content = content
+        
+        # Проверяем JavaScript в атрибутах
+        js_pattern = re.compile(r'javascript:', re.IGNORECASE)
+        js_match = js_pattern.search(content)
+        if js_match:
+            self.add_error("Обнаружен JavaScript в атрибутах", js_match.start())
+            
+        # Проверяем URL в атрибутах
+        url_pattern = re.compile(r'href=["\'](?!https?://)[^"\']+["\']')
+        url_match = url_pattern.search(content)
+        if url_match:
+            self.add_error("Обнаружены некорректные URL в атрибутах", url_match.start())
+            
         return len(self.errors) == 0
 
     def validate_nesting(self, content: str) -> bool:
-        """Проверяет правильность вложенности элементов."""
-        # Проверка вложенности блочных элементов
-        block_elements = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li']
-        for element in block_elements:
-            pattern = re.compile(f'<{element}[^>]*>.*?<{element}[^>]*>', re.DOTALL)
-            if pattern.search(content):
-                self.add_error(f"Неправильная вложенность элемента {element}", 0)
-                return False
-
-        return True
+        """Валидирует вложенность HTML тегов."""
+        if not content:
+            return True
+            
+        self.errors = []
+        
+        # Проверяем корректность вложенности
+        stack = []
+        pattern = re.compile(r'<(/?)([a-zA-Z0-9]+)[^>]*>')
+        
+        for match in pattern.finditer(content):
+            is_closing = bool(match.group(1))
+            tag = match.group(2).lower()
+            
+            if not is_closing:
+                stack.append(tag)
+            else:
+                if not stack:
+                    self.errors.append(f"Обнаружен закрывающий тег {tag} без открывающего")
+                elif stack[-1] != tag:
+                    self.errors.append(f"Некорректная вложенность тегов: {stack[-1]} и {tag}")
+                else:
+                    stack.pop()
+                    
+        if stack:
+            self.errors.append(f"Обнаружены незакрытые теги: {', '.join(stack)}")
+            
+        return len(self.errors) == 0
 
     def is_valid_url(self, url: str) -> bool:
         """Проверяет корректность URL."""
@@ -123,16 +174,18 @@ class ContentValidator:
 
     def get_line_number(self, position: int) -> int:
         """Вычисляет номер строки для позиции в тексте."""
-        return content[:position].count('\n') + 1
+        return self._current_content[:position].count('\n') + 1
 
     def get_column_number(self, position: int) -> int:
         """Вычисляет номер колонки для позиции в тексте."""
-        last_newline = content[:position].rfind('\n')
+        last_newline = self._current_content[:position].rfind('\n')
         return position - last_newline if last_newline != -1 else position + 1
 
-    def get_validation_report(self) -> Dict[str, List[ValidationError]]:
+    def get_validation_report(self) -> Dict[str, Any]:
         """Возвращает отчет о валидации."""
         return {
-            'errors': self.errors,
-            'warnings': self.warnings
+            "is_valid": len(self.errors) == 0,
+            "errors": self.errors,
+            "warnings": self.warnings,
+            "content": self._current_content
         } 

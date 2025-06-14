@@ -108,4 +108,16 @@ class ContentParser(ABC):
 
     def invalidate_cache(self, key: Optional[str] = None) -> None:
         """Инвалидирует кэш."""
-        self.cache.invalidate(key) 
+        self.cache.invalidate(key)
+
+    def validate(self, content: str) -> bool:
+        """Валидирует контент."""
+        raise NotImplementedError(
+            "Method validate() must be implemented by subclass"
+        )
+
+    def get_metadata(self, content: str) -> Dict[str, Any]:
+        """Получает метаданные из контента."""
+        raise NotImplementedError(
+            "Method get_metadata() must be implemented by subclass"
+        ) 

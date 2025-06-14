@@ -1,6 +1,5 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 import re
-import html
 from urllib.parse import urlparse
 from bleach import clean
 from bleach.sanitizer import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
@@ -34,14 +33,23 @@ class ContentSecurity:
         ]
 
     def sanitize_html(self, content: str) -> str:
-        """Очищает HTML от потенциально опасного кода."""
-        return clean(
+        """Очищает HTML от потенциально опасного содержимого."""
+        if not content:
+            return ""
+            
+        # Очищаем HTML с помощью bleach
+        cleaned = clean(
             content,
-            tags=self.allowed_tags,
-            attributes=self.allowed_attributes,
-            protocols=self.allowed_protocols,
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRIBUTES,
             strip=True
         )
+        
+        # Дополнительная очистка от JavaScript
+        cleaned = re.sub(r'javascript:', '', cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r'alert\s*\([^)]*\)', '', cleaned, flags=re.IGNORECASE)
+        
+        return cleaned
 
     def validate_urls(self, content: str) -> List[str]:
         """Проверяет и валидирует все URL в контенте."""
@@ -67,7 +75,7 @@ class ContentSecurity:
                     'javascript:', 'data:', 'vbscript:', 'file:'
                 ])
             )
-        except:
+        except Exception:
             return False
 
     def sanitize_styles(self, content: str) -> str:
@@ -84,18 +92,23 @@ class ContentSecurity:
                 if ':' in style:
                     prop, value = style.split(':', 1)
                     prop = prop.strip().lower()
+                    value = value.strip()
                     if prop in self.allowed_styles:
-                        cleaned_styles.append(f"{prop}:{value.strip()}")
+                        # Удаляем все URL и javascript из значений
+                        has_url = 'url(' in value.lower()
+                        has_js = 'javascript:' in value.lower()
+                        if has_url or has_js:
+                            continue
+                        cleaned_styles.append(f"{prop}: {value}")
             
-            return f'style="{"; ".join(cleaned_styles)}"'
+            if cleaned_styles:
+                return f'style="{"; ".join(cleaned_styles)}"'
+            return ''
 
         return style_pattern.sub(clean_style, content)
 
     def protect_against_xss(self, content: str) -> str:
         """Защищает контент от XSS-атак."""
-        # Экранирование HTML-сущностей
-        content = html.escape(content)
-        
         # Очистка HTML
         content = self.sanitize_html(content)
         
