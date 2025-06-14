@@ -16,6 +16,7 @@ from cryptography.fernet import Fernet
 import datetime
 
 from ..utils.logging import get_logger
+from ..core.config import Config
 
 # Получение логгера для данного модуля из централизованного модуля
 logger = get_logger("deploy.github_pages")
@@ -25,13 +26,16 @@ class GitHubPagesDeployer:
     Deployer class for GitHub Pages integration
     """
     
-    def __init__(self, site_path: str = "public"):
+    def __init__(self, site_path: str = None):
         """
         Initialize the GitHub Pages deployer
         
         Args:
-            site_path: Path to the built site (defaults to "public")
+            site_path: Path to the built site (defaults to config output_dir)
         """
+        config = Config(Path('config.toml'))
+        if site_path is None:
+            site_path = config.get('output_dir', 'public')
         self.site_path = Path(site_path)
         self.config_path = Path("deploy/github_pages.json")
         self.config = self._load_config()

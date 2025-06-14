@@ -88,7 +88,7 @@ class AdminPanel:
         static_path = Path(__file__).parent / 'static'
         if not static_path.exists():
             static_path.mkdir(parents=True)
-        cached_static_path = Path('public/admin/static')
+        cached_static_path = Path(self.output_dir) / 'admin/static'
         use_cached = cached_static_path.exists()
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
