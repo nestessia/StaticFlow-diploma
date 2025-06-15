@@ -10,7 +10,7 @@ class SitemapPlugin(Plugin):
     """Плагин для генерации Sitemap."""
     
     def __init__(self):
-        super().__init__({})
+        super().__init__()
         logger.info("Sitemap plugin initialized")
     
     @property
@@ -58,7 +58,7 @@ class SitemapPlugin(Plugin):
         except Exception as e:
             logger.error(f"Sitemap plugin: error generating sitemap: {str(e)}")
     
-    def _create_sitemap(self, pages: List[Dict[str, Any]]) -> ET.Element:
+    def _create_sitemap(self, pages: List[Any]) -> ET.Element:
         """Создает XML структуру sitemap."""
         logger.info("Sitemap plugin: creating sitemap structure")
         
@@ -84,9 +84,12 @@ class SitemapPlugin(Plugin):
             else:
                 base_url = str(base_url)  # Всегда преобразуем к строке
                 
-            # Ensure page['url'] is a string before calling lstrip
-            page_url = page.url if hasattr(page, 'url') else page.get('url')
-            if not page_url:
+            # Получаем URL страницы
+            if hasattr(page, 'url'):
+                page_url = page.url
+            elif isinstance(page, dict) and 'url' in page:
+                page_url = page['url']
+            else:
                 logger.warning(f"Sitemap plugin: page has no URL: {page}")
                 continue
                 
@@ -94,17 +97,26 @@ class SitemapPlugin(Plugin):
                 page_url = str(page_url)
             else:
                 page_url = str(page_url)  # Всегда преобразуем к строке
-                
+
+            page_url = page_url.replace('output/', '').replace('output\\', '')
+            
             # Теперь оба значения точно строки
             base_url_str = base_url.rstrip('/')
             page_url_str = page_url.lstrip('/')
+            
+            # Формируем финальный URL
+            if page_url_str.endswith('index.html'):
+                page_url_str = page_url_str[:-10]  # Убираем 'index.html'
+            elif page_url_str.endswith('.html'):
+                page_url_str = page_url_str[:-5]  # Убираем '.html'
+                
             loc.text = f"{base_url_str}/{page_url_str}"
             
             # Дата последнего изменения
             if hasattr(page, 'modified_at'):
                 lastmod = ET.SubElement(url, 'lastmod')
                 lastmod.text = page.modified_at.strftime('%Y-%m-%d')
-            elif 'modified_at' in page:
+            elif isinstance(page, dict) and 'modified_at' in page:
                 lastmod = ET.SubElement(url, 'lastmod')
                 lastmod.text = page['modified_at'].strftime('%Y-%m-%d')
             
@@ -112,7 +124,7 @@ class SitemapPlugin(Plugin):
             if hasattr(page, 'change_freq'):
                 changefreq = ET.SubElement(url, 'changefreq')
                 changefreq.text = page.change_freq
-            elif 'change_freq' in page:
+            elif isinstance(page, dict) and 'change_freq' in page:
                 changefreq = ET.SubElement(url, 'changefreq')
                 changefreq.text = page['change_freq']
             
@@ -120,7 +132,7 @@ class SitemapPlugin(Plugin):
             if hasattr(page, 'priority'):
                 priority = ET.SubElement(url, 'priority')
                 priority.text = str(page.priority)
-            elif 'priority' in page:
+            elif isinstance(page, dict) and 'priority' in page:
                 priority = ET.SubElement(url, 'priority')
                 priority.text = str(page['priority'])
                 
