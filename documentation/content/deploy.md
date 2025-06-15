@@ -1,5 +1,5 @@
 ---
-title: Развертывание
+title: Деплой
 date: 2024-03-20
 author: nastya
 tags: [deployment, hosting, server]

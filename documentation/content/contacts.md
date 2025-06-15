@@ -1,5 +1,6 @@
 ---
 title: Контакты
+date: 2024-03-20
 format: markdown
 template: page.html
 ---

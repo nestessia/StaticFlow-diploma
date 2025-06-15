@@ -1,6 +1,6 @@
 ---
-title: Welcome to StaticFlow
-date: 
+title: Блоки контента
+date: 2024-03-20
 author: None
 tags:
 format: markdown

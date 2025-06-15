@@ -1,5 +1,5 @@
 ---
-title: API
+title: API Reference
 date: 2024-03-20
 author: nastya
 tags: [api, development, reference]
