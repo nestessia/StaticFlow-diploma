@@ -45,6 +45,13 @@ def get_default_plugin_configs():
         "notion_blocks": {
             "enabled": True
         },
+        "minifier": {
+            "enabled": True,
+            "minify_html": True,
+            "minify_css": True,
+            "minify_js": True,
+            "preserve_comments": False
+        },
         "media": {
             "output_dir": "media",
             "source_dir": "static",
@@ -102,8 +109,13 @@ def initialize_plugins(engine) -> None:
 
     # Initialize minifier plugin
     if "minifier" in enabled_plugins:
+        minifier_config = engine.config.get("PLUGIN_MINIFIER", {})
         minifier_plugin = MinifierPlugin()
-        engine.add_plugin(minifier_plugin)
+        config = {
+            **default_configs.get("minifier"),
+            **minifier_config
+        }
+        engine.add_plugin(minifier_plugin, config)
 
     # Initialize SEO plugin
     if "seo" in enabled_plugins:

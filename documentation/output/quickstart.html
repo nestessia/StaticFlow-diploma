@@ -268,147 +268,48 @@
 
     <main>
         <div class="content">
-    <h1>Быстрый старт с StaticFlow</h1>
-<p>Это руководство поможет вам быстро начать работу с StaticFlow. Мы создадим простой сайт-блог с основными функциями.</p>
-<h2>Создание проекта</h2>
-<ol>
-<li>Создайте новый проект:</li>
-</ol>
-<pre><code class="language-bash">staticflow create my-blog
+    <h1>Быстрый старт с StaticFlow</h1><p>Это руководство поможет вам быстро начать работу с StaticFlow. Мы создадим простой сайт-блог с основными функциями.</p><h2>Создание проекта</h2><ol><li>Создайте новый проект:</li></ol><pre><code class="language-bash">staticflow create my-blog
 cd my-blog
-</code></pre>
-<ol>
-<li>Запустите сервер разработки:</li>
-</ol>
-<pre><code class="language-bash">staticflow serve
-</code></pre>
-<h2>Структура проекта</h2>
-<p>После создания проекта у вас будет следующая структура:</p>
-<pre><code>my-blog/
-├── content/          # Контент сайта
-│   └── index.md     # Главная страница
-├── templates/        # Шаблоны
-│   ├── base.html    # Базовый шаблон
-│   └── page.html    # Шаблон страницы
-├── static/          # Статические файлы
-│   ├── css/        # Стили
-│   └── js/         # Скрипты
-└── config.toml      # Конфигурация
-</code></pre>
-<h2>Создание первой страницы</h2>
-<ol>
-<li>Откройте <code>content/index.md</code> и отредактируйте его:</li>
-</ol>
-<pre><code class="language-markdown">---
+</code></pre><ol><li>Запустите сервер разработки:</li></ol><pre><code class="language-bash">staticflow serve
+</code></pre><h2>Структура проекта</h2><p>После создания проекта у вас будет следующая структура:</p><pre><code>my-blog/
+├── content/ # Контент сайта
+│ └── index.md # Главная страница
+├── templates/ # Шаблоны
+│ ├── base.html # Базовый шаблон
+│ └── page.html # Шаблон страницы
+├── static/ # Статические файлы
+│ ├── css/ # Стили
+│ └── js/ # Скрипты
+└── config.toml # Конфигурация
+</code></pre><h2>Создание первой страницы</h2><ol><li>Откройте <code>content/index.md</code> и отредактируйте его:</li></ol><pre><code class="language-markdown">---
 title: Мой блог
 date: 2024-03-20
 author: nastya
 tags: [blog, welcome]
 format: markdown
 template: page.html
----
-
-# Добро пожаловать в мой блог!
-
-Это моя первая страница, созданная с помощью StaticFlow.
-</code></pre>
-<h2>Добавление поста</h2>
-<ol>
-<li>Создайте новый файл <code>content/posts/my-first-post.md</code>:</li>
-</ol>
-<pre><code class="language-markdown">---
+--- # Добро пожаловать в мой блог! Это моя первая страница, созданная с помощью StaticFlow.
+</code></pre><h2>Добавление поста</h2><ol><li>Создайте новый файл <code>content/posts/my-first-post.md</code>:</li></ol><pre><code class="language-markdown">---
 title: Мой первый пост
 date: 2024-03-20
 author: nastya
 tags: [blog, first-post]
 format: markdown
 template: post.html
----
-
-# Мой первый пост
-
-Это мой первый пост в блоге. Здесь я буду делиться своими мыслями и идеями.
-</code></pre>
-<h2>Настройка шаблона</h2>
-<ol>
-<li>Откройте <code>templates/base.html</code>:</li>
-</ol>
-<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+--- # Мой первый пост Это мой первый пост в блоге. Здесь я буду делиться своими мыслями и идеями.
+</code></pre><h2>Настройка шаблона</h2><ol><li>Откройте <code>templates/base.html</code>:</li></ol><pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;{{ page.title }} - {{ config.site_name }}&lt;/title&gt;
-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/css/style.css&quot;&gt;
+&lt;head&gt; &lt;title&gt;{{ page.title }} - {{ config.site_name }}&lt;/title&gt; &lt;link rel="stylesheet" href="/static/css/style.css"&gt;
 &lt;/head&gt;
-&lt;body&gt;
-    &lt;header&gt;
-        &lt;nav&gt;
-            &lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;
-            &lt;a href=&quot;/posts&quot;&gt;Посты&lt;/a&gt;
-        &lt;/nav&gt;
-    &lt;/header&gt;
-
-    &lt;main&gt;
-        {% block content %}{% endblock %}
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        &lt;p&gt;&amp;copy; {{ config.site_name }} {{ now.year }}&lt;/p&gt;
-    &lt;/footer&gt;
+&lt;body&gt; &lt;header&gt; &lt;nav&gt; &lt;a href="/"&gt;Главная&lt;/a&gt; &lt;a href="/posts"&gt;Посты&lt;/a&gt; &lt;/nav&gt; &lt;/header&gt; &lt;main&gt; {% block content %}{% endblock %} &lt;/main&gt; &lt;footer&gt; &lt;p&gt;&amp;copy; {{ config.site_name }} {{ now.year }}&lt;/p&gt; &lt;/footer&gt;
 &lt;/body&gt;
 &lt;/html&gt;
-</code></pre>
-<h2>Добавление стилей</h2>
-<ol>
-<li>Создайте файл <code>static/css/style.css</code>:</li>
-</ol>
-<pre><code class="language-css">body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 20px;
+</code></pre><h2>Добавление стилей</h2><ol><li>Создайте файл <code>static/css/style.css</code>:</li></ol><pre><code class="language-css">body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px;
+} header { margin-bottom: 20px;
+} nav a { margin-right: 10px;
 }
-
-header {
-    margin-bottom: 20px;
-}
-
-nav a {
-    margin-right: 10px;
-}
-</code></pre>
-<h2>Сборка сайта</h2>
-<p>Для сборки сайта выполните:</p>
-<pre><code class="language-bash">staticflow build
-</code></pre>
-<p>Собранный сайт будет находиться в директории <code>output/</code>.</p>
-<h2>Следующие шаги</h2>
-<p>Теперь, когда у вас есть базовый сайт, вы можете:</p>
-<ol>
-<li>Добавить больше страниц и постов</li>
-<li>Настроить категории и теги</li>
-<li>Добавить пользовательские шаблоны</li>
-<li>Интегрировать плагины</li>
-<li>Настроить поиск</li>
-<li>Добавить комментарии</li>
-</ol>
-<h1>Работа с контентом</h1>
-<p>В этом разделе мы рассмотрим, как создавать и управлять контентом в StaticFlow.</p>
-<h2>Форматы контента</h2>
-<p>StaticFlow поддерживает несколько форматов контента:</p>
-<ul>
-<li>Markdown (<code>.md</code>)</li>
-<li>HTML (<code>.html</code>)</li>
-<li>reStructuredText (<code>.rst</code>)</li>
-<li>Textile (<code>.textile</code>)</li>
-</ul>
-<h2>Структура файлов контента</h2>
-<p>Каждый файл контента состоит из двух частей:</p>
-<ol>
-<li><strong>Front Matter</strong> - метаданные в формате YAML</li>
-<li><strong>Содержимое</strong> - основной контент в выбранном формате</li>
-</ol>
-<h3>Пример файла</h3>
-<pre><code class="language-markdown">---
+</code></pre><h2>Сборка сайта</h2><p>Для сборки сайта выполните:</p><pre><code class="language-bash">staticflow build
+</code></pre><p>Собранный сайт будет находиться в директории <code>output/</code>.</p><h2>Следующие шаги</h2><p>Теперь, когда у вас есть базовый сайт, вы можете:</p><ol><li>Добавить больше страниц и постов</li><li>Настроить категории и теги</li><li>Добавить пользовательские шаблоны</li><li>Интегрировать плагины</li><li>Настроить поиск</li><li>Добавить комментарии</li></ol><h1>Работа с контентом</h1><p>В этом разделе мы рассмотрим, как создавать и управлять контентом в StaticFlow.</p><h2>Форматы контента</h2><p>StaticFlow поддерживает несколько форматов контента:</p><ul><li>Markdown (<code>.md</code>)</li><li>HTML (<code>.html</code>)</li><li>reStructuredText (<code>.rst</code>)</li><li>Textile (<code>.textile</code>)</li></ul><h2>Структура файлов контента</h2><p>Каждый файл контента состоит из двух частей:</p><ol><li><strong>Front Matter</strong> - метаданные в формате YAML</li><li><strong>Содержимое</strong> - основной контент в выбранном формате</li></ol><h3>Пример файла</h3><pre><code class="language-markdown">---
 title: Заголовок страницы
 date: 2024-03-20
 author: nastya
@@ -416,139 +317,53 @@ tags: [tag1, tag2]
 category: blog
 format: markdown
 template: page.html
----
-
-# Основной контент
-
-Здесь идет содержимое страницы...
-</code></pre>
-<h2>Метаданные (Front Matter)</h2>
-<h3>Обязательные поля</h3>
-<ul>
-<li><code>title</code> - заголовок страницы</li>
-<li><code>date</code> - дата создания/публикации</li>
-<li><code>format</code> - формат контента</li>
-</ul>
-<h3>Опциональные поля</h3>
-<ul>
-<li><code>author</code> - автор контента</li>
-<li><code>tags</code> - список тегов</li>
-<li><code>category</code> - категория</li>
-<li><code>template</code> - используемый шаблон</li>
-<li><code>draft</code> - черновик (true/false)</li>
-<li><code>description</code> - описание страницы</li>
-<li><code>image</code> - главное изображение</li>
-<li><code>slug</code> - URL-friendly версия заголовка</li>
-</ul>
-<h2>Организация контента</h2>
-<h3>Категории</h3>
-<p>Категории позволяют организовать контент иерархически:</p>
-<pre><code>content/
+--- # Основной контент Здесь идет содержимое страницы...
+</code></pre><h2>Метаданные (Front Matter)</h2><h3>Обязательные поля</h3><ul><li><code>title</code> - заголовок страницы</li><li><code>date</code> - дата создания/публикации</li><li><code>format</code> - формат контента</li></ul><h3>Опциональные поля</h3><ul><li><code>author</code> - автор контента</li><li><code>tags</code> - список тегов</li><li><code>category</code> - категория</li><li><code>template</code> - используемый шаблон</li><li><code>draft</code> - черновик (true/false)</li><li><code>description</code> - описание страницы</li><li><code>image</code> - главное изображение</li><li><code>slug</code> - URL-friendly версия заголовка</li></ul><h2>Организация контента</h2><h3>Категории</h3><p>Категории позволяют организовать контент иерархически:</p><pre><code>content/
 ├── blog/
-│   ├── index.md
-│   ├── post-1.md
-│   └── post-2.md
+│ ├── index.md
+│ ├── post-1.md
+│ └── post-2.md
 ├── projects/
-│   ├── index.md
-│   └── project-1.md
+│ ├── index.md
+│ └── project-1.md
 └── about.md
-</code></pre>
-<h3>Теги</h3>
-<p>Теги помогают группировать контент по темам:</p>
-<pre><code class="language-markdown">---
+</code></pre><h3>Теги</h3><p>Теги помогают группировать контент по темам:</p><pre><code class="language-markdown">---
 tags: [python, web, tutorial]
 ---
-</code></pre>
-<h2>Специальные страницы</h2>
-<h3>Главная страница</h3>
-<p>Файл <code>content/index.md</code> используется как главная страница сайта.</p>
-<h3>Страницы категорий</h3>
-<p>Создайте <code>index.md</code> в директории категории для создания страницы категории:</p>
-<pre><code class="language-markdown">---
+</code></pre><h2>Специальные страницы</h2><h3>Главная страница</h3><p>Файл <code>content/index.md</code> используется как главная страница сайта.</p><h3>Страницы категорий</h3><p>Создайте <code>index.md</code> в директории категории для создания страницы категории:</p><pre><code class="language-markdown">---
 title: Блог
 template: category.html
 ---
-</code></pre>
-<h3>Страницы тегов</h3>
-<p>Теги автоматически генерируют страницы при использовании.</p>
-<h2>Работа с медиафайлами</h2>
-<h3>Изображения</h3>
-<ol>
-<li>Поместите изображения в директорию <code>media/</code></li>
-<li>Используйте в контенте:</li>
-</ol>
-<pre><code class="language-markdown">![Описание](/media/image.jpg)
-</code></pre>
-<h3>Другие медиафайлы</h3>
-<ul>
-<li>Видео</li>
-<li>Аудио</li>
-<li>PDF документы</li>
-<li>Другие файлы</li>
-</ul>
-<h2>Шаблоны контента</h2>
-<h3>Страницы</h3>
-<pre><code class="language-markdown">---
+</code></pre><h3>Страницы тегов</h3><p>Теги автоматически генерируют страницы при использовании.</p><h2>Работа с медиафайлами</h2><h3>Изображения</h3><ol><li>Поместите изображения в директорию <code>media/</code></li><li>Используйте в контенте:</li></ol><pre><code class="language-markdown">![Описание](/media/image.jpg)
+</code></pre><h3>Другие медиафайлы</h3><ul><li>Видео</li><li>Аудио</li><li>PDF документы</li><li>Другие файлы</li></ul><h2>Шаблоны контента</h2><h3>Страницы</h3><pre><code class="language-markdown">---
 template: page.html
 ---
-</code></pre>
-<h3>Посты</h3>
-<pre><code class="language-markdown">---
+</code></pre><h3>Посты</h3><pre><code class="language-markdown">---
 template: post.html
 ---
-</code></pre>
-<h3>Пользовательские шаблоны</h3>
-<p>Создайте свой шаблон в <code>templates/</code> и укажите его в front matter.</p>
-<h2>Расширенный контент</h2>
-<h3>Математические формулы</h3>
-<pre><code class="language-markdown">Inline формула: $E = mc^2$
-
-Блочная формула:
+</code></pre><h3>Пользовательские шаблоны</h3><p>Создайте свой шаблон в <code>templates/</code> и укажите его в front matter.</p><h2>Расширенный контент</h2><h3>Математические формулы</h3><pre><code class="language-markdown">Inline формула: $E = mc^2$ Блочная формула:
 $$
 \int_0^\infty e^{-x} dx = 1
 $$
-</code></pre>
-<h3>Диаграммы</h3>
-<pre><code class="language-markdown">```mermaid
+</code></pre><h3>Диаграммы</h3><pre><code class="language-markdown">```mermaid
 graph TD
 A[Старт] --&gt; B[Процесс]
 B --&gt; C{Условие}
 C --&gt;|Да| D[Результат 1]
 C --&gt;|Нет| E[Результат 2]
-</code></pre>
-<pre><code>
-### Подсветка кода
-
-```markdown
+</code></pre><pre><code>
+### Подсветка кода ```markdown
 ```python
-def hello_world():
-    print(&quot;Привет, StaticFlow!&quot;)
-</code></pre>
-<pre><code>
-## Локализация
-
-### Многоязычный контент
-
-```markdown
+def hello_world(): print("Привет, StaticFlow!")
+</code></pre><pre><code>
+## Локализация ### Многоязычный контент ```markdown
 ---
 language: ru
----
-
-# Русский контент
-</code></pre>
-<pre><code class="language-markdown">---
+--- # Русский контент
+</code></pre><pre><code class="language-markdown">---
 language: en
----
-
-# English content
-</code></pre>
-<h2>Плагины для контента</h2>
-<ul>
-<li><code>staticflow-markdown</code> - расширенная поддержка Markdown</li>
-<li><code>staticflow-images</code> - оптимизация изображений</li>
-<li><code>staticflow-search</code> - поиск по контенту</li>
-<li><code>staticflow-comments</code> - система комментариев</li>
-</ul>
+--- # English content
+</code></pre><h2>Плагины для контента</h2><ul><li><code>staticflow-markdown</code> - расширенная поддержка Markdown</li><li><code>staticflow-images</code> - оптимизация изображений</li><li><code>staticflow-search</code> - поиск по контенту</li><li><code>staticflow-comments</code> - система комментариев</li></ul>
         </div>
     </main>
 

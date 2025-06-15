@@ -268,383 +268,70 @@
 
     <main>
         <div class="content">
-    <h1>API документация</h1>
-<p>В этом разделе мы рассмотрим API StaticFlow для разработчиков.</p>
-<h2>Основные классы</h2>
-<h3>Application</h3>
-<p>Основной класс приложения.</p>
-<pre><code class="language-python">from staticflow import Application
-
-app = Application(
-    content_dir=&quot;content&quot;,
-    output_dir=&quot;output&quot;,
-    static_dir=&quot;static&quot;,
-    templates_dir=&quot;templates&quot;
+    <h1>API документация</h1><p>В этом разделе мы рассмотрим API StaticFlow для разработчиков.</p><h2>Основные классы</h2><h3>Application</h3><p>Основной класс приложения.</p><pre><code class="language-python">from staticflow import Application app = Application( content_dir="content", output_dir="output", static_dir="static", templates_dir="templates"
 )
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>build()</code> - сборка сайта</li>
-<li><code>clean()</code> - очистка выходной директории</li>
-<li><code>serve(host='localhost', port=8000)</code> - запуск сервера разработки</li>
-</ul>
-<h4>Свойства</h4>
-<ul>
-<li><code>config</code> - конфигурация приложения</li>
-<li><code>content</code> - менеджер контента</li>
-<li><code>templates</code> - менеджер шаблонов</li>
-<li><code>plugins</code> - менеджер плагинов</li>
-</ul>
-<h3>Content</h3>
-<p>Управление контентом.</p>
-<pre><code class="language-python">from staticflow import Content
-
-content = Content(app)
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>load(path)</code> - загрузка контента</li>
-<li><code>save(content, path)</code> - сохранение контента</li>
-<li><code>get(path)</code> - получение страницы</li>
-<li><code>list(path='')</code> - список страниц</li>
-<li><code>search(query)</code> - поиск по контенту</li>
-</ul>
-<h4>Свойства</h4>
-<ul>
-<li><code>pages</code> - все страницы</li>
-<li><code>posts</code> - все посты</li>
-<li><code>categories</code> - категории</li>
-<li><code>tags</code> - теги</li>
-</ul>
-<h3>Template</h3>
-<p>Управление шаблонами.</p>
-<pre><code class="language-python">from staticflow import Template
-
-template = Template(app)
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>render(template_name, context)</code> - рендеринг шаблона</li>
-<li><code>get_template(name)</code> - получение шаблона</li>
-<li><code>register_filter(name, func)</code> - регистрация фильтра</li>
-<li><code>register_function(name, func)</code> - регистрация функции</li>
-</ul>
-<h4>Свойства</h4>
-<ul>
-<li><code>env</code> - окружение Jinja2</li>
-<li><code>filters</code> - доступные фильтры</li>
-<li><code>functions</code> - доступные функции</li>
-</ul>
-<h3>Plugin</h3>
-<p>Базовый класс для плагинов.</p>
-<pre><code class="language-python">from staticflow import Plugin
-
-class MyPlugin(Plugin):
-    name = &quot;my-plugin&quot;
-    version = &quot;1.0.0&quot;
-
-    def on_build_start(self):
-        pass
-
-    def on_build_end(self):
-        pass
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>on_init()</code> - инициализация</li>
-<li><code>on_build_start()</code> - начало сборки</li>
-<li><code>on_build_end()</code> - конец сборки</li>
-<li><code>on_clean()</code> - очистка</li>
-</ul>
-<h2>Модели данных</h2>
-<h3>Page</h3>
-<p>Модель страницы.</p>
-<pre><code class="language-python">from staticflow import Page
-
-page = Page(
-    title=&quot;Заголовок&quot;,
-    content=&quot;Содержимое&quot;,
-    template=&quot;page.html&quot;,
-    date=&quot;2024-03-20&quot;
+</code></pre><h4>Методы</h4><ul><li><code>build()</code> - сборка сайта</li><li><code>clean()</code> - очистка выходной директории</li><li><code>serve(host='localhost', port=8000)</code> - запуск сервера разработки</li></ul><h4>Свойства</h4><ul><li><code>config</code> - конфигурация приложения</li><li><code>content</code> - менеджер контента</li><li><code>templates</code> - менеджер шаблонов</li><li><code>plugins</code> - менеджер плагинов</li></ul><h3>Content</h3><p>Управление контентом.</p><pre><code class="language-python">from staticflow import Content content = Content(app)
+</code></pre><h4>Методы</h4><ul><li><code>load(path)</code> - загрузка контента</li><li><code>save(content, path)</code> - сохранение контента</li><li><code>get(path)</code> - получение страницы</li><li><code>list(path='')</code> - список страниц</li><li><code>search(query)</code> - поиск по контенту</li></ul><h4>Свойства</h4><ul><li><code>pages</code> - все страницы</li><li><code>posts</code> - все посты</li><li><code>categories</code> - категории</li><li><code>tags</code> - теги</li></ul><h3>Template</h3><p>Управление шаблонами.</p><pre><code class="language-python">from staticflow import Template template = Template(app)
+</code></pre><h4>Методы</h4><ul><li><code>render(template_name, context)</code> - рендеринг шаблона</li><li><code>get_template(name)</code> - получение шаблона</li><li><code>register_filter(name, func)</code> - регистрация фильтра</li><li><code>register_function(name, func)</code> - регистрация функции</li></ul><h4>Свойства</h4><ul><li><code>env</code> - окружение Jinja2</li><li><code>filters</code> - доступные фильтры</li><li><code>functions</code> - доступные функции</li></ul><h3>Plugin</h3><p>Базовый класс для плагинов.</p><pre><code class="language-python">from staticflow import Plugin class MyPlugin(Plugin): name = "my-plugin" version = "1.0.0" def on_build_start(self): pass def on_build_end(self): pass
+</code></pre><h4>Методы</h4><ul><li><code>on_init()</code> - инициализация</li><li><code>on_build_start()</code> - начало сборки</li><li><code>on_build_end()</code> - конец сборки</li><li><code>on_clean()</code> - очистка</li></ul><h2>Модели данных</h2><h3>Page</h3><p>Модель страницы.</p><pre><code class="language-python">from staticflow import Page page = Page( title="Заголовок", content="Содержимое", template="page.html", date="2024-03-20"
 )
-</code></pre>
-<h4>Свойства</h4>
-<ul>
-<li><code>title</code> - заголовок</li>
-<li><code>content</code> - содержимое</li>
-<li><code>template</code> - шаблон</li>
-<li><code>date</code> - дата</li>
-<li><code>author</code> - автор</li>
-<li><code>tags</code> - теги</li>
-<li><code>category</code> - категория</li>
-<li><code>url</code> - URL страницы</li>
-<li><code>slug</code> - URL-friendly версия заголовка</li>
-</ul>
-<h3>Post</h3>
-<p>Модель поста (наследуется от Page).</p>
-<pre><code class="language-python">from staticflow import Post
-
-post = Post(
-    title=&quot;Заголовок поста&quot;,
-    content=&quot;Содержимое поста&quot;,
-    date=&quot;2024-03-20&quot;,
-    author=&quot;Автор&quot;
+</code></pre><h4>Свойства</h4><ul><li><code>title</code> - заголовок</li><li><code>content</code> - содержимое</li><li><code>template</code> - шаблон</li><li><code>date</code> - дата</li><li><code>author</code> - автор</li><li><code>tags</code> - теги</li><li><code>category</code> - категория</li><li><code>url</code> - URL страницы</li><li><code>slug</code> - URL-friendly версия заголовка</li></ul><h3>Post</h3><p>Модель поста (наследуется от Page).</p><pre><code class="language-python">from staticflow import Post post = Post( title="Заголовок поста", content="Содержимое поста", date="2024-03-20", author="Автор"
 )
-</code></pre>
-<h4>Дополнительные свойства</h4>
-<ul>
-<li><code>excerpt</code> - отрывок</li>
-<li><code>comments</code> - комментарии</li>
-<li><code>related</code> - связанные посты</li>
-</ul>
-<h3>Category</h3>
-<p>Модель категории.</p>
-<pre><code class="language-python">from staticflow import Category
-
-category = Category(
-    name=&quot;Название&quot;,
-    description=&quot;Описание&quot;,
-    parent=None
+</code></pre><h4>Дополнительные свойства</h4><ul><li><code>excerpt</code> - отрывок</li><li><code>comments</code> - комментарии</li><li><code>related</code> - связанные посты</li></ul><h3>Category</h3><p>Модель категории.</p><pre><code class="language-python">from staticflow import Category category = Category( name="Название", description="Описание", parent=None
 )
-</code></pre>
-<h4>Свойства</h4>
-<ul>
-<li><code>name</code> - название</li>
-<li><code>description</code> - описание</li>
-<li><code>parent</code> - родительская категория</li>
-<li><code>children</code> - дочерние категории</li>
-<li><code>posts</code> - посты в категории</li>
-<li><code>url</code> - URL категории</li>
-</ul>
-<h3>Tag</h3>
-<p>Модель тега.</p>
-<pre><code class="language-python">from staticflow import Tag
-
-tag = Tag(name=&quot;python&quot;)
-</code></pre>
-<h4>Свойства</h4>
-<ul>
-<li><code>name</code> - название</li>
-<li><code>posts</code> - посты с тегом</li>
-<li><code>url</code> - URL тега</li>
-</ul>
-<h2>Утилиты</h2>
-<h3>Markdown</h3>
-<p>Работа с Markdown.</p>
-<pre><code class="language-python">from staticflow.utils.markdown import Markdown
-
-md = Markdown()
-html = md.convert(&quot;# Заголовок&quot;)
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>convert(text)</code> - конвертация в HTML</li>
-<li><code>convert_file(path)</code> - конвертация файла</li>
-<li><code>register_extension(ext)</code> - регистрация расширения</li>
-</ul>
-<h3>Assets</h3>
-<p>Управление ассетами.</p>
-<pre><code class="language-python">from staticflow.utils.assets import Assets
-
-assets = Assets(app)
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>process(path)</code> - обработка ассета</li>
-<li><code>optimize(path)</code> - оптимизация</li>
-<li><code>minify(path)</code> - минификация</li>
-<li><code>hash(path)</code> - хеширование</li>
-</ul>
-<h3>Cache</h3>
-<p>Управление кэшем.</p>
-<pre><code class="language-python">from staticflow.utils.cache import Cache
-
-cache = Cache(app)
-</code></pre>
-<h4>Методы</h4>
-<ul>
-<li><code>get(key)</code> - получение из кэша</li>
-<li><code>set(key, value)</code> - сохранение в кэш</li>
-<li><code>delete(key)</code> - удаление из кэша</li>
-<li><code>clear()</code> - очистка кэша</li>
-</ul>
-<h2>CLI</h2>
-<h3>Команды</h3>
-<pre><code class="language-python">from staticflow.cli import cli
-
-@cli.command()
-def my_command():
-    &quot;&quot;&quot;Описание команды&quot;&quot;&quot;
-    pass
-</code></pre>
-<h4>Встроенные команды</h4>
-<ul>
-<li><code>build</code> - сборка сайта</li>
-<li><code>serve</code> - запуск сервера</li>
-<li><code>clean</code> - очистка</li>
-<li><code>new</code> - создание проекта</li>
-<li><code>new-page</code> - создание страницы</li>
-<li><code>new-post</code> - создание поста</li>
-</ul>
-<h3>Аргументы</h3>
-<pre><code class="language-python">@cli.command()
+</code></pre><h4>Свойства</h4><ul><li><code>name</code> - название</li><li><code>description</code> - описание</li><li><code>parent</code> - родительская категория</li><li><code>children</code> - дочерние категории</li><li><code>posts</code> - посты в категории</li><li><code>url</code> - URL категории</li></ul><h3>Tag</h3><p>Модель тега.</p><pre><code class="language-python">from staticflow import Tag tag = Tag(name="python")
+</code></pre><h4>Свойства</h4><ul><li><code>name</code> - название</li><li><code>posts</code> - посты с тегом</li><li><code>url</code> - URL тега</li></ul><h2>Утилиты</h2><h3>Markdown</h3><p>Работа с Markdown.</p><pre><code class="language-python">from staticflow.utils.markdown import Markdown md = Markdown()
+html = md.convert("# Заголовок")
+</code></pre><h4>Методы</h4><ul><li><code>convert(text)</code> - конвертация в HTML</li><li><code>convert_file(path)</code> - конвертация файла</li><li><code>register_extension(ext)</code> - регистрация расширения</li></ul><h3>Assets</h3><p>Управление ассетами.</p><pre><code class="language-python">from staticflow.utils.assets import Assets assets = Assets(app)
+</code></pre><h4>Методы</h4><ul><li><code>process(path)</code> - обработка ассета</li><li><code>optimize(path)</code> - оптимизация</li><li><code>minify(path)</code> - минификация</li><li><code>hash(path)</code> - хеширование</li></ul><h3>Cache</h3><p>Управление кэшем.</p><pre><code class="language-python">from staticflow.utils.cache import Cache cache = Cache(app)
+</code></pre><h4>Методы</h4><ul><li><code>get(key)</code> - получение из кэша</li><li><code>set(key, value)</code> - сохранение в кэш</li><li><code>delete(key)</code> - удаление из кэша</li><li><code>clear()</code> - очистка кэша</li></ul><h2>CLI</h2><h3>Команды</h3><pre><code class="language-python">from staticflow.cli import cli @cli.command()
+def my_command(): """Описание команды""" pass
+</code></pre><h4>Встроенные команды</h4><ul><li><code>build</code> - сборка сайта</li><li><code>serve</code> - запуск сервера</li><li><code>clean</code> - очистка</li><li><code>new</code> - создание проекта</li><li><code>new-page</code> - создание страницы</li><li><code>new-post</code> - создание поста</li></ul><h3>Аргументы</h3><pre><code class="language-python">@cli.command()
 @click.option('--output', '-o', help='Выходная директория')
-def build(output):
-    pass
-</code></pre>
-<h2>События</h2>
-<h3>Регистрация обработчика</h3>
-<pre><code class="language-python">@app.on('build_start')
-def on_build_start():
-    pass
-</code></pre>
-<h3>Доступные события</h3>
-<ul>
-<li><code>init</code> - инициализация</li>
-<li><code>build_start</code> - начало сборки</li>
-<li><code>build_end</code> - конец сборки</li>
-<li><code>clean</code> - очистка</li>
-<li><code>content_load</code> - загрузка контента</li>
-<li><code>content_save</code> - сохранение контента</li>
-<li><code>template_render</code> - рендеринг шаблона</li>
-<li><code>page_render</code> - рендеринг страницы</li>
-<li><code>post_render</code> - рендеринг поста</li>
-</ul>
-<h2>Конфигурация</h2>
-<h3>Загрузка конфигурации</h3>
-<pre><code class="language-python">from staticflow.config import Config
-
-config = Config('config.toml')
-</code></pre>
-<h3>Настройки</h3>
-<pre><code class="language-toml"># config.toml
-site_name = &quot;My Site&quot;
-base_url = &quot;http://example.com&quot;
-language = &quot;ru&quot;
-
-[build]
-output_dir = &quot;output&quot;
-clean = true
-
-[server]
-host = &quot;localhost&quot;
+def build(output): pass
+</code></pre><h2>События</h2><h3>Регистрация обработчика</h3><pre><code class="language-python">@app.on('build_start')
+def on_build_start(): pass
+</code></pre><h3>Доступные события</h3><ul><li><code>init</code> - инициализация</li><li><code>build_start</code> - начало сборки</li><li><code>build_end</code> - конец сборки</li><li><code>clean</code> - очистка</li><li><code>content_load</code> - загрузка контента</li><li><code>content_save</code> - сохранение контента</li><li><code>template_render</code> - рендеринг шаблона</li><li><code>page_render</code> - рендеринг страницы</li><li><code>post_render</code> - рендеринг поста</li></ul><h2>Конфигурация</h2><h3>Загрузка конфигурации</h3><pre><code class="language-python">from staticflow.config import Config config = Config('config.toml')
+</code></pre><h3>Настройки</h3><pre><code class="language-toml"># config.toml
+site_name = "My Site"
+base_url = "http://example.com"
+language = "ru" [build]
+output_dir = "output"
+clean = true [server]
+host = "localhost"
 port = 8000
-</code></pre>
-<h2>Расширения</h2>
-<h3>Создание расширения</h3>
-<pre><code class="language-python">from staticflow.extensions import Extension
-
-class MyExtension(Extension):
-    def init_app(self, app):
-        pass
-</code></pre>
-<h3>Регистрация расширения</h3>
-<pre><code class="language-python">app.register_extension(MyExtension())
-</code></pre>
-<h2>Тестирование</h2>
-<h3>Тестовое приложение</h3>
-<pre><code class="language-python">from staticflow.testing import TestApp
-
-app = TestApp()
-</code></pre>
-<h3>Тестовый клиент</h3>
-<pre><code class="language-python">client = app.test_client()
+</code></pre><h2>Расширения</h2><h3>Создание расширения</h3><pre><code class="language-python">from staticflow.extensions import Extension class MyExtension(Extension): def init_app(self, app): pass
+</code></pre><h3>Регистрация расширения</h3><pre><code class="language-python">app.register_extension(MyExtension())
+</code></pre><h2>Тестирование</h2><h3>Тестовое приложение</h3><pre><code class="language-python">from staticflow.testing import TestApp app = TestApp()
+</code></pre><h3>Тестовый клиент</h3><pre><code class="language-python">client = app.test_client()
 response = client.get('/')
-</code></pre>
-<h3>Фикстуры</h3>
-<pre><code class="language-python">@pytest.fixture
-def app():
-    return TestApp()
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-</code></pre>
-<h2>Отладка</h2>
-<h3>Логирование</h3>
-<pre><code class="language-python">import logging
-
-logging.basicConfig(level=logging.DEBUG)
+</code></pre><h3>Фикстуры</h3><pre><code class="language-python">@pytest.fixture
+def app(): return TestApp() @pytest.fixture
+def client(app): return app.test_client()
+</code></pre><h2>Отладка</h2><h3>Логирование</h3><pre><code class="language-python">import logging logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('staticflow')
-</code></pre>
-<h3>Профилирование</h3>
-<pre><code class="language-python">from staticflow.utils.profiler import Profiler
-
-with Profiler() as profiler:
-    app.build()
-</code></pre>
-<h2>Безопасность</h2>
-<h3>Валидация</h3>
-<pre><code class="language-python">from staticflow.utils.validator import Validator
-
-validator = Validator()
+</code></pre><h3>Профилирование</h3><pre><code class="language-python">from staticflow.utils.profiler import Profiler with Profiler() as profiler: app.build()
+</code></pre><h2>Безопасность</h2><h3>Валидация</h3><pre><code class="language-python">from staticflow.utils.validator import Validator validator = Validator()
 validator.validate_page(page)
-</code></pre>
-<h3>Санитизация</h3>
-<pre><code class="language-python">from staticflow.utils.sanitizer import Sanitizer
-
-sanitizer = Sanitizer()
+</code></pre><h3>Санитизация</h3><pre><code class="language-python">from staticflow.utils.sanitizer import Sanitizer sanitizer = Sanitizer()
 clean_html = sanitizer.sanitize(html)
-</code></pre>
-<h2>Интернационализация</h2>
-<h3>Переводы</h3>
-<pre><code class="language-python">from staticflow.utils.i18n import I18n
-
-i18n = I18n(app)
+</code></pre><h2>Интернационализация</h2><h3>Переводы</h3><pre><code class="language-python">from staticflow.utils.i18n import I18n i18n = I18n(app)
 text = i18n.translate('hello', 'ru')
-</code></pre>
-<h3>Форматирование</h3>
-<pre><code class="language-python">from staticflow.utils.i18n import format_date
-
-date = format_date('2024-03-20', 'ru')
-</code></pre>
-<h2>Поиск</h2>
-<h3>Индексация</h3>
-<pre><code class="language-python">from staticflow.utils.search import Search
-
-search = Search(app)
+</code></pre><h3>Форматирование</h3><pre><code class="language-python">from staticflow.utils.i18n import format_date date = format_date('2024-03-20', 'ru')
+</code></pre><h2>Поиск</h2><h3>Индексация</h3><pre><code class="language-python">from staticflow.utils.search import Search search = Search(app)
 search.index_page(page)
-</code></pre>
-<h3>Поиск</h3>
-<pre><code class="language-python">results = search.search('запрос')
-</code></pre>
-<h2>Кэширование</h2>
-<h3>Страницы</h3>
-<pre><code class="language-python">from staticflow.utils.cache import PageCache
-
-cache = PageCache(app)
+</code></pre><h3>Поиск</h3><pre><code class="language-python">results = search.search('запрос')
+</code></pre><h2>Кэширование</h2><h3>Страницы</h3><pre><code class="language-python">from staticflow.utils.cache import PageCache cache = PageCache(app)
 cache.set(page)
-</code></pre>
-<h3>Ассеты</h3>
-<pre><code class="language-python">from staticflow.utils.cache import AssetCache
-
-cache = AssetCache(app)
+</code></pre><h3>Ассеты</h3><pre><code class="language-python">from staticflow.utils.cache import AssetCache cache = AssetCache(app)
 cache.set(asset)
-</code></pre>
-<h2>Оптимизация</h2>
-<h3>Изображения</h3>
-<pre><code class="language-python">from staticflow.utils.optimizer import ImageOptimizer
-
-optimizer = ImageOptimizer(app)
+</code></pre><h2>Оптимизация</h2><h3>Изображения</h3><pre><code class="language-python">from staticflow.utils.optimizer import ImageOptimizer optimizer = ImageOptimizer(app)
 optimizer.optimize(image_path)
-</code></pre>
-<h3>CSS/JS</h3>
-<pre><code class="language-python">from staticflow.utils.optimizer import AssetOptimizer
-
-optimizer = AssetOptimizer(app)
+</code></pre><h3>CSS/JS</h3><pre><code class="language-python">from staticflow.utils.optimizer import AssetOptimizer optimizer = AssetOptimizer(app)
 optimizer.minify(css_path)
-</code></pre>
-<h2>Мониторинг</h2>
-<h3>Метрики</h3>
-<pre><code class="language-python">from staticflow.utils.metrics import Metrics
-
-metrics = Metrics(app)
+</code></pre><h2>Мониторинг</h2><h3>Метрики</h3><pre><code class="language-python">from staticflow.utils.metrics import Metrics metrics = Metrics(app)
 metrics.record_build_time(time)
-</code></pre>
-<h3>Логи</h3>
-<pre><code class="language-python">from staticflow.utils.logger import Logger
-
-logger = Logger(app)
+</code></pre><h3>Логи</h3><pre><code class="language-python">from staticflow.utils.logger import Logger logger = Logger(app)
 logger.info('Сообщение')
 </code></pre>
         </div>

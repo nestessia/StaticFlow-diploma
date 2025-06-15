@@ -268,450 +268,98 @@
 
     <main>
         <div class="content">
-    <h1>Шаблоны</h1>
-<p>В этом разделе мы рассмотрим, как работать с шаблонами в StaticFlow.</p>
-<h2>Движок шаблонов</h2>
-<p>StaticFlow использует Jinja2 как движок шаблонов. Jinja2 предоставляет мощный и гибкий способ создания HTML шаблонов.</p>
-<h2>Структура шаблонов</h2>
-<h3>Базовый шаблон</h3>
-<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+    <h1>Шаблоны</h1><p>В этом разделе мы рассмотрим, как работать с шаблонами в StaticFlow.</p><h2>Движок шаблонов</h2><p>StaticFlow использует Jinja2 как движок шаблонов. Jinja2 предоставляет мощный и гибкий способ создания HTML шаблонов.</p><h2>Структура шаблонов</h2><h3>Базовый шаблон</h3><pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;{% block title %}{{ page.title }} - {{ config.site_name }}{% endblock %}&lt;/title&gt;
-    &lt;meta name=&quot;description&quot; content=&quot;{{ page.description }}&quot;&gt;
-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/css/style.css&quot;&gt;
-    {% block extra_head %}{% endblock %}
+&lt;head&gt; &lt;title&gt;{% block title %}{{ page.title }} - {{ config.site_name }}{% endblock %}&lt;/title&gt; &lt;meta name="description" content="{{ page.description }}"&gt; &lt;link rel="stylesheet" href="/static/css/style.css"&gt; {% block extra_head %}{% endblock %}
 &lt;/head&gt;
-&lt;body&gt;
-    &lt;header&gt;
-        {% include &quot;partials/navigation.html&quot; %}
-    &lt;/header&gt;
-
-    &lt;main&gt;
-        {% block content %}{% endblock %}
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        {% include &quot;partials/footer.html&quot; %}
-    &lt;/footer&gt;
-
-    {% block extra_body %}{% endblock %}
+&lt;body&gt; &lt;header&gt; {% include "partials/navigation.html" %} &lt;/header&gt; &lt;main&gt; {% block content %}{% endblock %} &lt;/main&gt; &lt;footer&gt; {% include "partials/footer.html" %} &lt;/footer&gt; {% block extra_body %}{% endblock %}
 &lt;/body&gt;
 &lt;/html&gt;
-</code></pre>
-<h3>Шаблон страницы</h3>
-<pre><code class="language-html">{% extends &quot;base.html&quot; %}
-
-{% block content %}
-&lt;article&gt;
-    &lt;h1&gt;{{ page.title }}&lt;/h1&gt;
-
-    {% if page.date %}
-    &lt;time datetime=&quot;{{ page.date.isoformat() }}&quot;&gt;
-        {{ page.date.strftime('%d.%m.%Y') }}
-    &lt;/time&gt;
-    {% endif %}
-
-    {{ page.content }}
+</code></pre><h3>Шаблон страницы</h3><pre><code class="language-html">{% extends "base.html" %} {% block content %}
+&lt;article&gt; &lt;h1&gt;{{ page.title }}&lt;/h1&gt; {% if page.date %} &lt;time datetime="{{ page.date.isoformat() }}"&gt; {{ page.date.strftime('%d.%m.%Y') }} &lt;/time&gt; {% endif %} {{ page.content }}
 &lt;/article&gt;
 {% endblock %}
-</code></pre>
-<h2>Наследование шаблонов</h2>
-<h3>Базовый шаблон</h3>
-<pre><code class="language-html">&lt;!-- base.html --&gt;
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    {% block head %}{% endblock %}
-&lt;/head&gt;
-&lt;body&gt;
-    {% block body %}{% endblock %}
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-<h3>Наследование</h3>
-<pre><code class="language-html">&lt;!-- page.html --&gt;
-{% extends &quot;base.html&quot; %}
-
-{% block head %}
-&lt;title&gt;{{ page.title }}&lt;/title&gt;
-{% endblock %}
-
-{% block body %}
-&lt;h1&gt;{{ page.title }}&lt;/h1&gt;
-{{ page.content }}
-{% endblock %}
-</code></pre>
-<h2>Включение частичных шаблонов</h2>
-<h3>Создание частичного шаблона</h3>
-<pre><code class="language-html">&lt;!-- partials/navigation.html --&gt;
-&lt;nav&gt;
-    &lt;ul&gt;
-        &lt;li&gt;&lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href=&quot;/blog&quot;&gt;Блог&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href=&quot;/about&quot;&gt;О нас&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/nav&gt;
-</code></pre>
-<h3>Использование</h3>
-<pre><code class="language-html">{% include &quot;partials/navigation.html&quot; %}
-</code></pre>
-<h2>Макросы</h2>
-<h3>Определение макроса</h3>
-<pre><code class="language-html">&lt;!-- macros.html --&gt;
-{% macro render_post(post) %}
-&lt;article&gt;
-    &lt;h2&gt;{{ post.title }}&lt;/h2&gt;
-    &lt;time&gt;{{ post.date.strftime('%d.%m.%Y') }}&lt;/time&gt;
-    {{ post.content }}
-&lt;/article&gt;
-{% endmacro %}
-</code></pre>
-<h3>Использование макроса</h3>
-<pre><code class="language-html">{% from &quot;macros.html&quot; import render_post %}
-
-{% for post in posts %}
-    {{ render_post(post) }}
+</code></pre><h2>Наследование шаблонов</h2><h3>Базовый шаблон</h3><pre><code class="language-html"></code></pre><h3>Наследование</h3><pre><code class="language-html"></code></pre><h2>Включение частичных шаблонов</h2><h3>Создание частичного шаблона</h3><pre><code class="language-html"></code></pre><h3>Использование</h3><pre><code class="language-html">{% include "partials/navigation.html" %}
+</code></pre><h2>Макросы</h2><h3>Определение макроса</h3><pre><code class="language-html"></code></pre><h3>Использование макроса</h3><pre><code class="language-html">{% from "macros.html" import render_post %} {% for post in posts %} {{ render_post(post) }}
 {% endfor %}
-</code></pre>
-<h2>Переменные и контекст</h2>
-<h3>Доступные переменные</h3>
-<ul>
-<li><code>page</code> - текущая страница</li>
-<li><code>config</code> - конфигурация сайта</li>
-<li><code>site</code> - все страницы сайта</li>
-<li><code>categories</code> - категории</li>
-<li><code>tags</code> - теги</li>
-<li><code>authors</code> - авторы</li>
-</ul>
-<h3>Пример использования</h3>
-<pre><code class="language-html">&lt;h1&gt;{{ page.title }}&lt;/h1&gt;
+</code></pre><h2>Переменные и контекст</h2><h3>Доступные переменные</h3><ul><li><code>page</code> - текущая страница</li><li><code>config</code> - конфигурация сайта</li><li><code>site</code> - все страницы сайта</li><li><code>categories</code> - категории</li><li><code>tags</code> - теги</li><li><code>authors</code> - авторы</li></ul><h3>Пример использования</h3><pre><code class="language-html">&lt;h1&gt;{{ page.title }}&lt;/h1&gt;
 &lt;p&gt;Автор: {{ page.author }}&lt;/p&gt;
-&lt;p&gt;Дата: {{ page.date.strftime('%d.%m.%Y') }}&lt;/p&gt;
-
-{% if page.tags %}
-&lt;p&gt;Теги: 
-    {% for tag in page.tags %}
-    &lt;a href=&quot;/tags/{{ tag }}&quot;&gt;{{ tag }}&lt;/a&gt;
-    {% endfor %}
+&lt;p&gt;Дата: {{ page.date.strftime('%d.%m.%Y') }}&lt;/p&gt; {% if page.tags %}
+&lt;p&gt;Теги: {% for tag in page.tags %} &lt;a href="/tags/{{ tag }}"&gt;{{ tag }}&lt;/a&gt; {% endfor %}
 &lt;/p&gt;
 {% endif %}
-</code></pre>
-<h2>Фильтры</h2>
-<h3>Встроенные фильтры</h3>
-<pre><code class="language-html">{{ page.title|upper }}
+</code></pre><h2>Фильтры</h2><h3>Встроенные фильтры</h3><pre><code class="language-html">{{ page.title|upper }}
 {{ page.content|truncate(200) }}
 {{ page.date|date('%d.%m.%Y') }}
-</code></pre>
-<h3>Пользовательские фильтры</h3>
-<pre><code class="language-python"># plugins/custom_filters.py
-def markdown_to_html(text):
-    return markdown.markdown(text)
-
-def register_filters(app):
-    app.jinja_env.filters['markdown'] = markdown_to_html
-</code></pre>
-<h2>Условные операторы</h2>
-<pre><code class="language-html">{% if page.draft %}
-&lt;div class=&quot;draft-notice&quot;&gt;Черновик&lt;/div&gt;
-{% endif %}
-
-{% if page.tags %}
+</code></pre><h3>Пользовательские фильтры</h3><pre><code class="language-python"># plugins/custom_filters.py
+def markdown_to_html(text): return markdown.markdown(text) def register_filters(app): app.jinja_env.filters['markdown'] = markdown_to_html
+</code></pre><h2>Условные операторы</h2><pre><code class="language-html">{% if page.draft %}
+&lt;div class="draft-notice"&gt;Черновик&lt;/div&gt;
+{% endif %} {% if page.tags %}
 &lt;p&gt;Теги: {{ page.tags|join(', ') }}&lt;/p&gt;
 {% else %}
 &lt;p&gt;Нет тегов&lt;/p&gt;
 {% endif %}
-</code></pre>
-<h2>Циклы</h2>
-<pre><code class="language-html">{% for post in site.posts %}
-&lt;article&gt;
-    &lt;h2&gt;{{ post.title }}&lt;/h2&gt;
-    {{ post.content|truncate(200) }}
-    &lt;a href=&quot;{{ post.url }}&quot;&gt;Читать далее&lt;/a&gt;
+</code></pre><h2>Циклы</h2><pre><code class="language-html">{% for post in site.posts %}
+&lt;article&gt; &lt;h2&gt;{{ post.title }}&lt;/h2&gt; {{ post.content|truncate(200) }} &lt;a href="{{ post.url }}"&gt;Читать далее&lt;/a&gt;
 &lt;/article&gt;
 {% endfor %}
-</code></pre>
-<h2>Шаблоны для разных типов контента</h2>
-<h3>Шаблон поста</h3>
-<pre><code class="language-html">{% extends &quot;base.html&quot; %}
-
-{% block content %}
-&lt;article class=&quot;post&quot;&gt;
-    &lt;header&gt;
-        &lt;h1&gt;{{ page.title }}&lt;/h1&gt;
-        &lt;div class=&quot;meta&quot;&gt;
-            &lt;time&gt;{{ page.date.strftime('%d.%m.%Y') }}&lt;/time&gt;
-            {% if page.author %}
-            &lt;span class=&quot;author&quot;&gt;{{ page.author }}&lt;/span&gt;
-            {% endif %}
-        &lt;/div&gt;
-    &lt;/header&gt;
-
-    {{ page.content }}
-
-    {% if page.tags %}
-    &lt;footer&gt;
-        &lt;div class=&quot;tags&quot;&gt;
-            {% for tag in page.tags %}
-            &lt;a href=&quot;/tags/{{ tag }}&quot; class=&quot;tag&quot;&gt;{{ tag }}&lt;/a&gt;
-            {% endfor %}
-        &lt;/div&gt;
-    &lt;/footer&gt;
-    {% endif %}
+</code></pre><h2>Шаблоны для разных типов контента</h2><h3>Шаблон поста</h3><pre><code class="language-html">{% extends "base.html" %} {% block content %}
+&lt;article class="post"&gt; &lt;header&gt; &lt;h1&gt;{{ page.title }}&lt;/h1&gt; &lt;div class="meta"&gt; &lt;time&gt;{{ page.date.strftime('%d.%m.%Y') }}&lt;/time&gt; {% if page.author %} &lt;span class="author"&gt;{{ page.author }}&lt;/span&gt; {% endif %} &lt;/div&gt; &lt;/header&gt; {{ page.content }} {% if page.tags %} &lt;footer&gt; &lt;div class="tags"&gt; {% for tag in page.tags %} &lt;a href="/tags/{{ tag }}" class="tag"&gt;{{ tag }}&lt;/a&gt; {% endfor %} &lt;/div&gt; &lt;/footer&gt; {% endif %}
 &lt;/article&gt;
 {% endblock %}
-</code></pre>
-<h3>Шаблон категории</h3>
-<pre><code class="language-html">{% extends &quot;base.html&quot; %}
-
-{% block content %}
-&lt;h1&gt;{{ page.title }}&lt;/h1&gt;
-
-&lt;div class=&quot;posts&quot;&gt;
-    {% for post in page.posts %}
-    &lt;article&gt;
-        &lt;h2&gt;&lt;a href=&quot;{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt;&lt;/h2&gt;
-        &lt;time&gt;{{ post.date.strftime('%d.%m.%Y') }}&lt;/time&gt;
-        {{ post.content|truncate(200) }}
-    &lt;/article&gt;
-    {% endfor %}
+</code></pre><h3>Шаблон категории</h3><pre><code class="language-html">{% extends "base.html" %} {% block content %}
+&lt;h1&gt;{{ page.title }}&lt;/h1&gt; &lt;div class="posts"&gt; {% for post in page.posts %} &lt;article&gt; &lt;h2&gt;&lt;a href="{{ post.url }}"&gt;{{ post.title }}&lt;/a&gt;&lt;/h2&gt; &lt;time&gt;{{ post.date.strftime('%d.%m.%Y') }}&lt;/time&gt; {{ post.content|truncate(200) }} &lt;/article&gt; {% endfor %}
 &lt;/div&gt;
 {% endblock %}
-</code></pre>
-<h2>Плагины для шаблонов</h2>
-<ul>
-<li><code>staticflow-sass</code> - поддержка SASS/SCSS</li>
-<li><code>staticflow-webpack</code> - сборка JavaScript</li>
-<li><code>staticflow-images</code> - оптимизация изображений</li>
-<li><code>staticflow-seo</code> - SEO оптимизация</li>
-</ul>
-<h1>Темы</h1>
-<p>В этом разделе мы рассмотрим, как работать с темами в StaticFlow.</p>
-<h2>Что такое тема?</h2>
-<p>Тема в StaticFlow - это набор файлов, которые определяют внешний вид и функциональность сайта:</p>
-<ul>
-<li>HTML шаблоны</li>
-<li>CSS стили</li>
-<li>JavaScript файлы</li>
-<li>Изображения и другие медиафайлы</li>
-<li>Конфигурационные файлы</li>
-</ul>
-<h2>Структура темы</h2>
-<pre><code>theme/
-├── templates/          # HTML шаблоны
-│   ├── base.html      # Базовый шаблон
-│   ├── page.html      # Шаблон страницы
-│   ├── post.html      # Шаблон поста
-│   └── partials/      # Частичные шаблоны
-├── static/            # Статические файлы
-│   ├── css/          # Стили
-│   ├── js/           # Скрипты
-│   └── images/       # Изображения
-├── media/            # Медиафайлы
-└── theme.toml        # Конфигурация темы
-</code></pre>
-<h2>Установка темы</h2>
-<h3>Через pip</h3>
-<pre><code class="language-bash">pip install staticflow-theme-default
-</code></pre>
-<h3>Из репозитория</h3>
-<pre><code class="language-bash">git clone https://github.com/staticflow/themes/default.git themes/default
-</code></pre>
-<h2>Использование темы</h2>
-<h3>В конфигурации</h3>
-<pre><code class="language-toml"># config.toml
-theme = &quot;default&quot;
-</code></pre>
-<h3>В шаблонах</h3>
-<pre><code class="language-html">{% extends &quot;theme/default/templates/base.html&quot; %}
-</code></pre>
-<h2>Создание своей темы</h2>
-<h3>1. Создание структуры</h3>
-<pre><code class="language-bash">mkdir -p my-theme/{templates,static/{css,js,images},media}
+</code></pre><h2>Плагины для шаблонов</h2><ul><li><code>staticflow-sass</code> - поддержка SASS/SCSS</li><li><code>staticflow-webpack</code> - сборка JavaScript</li><li><code>staticflow-images</code> - оптимизация изображений</li><li><code>staticflow-seo</code> - SEO оптимизация</li></ul><h1>Темы</h1><p>В этом разделе мы рассмотрим, как работать с темами в StaticFlow.</p><h2>Что такое тема?</h2><p>Тема в StaticFlow - это набор файлов, которые определяют внешний вид и функциональность сайта:</p><ul><li>HTML шаблоны</li><li>CSS стили</li><li>JavaScript файлы</li><li>Изображения и другие медиафайлы</li><li>Конфигурационные файлы</li></ul><h2>Структура темы</h2><pre><code>theme/
+├── templates/ # HTML шаблоны
+│ ├── base.html # Базовый шаблон
+│ ├── page.html # Шаблон страницы
+│ ├── post.html # Шаблон поста
+│ └── partials/ # Частичные шаблоны
+├── static/ # Статические файлы
+│ ├── css/ # Стили
+│ ├── js/ # Скрипты
+│ └── images/ # Изображения
+├── media/ # Медиафайлы
+└── theme.toml # Конфигурация темы
+</code></pre><h2>Установка темы</h2><h3>Через pip</h3><pre><code class="language-bash">pip install staticflow-theme-default
+</code></pre><h3>Из репозитория</h3><pre><code class="language-bash">git clone https://github.com/staticflow/themes/default.git themes/default
+</code></pre><h2>Использование темы</h2><h3>В конфигурации</h3><pre><code class="language-toml"># config.toml
+theme = "default"
+</code></pre><h3>В шаблонах</h3><pre><code class="language-html">{% extends "theme/default/templates/base.html" %}
+</code></pre><h2>Создание своей темы</h2><h3>1. Создание структуры</h3><pre><code class="language-bash">mkdir -p my-theme/{templates,static/{css,js,images},media}
 touch my-theme/theme.toml
-</code></pre>
-<h3>2. Конфигурация темы</h3>
-<pre><code class="language-toml"># theme.toml
-name = &quot;My Theme&quot;
-version = &quot;1.0.0&quot;
-author = &quot;Your Name&quot;
-description = &quot;A custom theme for StaticFlow&quot;
-license = &quot;MIT&quot;
-
-[theme]
-default_template = &quot;base.html&quot;
-</code></pre>
-<h3>3. Базовый шаблон</h3>
-<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+</code></pre><h3>2. Конфигурация темы</h3><pre><code class="language-toml"># theme.toml
+name = "My Theme"
+version = "1.0.0"
+author = "Your Name"
+description = "A custom theme for StaticFlow"
+license = "MIT" [theme]
+default_template = "base.html"
+</code></pre><h3>3. Базовый шаблон</h3><pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;{% block title %}{{ page.title }}{% endblock %}&lt;/title&gt;
-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/css/style.css&quot;&gt;
-    {% block extra_head %}{% endblock %}
+&lt;head&gt; &lt;title&gt;{% block title %}{{ page.title }}{% endblock %}&lt;/title&gt; &lt;link rel="stylesheet" href="/static/css/style.css"&gt; {% block extra_head %}{% endblock %}
 &lt;/head&gt;
-&lt;body&gt;
-    &lt;header&gt;
-        {% include &quot;partials/navigation.html&quot; %}
-    &lt;/header&gt;
-
-    &lt;main&gt;
-        {% block content %}{% endblock %}
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        {% include &quot;partials/footer.html&quot; %}
-    &lt;/footer&gt;
-
-    &lt;script src=&quot;/static/js/main.js&quot;&gt;&lt;/script&gt;
-    {% block extra_body %}{% endblock %}
+&lt;body&gt; &lt;header&gt; {% include "partials/navigation.html" %} &lt;/header&gt; &lt;main&gt; {% block content %}{% endblock %} &lt;/main&gt; &lt;footer&gt; {% include "partials/footer.html" %} &lt;/footer&gt; &lt;script src="/static/js/main.js"&gt;&lt;/script&gt; {% block extra_body %}{% endblock %}
 &lt;/body&gt;
 &lt;/html&gt;
-</code></pre>
-<h3>4. Стили</h3>
-<pre><code class="language-css">/* static/css/style.css */
-:root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --background-color: #ffffff;
-    --text-color: #212529;
+</code></pre><h3>4. Стили</h3><pre><code class="language-css">/* static/css/style.css */
+:root { --primary-color: #007bff; --secondary-color: #6c757d; --background-color: #ffffff; --text-color: #212529;
+} body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: var(--text-color); background-color: var(--background-color);
+} /* ... другие стили ... */
+</code></pre><h3>5. JavaScript</h3><pre><code class="language-javascript">// static/js/main.js
+document.addEventListener('DOMContentLoaded', function() { // Инициализация темы initTheme();
+}); function initTheme() { // Код инициализации
 }
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;
-    line-height: 1.6;
-    color: var(--text-color);
-    background-color: var(--background-color);
+</code></pre><h2>Наследование тем</h2><h3>Базовая тема</h3><pre><code class="language-html"></code></pre><h3>Расширение темы</h3><pre><code class="language-html"></code></pre><h2>Переопределение компонентов</h2><h3>Переопределение стилей</h3><pre><code class="language-css">/* my-theme/static/css/custom.css */
+:root { --primary-color: #ff0000; /* Переопределение цвета */
+} .custom-header { /* Стили для кастомного хедера */
 }
-
-/* ... другие стили ... */
-</code></pre>
-<h3>5. JavaScript</h3>
-<pre><code class="language-javascript">// static/js/main.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация темы
-    initTheme();
-});
-
-function initTheme() {
-    // Код инициализации
-}
-</code></pre>
-<h2>Наследование тем</h2>
-<h3>Базовая тема</h3>
-<pre><code class="language-html">&lt;!-- base-theme/templates/base.html --&gt;
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    {% block head %}{% endblock %}
-&lt;/head&gt;
-&lt;body&gt;
-    {% block body %}{% endblock %}
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-<h3>Расширение темы</h3>
-<pre><code class="language-html">&lt;!-- my-theme/templates/base.html --&gt;
-{% extends &quot;base-theme/templates/base.html&quot; %}
-
-{% block head %}
-&lt;title&gt;{% block title %}{{ page.title }}{% endblock %}&lt;/title&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;/static/css/custom.css&quot;&gt;
-{% endblock %}
-
-{% block body %}
-&lt;header class=&quot;custom-header&quot;&gt;
-    {% block header %}{% endblock %}
-&lt;/header&gt;
-
-&lt;main class=&quot;custom-main&quot;&gt;
-    {% block content %}{% endblock %}
-&lt;/main&gt;
-
-&lt;footer class=&quot;custom-footer&quot;&gt;
-    {% block footer %}{% endblock %}
-&lt;/footer&gt;
-{% endblock %}
-</code></pre>
-<h2>Переопределение компонентов</h2>
-<h3>Переопределение стилей</h3>
-<pre><code class="language-css">/* my-theme/static/css/custom.css */
-:root {
-    --primary-color: #ff0000;  /* Переопределение цвета */
-}
-
-.custom-header {
-    /* Стили для кастомного хедера */
-}
-</code></pre>
-<h3>Переопределение шаблонов</h3>
-<pre><code class="language-html">&lt;!-- my-theme/templates/partials/navigation.html --&gt;
-&lt;nav class=&quot;custom-nav&quot;&gt;
-    &lt;!-- Кастомная навигация --&gt;
-&lt;/nav&gt;
-</code></pre>
-<h2>Плагины для тем</h2>
-<ul>
-<li><code>staticflow-theme-assets</code> - управление ресурсами темы</li>
-<li><code>staticflow-theme-builder</code> - инструменты для создания тем</li>
-<li><code>staticflow-theme-preview</code> - предпросмотр тем</li>
-<li><code>staticflow-theme-export</code> - экспорт тем</li>
-</ul>
-<h2>Лучшие практики</h2>
-<h3>Организация</h3>
-<ol>
-<li>Используйте модульную структуру</li>
-<li>Разделяйте стили по компонентам</li>
-<li>Минимизируйте зависимости</li>
-<li>Документируйте компоненты</li>
-</ol>
-<h3>Производительность</h3>
-<ol>
-<li>Оптимизируйте изображения</li>
-<li>Минифицируйте CSS и JavaScript</li>
-<li>Используйте кэширование</li>
-<li>Следите за размером бандла</li>
-</ol>
-<h3>Доступность</h3>
-<ol>
-<li>Используйте семантическую разметку</li>
-<li>Обеспечьте поддержку клавиатурной навигации</li>
-<li>Добавьте ARIA-атрибуты</li>
-<li>Проверяйте контрастность</li>
-</ol>
-<h3>Адаптивность</h3>
-<ol>
-<li>Используйте медиа-запросы</li>
-<li>Тестируйте на разных устройствах</li>
-<li>Применяйте mobile-first подход</li>
-<li>Оптимизируйте изображения</li>
-</ol>
-<h2>Публикация темы</h2>
-<h3>Подготовка</h3>
-<ol>
-<li>Создайте README.md</li>
-<li>Добавьте лицензию</li>
-<li>Напишите документацию</li>
-<li>Создайте примеры</li>
-</ol>
-<h3>Публикация</h3>
-<ol>
-<li>Создайте репозиторий</li>
-<li>Настройте CI/CD</li>
-<li>Опубликуйте в PyPI</li>
-<li>Добавьте в каталог тем</li>
-</ol>
-<h2>Обновление темы</h2>
-<h3>Версионирование</h3>
-<pre><code class="language-toml"># theme.toml
-version = &quot;1.0.0&quot;
-</code></pre>
-<h3>Миграции</h3>
-<ol>
-<li>Создайте миграционные скрипты</li>
-<li>Документируйте изменения</li>
-<li>Поддерживайте обратную совместимость</li>
-<li>Тестируйте обновления</li>
-</ol>
+</code></pre><h3>Переопределение шаблонов</h3><pre><code class="language-html"></code></pre><h2>Плагины для тем</h2><ul><li><code>staticflow-theme-assets</code> - управление ресурсами темы</li><li><code>staticflow-theme-builder</code> - инструменты для создания тем</li><li><code>staticflow-theme-preview</code> - предпросмотр тем</li><li><code>staticflow-theme-export</code> - экспорт тем</li></ul><h2>Лучшие практики</h2><h3>Организация</h3><ol><li>Используйте модульную структуру</li><li>Разделяйте стили по компонентам</li><li>Минимизируйте зависимости</li><li>Документируйте компоненты</li></ol><h3>Производительность</h3><ol><li>Оптимизируйте изображения</li><li>Минифицируйте CSS и JavaScript</li><li>Используйте кэширование</li><li>Следите за размером бандла</li></ol><h3>Доступность</h3><ol><li>Используйте семантическую разметку</li><li>Обеспечьте поддержку клавиатурной навигации</li><li>Добавьте ARIA-атрибуты</li><li>Проверяйте контрастность</li></ol><h3>Адаптивность</h3><ol><li>Используйте медиа-запросы</li><li>Тестируйте на разных устройствах</li><li>Применяйте mobile-first подход</li><li>Оптимизируйте изображения</li></ol><h2>Публикация темы</h2><h3>Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте примеры</li></ol><h3>Публикация</h3><ol><li>Создайте репозиторий</li><li>Настройте CI/CD</li><li>Опубликуйте в PyPI</li><li>Добавьте в каталог тем</li></ol><h2>Обновление темы</h2><h3>Версионирование</h3><pre><code class="language-toml"># theme.toml
+version = "1.0.0"
+</code></pre><h3>Миграции</h3><ol><li>Создайте миграционные скрипты</li><li>Документируйте изменения</li><li>Поддерживайте обратную совместимость</li><li>Тестируйте обновления</li></ol>
         </div>
     </main>
 

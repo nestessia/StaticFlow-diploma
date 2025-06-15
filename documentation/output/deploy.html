@@ -268,323 +268,54 @@
 
     <main>
         <div class="content">
-    <h1>Развертывание</h1>
-<p>В этом разделе мы рассмотрим различные способы развертывания сайта, созданного с помощью StaticFlow.</p>
-<h2>Подготовка к развертыванию</h2>
-<h3>Сборка сайта</h3>
-<pre><code class="language-bash">staticflow build
-</code></pre>
-<p>Это создаст статические файлы в директории <code>output/</code>.</p>
-<h3>Проверка сборки</h3>
-<pre><code class="language-bash">staticflow serve --build-dir output
-</code></pre>
-<h2>Варианты хостинга</h2>
-<h3>GitHub Pages</h3>
-<ol>
-<li>Создайте репозиторий <code>username.github.io</code></li>
-<li>Настройте GitHub Actions:</li>
-</ol>
-<pre><code class="language-yaml"># .github/workflows/deploy.yml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install staticflow
-
-      - name: Build site
-        run: staticflow build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./output
-</code></pre>
-<h3>Netlify</h3>
-<ol>
-<li>Создайте <code>netlify.toml</code>:</li>
-</ol>
-<pre><code class="language-toml">[build]
-  command = &quot;staticflow build&quot;
-  publish = &quot;output&quot;
-
-[build.environment]
-  PYTHON_VERSION = &quot;3.8&quot;
-</code></pre>
-<ol>
-<li>Настройте деплой:</li>
-<li>Подключите репозиторий к Netlify</li>
-<li>Укажите команду сборки: <code>staticflow build</code></li>
-<li>Укажите директорию публикации: <code>output</code></li>
-</ol>
-<h3>Vercel</h3>
-<ol>
-<li>Создайте <code>vercel.json</code>:</li>
-</ol>
-<pre><code class="language-json">{
-  &quot;version&quot;: 2,
-  &quot;builds&quot;: [
-    {
-      &quot;src&quot;: &quot;package.json&quot;,
-      &quot;use&quot;: &quot;@vercel/static-build&quot;,
-      &quot;config&quot;: {
-        &quot;buildCommand&quot;: &quot;staticflow build&quot;,
-        &quot;outputDirectory&quot;: &quot;output&quot;
-      }
-    }
-  ]
+    <h1>Развертывание</h1><p>В этом разделе мы рассмотрим различные способы развертывания сайта, созданного с помощью StaticFlow.</p><h2>Подготовка к развертыванию</h2><h3>Сборка сайта</h3><pre><code class="language-bash">staticflow build
+</code></pre><p>Это создаст статические файлы в директории <code>output/</code>.</p><h3>Проверка сборки</h3><pre><code class="language-bash">staticflow serve --build-dir output
+</code></pre><h2>Варианты хостинга</h2><h3>GitHub Pages</h3><ol><li>Создайте репозиторий <code>username.github.io</code></li><li>Настройте GitHub Actions:</li></ol><pre><code class="language-yaml"># .github/workflows/deploy.yml
+name: Deploy to GitHub Pages on: push: branches: [ main ] jobs: build-and-deploy: runs-on: ubuntu-latest steps: - uses: actions/checkout@v2 - name: Set up Python uses: actions/setup-python@v2 with: python-version: '3.8' - name: Install dependencies run: | python -m pip install --upgrade pip pip install staticflow - name: Build site run: staticflow build - name: Deploy to GitHub Pages uses: peaceiris/actions-gh-pages@v3 with: github_token: ${{ secrets.GITHUB_TOKEN }} publish_dir: ./output
+</code></pre><h3>Netlify</h3><ol><li>Создайте <code>netlify.toml</code>:</li></ol><pre><code class="language-toml">[build] command = "staticflow build" publish = "output" [build.environment] PYTHON_VERSION = "3.8"
+</code></pre><ol><li>Настройте деплой:</li><li>Подключите репозиторий к Netlify</li><li>Укажите команду сборки: <code>staticflow build</code></li><li>Укажите директорию публикации: <code>output</code></li></ol><h3>Vercel</h3><ol><li>Создайте <code>vercel.json</code>:</li></ol><pre><code class="language-json">{ "version": 2, "builds": [ { "src": "package.json", "use": "@vercel/static-build", "config": { "buildCommand": "staticflow build", "outputDirectory": "output" } } ]
 }
-</code></pre>
-<ol>
-<li>Создайте <code>package.json</code>:</li>
-</ol>
-<pre><code class="language-json">{
-  &quot;name&quot;: &quot;my-staticflow-site&quot;,
-  &quot;version&quot;: &quot;1.0.0&quot;,
-  &quot;scripts&quot;: {
-    &quot;build&quot;: &quot;staticflow build&quot;
-  }
+</code></pre><ol><li>Создайте <code>package.json</code>:</li></ol><pre><code class="language-json">{ "name": "my-staticflow-site", "version": "1.0.0", "scripts": { "build": "staticflow build" }
 }
-</code></pre>
-<h3>Amazon S3</h3>
-<ol>
-<li>Установите AWS CLI:</li>
-</ol>
-<pre><code class="language-bash">pip install awscli
-</code></pre>
-<ol>
-<li>Настройте AWS:</li>
-</ol>
-<pre><code class="language-bash">aws configure
-</code></pre>
-<ol>
-<li>Создайте скрипт деплоя:</li>
-</ol>
-<pre><code class="language-bash">#!/bin/bash
+</code></pre><h3>Amazon S3</h3><ol><li>Установите AWS CLI:</li></ol><pre><code class="language-bash">pip install awscli
+</code></pre><ol><li>Настройте AWS:</li></ol><pre><code class="language-bash">aws configure
+</code></pre><ol><li>Создайте скрипт деплоя:</li></ol><pre><code class="language-bash">#!/bin/bash
 staticflow build
 aws s3 sync output/ s3://your-bucket-name/ --delete
-</code></pre>
-<h3>Nginx</h3>
-<ol>
-<li>Установите Nginx:</li>
-</ol>
-<pre><code class="language-bash">sudo apt-get install nginx
-</code></pre>
-<ol>
-<li>Настройте виртуальный хост:</li>
-</ol>
-<pre><code class="language-nginx">server {
-    listen 80;
-    server_name your-domain.com;
-    root /path/to/your/output;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+</code></pre><h3>Nginx</h3><ol><li>Установите Nginx:</li></ol><pre><code class="language-bash">sudo apt-get install nginx
+</code></pre><ol><li>Настройте виртуальный хост:</li></ol><pre><code class="language-nginx">server { listen 80; server_name your-domain.com; root /path/to/your/output; index index.html; location / { try_files $uri $uri/ /index.html; }
 }
-</code></pre>
-<ol>
-<li>Скопируйте файлы:</li>
-</ol>
-<pre><code class="language-bash">sudo cp -r output/* /var/www/html/
-</code></pre>
-<h2>Настройка домена</h2>
-<h3>DNS настройки</h3>
-<ol>
-<li>Добавьте A-запись:</li>
-</ol>
-<pre><code>your-domain.com.  A  your-server-ip
-</code></pre>
-<ol>
-<li>Добавьте CNAME-запись для www:</li>
-</ol>
-<pre><code>www.your-domain.com.  CNAME  your-domain.com.
-</code></pre>
-<h3>SSL сертификат</h3>
-<h4>Let's Encrypt</h4>
-<ol>
-<li>Установите Certbot:</li>
-</ol>
-<pre><code class="language-bash">sudo apt-get install certbot python3-certbot-nginx
-</code></pre>
-<ol>
-<li>Получите сертификат:</li>
-</ol>
-<pre><code class="language-bash">sudo certbot --nginx -d your-domain.com -d www.your-domain.com
-</code></pre>
-<h2>Мониторинг</h2>
-<h3>Логи</h3>
-<ol>
-<li>Настройте логирование в Nginx:</li>
-</ol>
-<pre><code class="language-nginx">access_log /var/log/nginx/your-domain.access.log;
+</code></pre><ol><li>Скопируйте файлы:</li></ol><pre><code class="language-bash">sudo cp -r output/* /var/www/html/
+</code></pre><h2>Настройка домена</h2><h3>DNS настройки</h3><ol><li>Добавьте A-запись:</li></ol><pre><code>your-domain.com. A your-server-ip
+</code></pre><ol><li>Добавьте CNAME-запись для www:</li></ol><pre><code>www.your-domain.com. CNAME your-domain.com.
+</code></pre><h3>SSL сертификат</h3><h4>Let's Encrypt</h4><ol><li>Установите Certbot:</li></ol><pre><code class="language-bash">sudo apt-get install certbot python3-certbot-nginx
+</code></pre><ol><li>Получите сертификат:</li></ol><pre><code class="language-bash">sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+</code></pre><h2>Мониторинг</h2><h3>Логи</h3><ol><li>Настройте логирование в Nginx:</li></ol><pre><code class="language-nginx">access_log /var/log/nginx/your-domain.access.log;
 error_log /var/log/nginx/your-domain.error.log;
-</code></pre>
-<ol>
-<li>Настройте ротацию логов:</li>
-</ol>
-<pre><code class="language-nginx">logrotate /etc/logrotate.d/nginx
-</code></pre>
-<h3>Метрики</h3>
-<ol>
-<li>Установите Prometheus:</li>
-</ol>
-<pre><code class="language-bash">sudo apt-get install prometheus
-</code></pre>
-<ol>
-<li>Настройте Node Exporter:</li>
-</ol>
-<pre><code class="language-bash">sudo apt-get install prometheus-node-exporter
-</code></pre>
-<ol>
-<li>Настройте Grafana:</li>
-</ol>
-<pre><code class="language-bash">sudo apt-get install grafana
-</code></pre>
-<h2>Резервное копирование</h2>
-<h3>Автоматическое резервное копирование</h3>
-<ol>
-<li>Создайте скрипт:</li>
-</ol>
-<pre><code class="language-bash">#!/bin/bash
-BACKUP_DIR=&quot;/path/to/backups&quot;
-SITE_DIR=&quot;/path/to/site&quot;
-DATE=$(date +%Y-%m-%d)
-
-tar -czf &quot;$BACKUP_DIR/site-$DATE.tar.gz&quot; &quot;$SITE_DIR&quot;
-</code></pre>
-<ol>
-<li>Добавьте в crontab:</li>
-</ol>
-<pre><code class="language-bash">0 0 * * * /path/to/backup.sh
-</code></pre>
-<h3>Восстановление</h3>
-<pre><code class="language-bash">tar -xzf site-2024-03-20.tar.gz -C /path/to/restore
-</code></pre>
-<h2>Оптимизация</h2>
-<h3>Сжатие</h3>
-<ol>
-<li>Включите gzip в Nginx:</li>
-</ol>
-<pre><code class="language-nginx">gzip on;
+</code></pre><ol><li>Настройте ротацию логов:</li></ol><pre><code class="language-nginx">logrotate /etc/logrotate.d/nginx
+</code></pre><h3>Метрики</h3><ol><li>Установите Prometheus:</li></ol><pre><code class="language-bash">sudo apt-get install prometheus
+</code></pre><ol><li>Настройте Node Exporter:</li></ol><pre><code class="language-bash">sudo apt-get install prometheus-node-exporter
+</code></pre><ol><li>Настройте Grafana:</li></ol><pre><code class="language-bash">sudo apt-get install grafana
+</code></pre><h2>Резервное копирование</h2><h3>Автоматическое резервное копирование</h3><ol><li>Создайте скрипт:</li></ol><pre><code class="language-bash">#!/bin/bash
+BACKUP_DIR="/path/to/backups"
+SITE_DIR="/path/to/site"
+DATE=$(date +%Y-%m-%d) tar -czf "$BACKUP_DIR/site-$DATE.tar.gz" "$SITE_DIR"
+</code></pre><ol><li>Добавьте в crontab:</li></ol><pre><code class="language-bash">0 0 * * * /path/to/backup.sh
+</code></pre><h3>Восстановление</h3><pre><code class="language-bash">tar -xzf site-2024-03-20.tar.gz -C /path/to/restore
+</code></pre><h2>Оптимизация</h2><h3>Сжатие</h3><ol><li>Включите gzip в Nginx:</li></ol><pre><code class="language-nginx">gzip on;
 gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-</code></pre>
-<h3>Кэширование</h3>
-<ol>
-<li>Настройте кэширование в Nginx:</li>
-</ol>
-<pre><code class="language-nginx">location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
-    expires 30d;
-    add_header Cache-Control &quot;public, no-transform&quot;;
+</code></pre><h3>Кэширование</h3><ol><li>Настройте кэширование в Nginx:</li></ol><pre><code class="language-nginx">location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ { expires 30d; add_header Cache-Control "public, no-transform";
 }
-</code></pre>
-<h3>CDN</h3>
-<ol>
-<li>Настройте Cloudflare:</li>
-<li>Добавьте ваш домен</li>
-<li>Обновите DNS записи</li>
-<li>Включите SSL</li>
-<li>Настройте кэширование</li>
-</ol>
-<h2>Безопасность</h2>
-<h3>Заголовки безопасности</h3>
-<pre><code class="language-nginx">add_header X-Frame-Options &quot;SAMEORIGIN&quot;;
-add_header X-XSS-Protection &quot;1; mode=block&quot;;
-add_header X-Content-Type-Options &quot;nosniff&quot;;
-add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;;
-</code></pre>
-<h3>Защита от DDoS</h3>
-<ol>
-<li>Настройте rate limiting:</li>
-</ol>
-<pre><code class="language-nginx">limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
-
-location / {
-    limit_req zone=one burst=5;
+</code></pre><h3>CDN</h3><ol><li>Настройте Cloudflare:</li><li>Добавьте ваш домен</li><li>Обновите DNS записи</li><li>Включите SSL</li><li>Настройте кэширование</li></ol><h2>Безопасность</h2><h3>Заголовки безопасности</h3><pre><code class="language-nginx">add_header X-Frame-Options "SAMEORIGIN";
+add_header X-XSS-Protection "1; mode=block";
+add_header X-Content-Type-Options "nosniff";
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+</code></pre><h3>Защита от DDoS</h3><ol><li>Настройте rate limiting:</li></ol><pre><code class="language-nginx">limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s; location / { limit_req zone=one burst=5;
 }
-</code></pre>
-<h3>SSL/TLS</h3>
-<ol>
-<li>Настройте современные шифры:</li>
-</ol>
-<pre><code class="language-nginx">ssl_protocols TLSv1.2 TLSv1.3;
+</code></pre><h3>SSL/TLS</h3><ol><li>Настройте современные шифры:</li></ol><pre><code class="language-nginx">ssl_protocols TLSv1.2 TLSv1.3;
 ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-</code></pre>
-<h2>Автоматизация</h2>
-<h3>CI/CD</h3>
-<ol>
-<li>Настройте GitHub Actions:</li>
-</ol>
-<pre><code class="language-yaml">name: Deploy
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install staticflow
-
-      - name: Build
-        run: staticflow build
-
-      - name: Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /path/to/site
-            git pull
-            staticflow build
-            sudo systemctl reload nginx
-</code></pre>
-<h3>Мониторинг деплоя</h3>
-<ol>
-<li>Настройте уведомления:</li>
-<li>Email</li>
-<li>Slack</li>
-<li>Telegram</li>
-<li>
-<p>Discord</p>
-</li>
-<li>
-<p>Добавьте проверки:</p>
-</li>
-<li>Тесты</li>
-<li>Линтинг</li>
-<li>Проверка безопасности</li>
-</ol>
+</code></pre><h2>Автоматизация</h2><h3>CI/CD</h3><ol><li>Настройте GitHub Actions:</li></ol><pre><code class="language-yaml">name: Deploy on: push: branches: [ main ] jobs: deploy: runs-on: ubuntu-latest steps: - uses: actions/checkout@v2 - name: Set up Python uses: actions/setup-python@v2 with: python-version: '3.8' - name: Install dependencies run: | python -m pip install --upgrade pip pip install staticflow - name: Build run: staticflow build - name: Deploy uses: appleboy/ssh-action@master with: host: ${{ secrets.HOST }} username: ${{ secrets.USERNAME }} key: ${{ secrets.SSH_KEY }} script: | cd /path/to/site git pull staticflow build sudo systemctl reload nginx
+</code></pre><h3>Мониторинг деплоя</h3><ol><li>Настройте уведомления:</li><li>Email</li><li>Slack</li><li>Telegram</li><li><p>Discord</p></li><li><p>Добавьте проверки:</p></li><li>Тесты</li><li>Линтинг</li><li>Проверка безопасности</li></ol>
         </div>
     </main>
 

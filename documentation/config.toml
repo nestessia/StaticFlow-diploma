@@ -42,7 +42,7 @@ use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
 [PLUGINS]
-enabled = [ "multilingual", "rss", "sitemap"]
+enabled = [ "multilingual", "rss", "sitemap", "minifier"]
 
 [PLUGIN_MULTILINGUAL]
 enabled = true
@@ -58,6 +58,13 @@ site_description = "Документация по фреймворку StaticFlo
 base_url = "http://localhost:8000"
 output_path = "output"
 language = "ru"
+
+[PLUGIN_MINIFIER]
+enabled = true
+minify_html = true
+minify_css = true
+minify_js = true
+preserve_comments = false
 
 [syntax_highlight]
 style = "monokai"
