@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Плагины</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
+    
+    
     
     <style>
         :root {
@@ -268,6 +270,7 @@
 
     <main>
         <div class="content">
+            
     <h1>Плагины</h1><p>В этом разделе мы рассмотрим систему плагинов StaticFlow и как создавать свои плагины.</p><h2>Что такое плагин?</h2><p>Плагин в StaticFlow - это расширение, которое добавляет новую функциональность или изменяет существующую. Плагины могут:</p><ul><li>Добавлять новые форматы контента</li><li>Расширять функциональность шаблонов</li><li>Добавлять новые команды CLI</li><li>Интегрировать внешние сервисы</li><li>Оптимизировать процесс сборки</li></ul><h2>Установка плагинов</h2><h3>Через pip</h3><pre><code class="language-bash">pip install staticflow-plugin-name
 </code></pre><h3>В конфигурации</h3><pre><code class="language-toml"># config.toml
 [PLUGINS]
@@ -305,6 +308,7 @@ from staticflow_my_plugin import MyPlugin def test_plugin_initialization(): plug
 </code></pre><h2>Публикация плагина</h2><h3>Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте тесты</li></ol><h3>Публикация в PyPI</h3><pre><code class="language-bash">python setup.py sdist bdist_wheel
 twine upload dist/*
 </code></pre><h3>Обновление</h3><ol><li>Увеличьте версию</li><li>Обновите документацию</li><li>Добавьте миграции</li><li>Опубликуйте новую версию</li></ol><h2>Лучшие практики</h2><h3>Разработка</h3><ol><li>Следуйте PEP 8</li><li>Пишите тесты</li><li>Документируйте код</li><li>Используйте типизацию</li></ol><h3>Производительность</h3><ol><li>Оптимизируйте операции</li><li>Используйте кэширование</li><li>Минимизируйте зависимости</li><li>Следите за памятью</li></ol><h3>Безопасность</h3><ol><li>Валидируйте входные данные</li><li>Используйте безопасные настройки</li><li>Обрабатывайте ошибки</li><li>Следите за обновлениями</li></ol><h3>Совместимость</h3><ol><li>Поддерживайте версии Python</li><li>Тестируйте на разных версиях</li><li>Документируйте зависимости</li><li>Следите за изменениями API</li></ol>
+
         </div>
     </main>
 

@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Деплой</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
+    
+    
     
     <style>
         :root {
@@ -268,6 +270,7 @@
 
     <main>
         <div class="content">
+            
     <h1>Развертывание</h1><p>В этом разделе мы рассмотрим различные способы развертывания сайта, созданного с помощью StaticFlow.</p><h2>Подготовка к развертыванию</h2><h3>Сборка сайта</h3><pre><code class="language-bash">staticflow build
 </code></pre><p>Это создаст статические файлы в директории <code>output/</code>.</p><h3>Проверка сборки</h3><pre><code class="language-bash">staticflow serve --build-dir output
 </code></pre><h2>Варианты хостинга</h2><h3>GitHub Pages</h3><ol><li>Создайте репозиторий <code>username.github.io</code></li><li>Настройте GitHub Actions:</li></ol><pre><code class="language-yaml"># .github/workflows/deploy.yml
@@ -316,6 +319,7 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
 ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
 </code></pre><h2>Автоматизация</h2><h3>CI/CD</h3><ol><li>Настройте GitHub Actions:</li></ol><pre><code class="language-yaml">name: Deploy on: push: branches: [ main ] jobs: deploy: runs-on: ubuntu-latest steps: - uses: actions/checkout@v2 - name: Set up Python uses: actions/setup-python@v2 with: python-version: '3.8' - name: Install dependencies run: | python -m pip install --upgrade pip pip install staticflow - name: Build run: staticflow build - name: Deploy uses: appleboy/ssh-action@master with: host: ${{ secrets.HOST }} username: ${{ secrets.USERNAME }} key: ${{ secrets.SSH_KEY }} script: | cd /path/to/site git pull staticflow build sudo systemctl reload nginx
 </code></pre><h3>Мониторинг деплоя</h3><ol><li>Настройте уведомления:</li><li>Email</li><li>Slack</li><li>Telegram</li><li><p>Discord</p></li><li><p>Добавьте проверки:</p></li><li>Тесты</li><li>Линтинг</li><li>Проверка безопасности</li></ol>
+
         </div>
     </main>
 

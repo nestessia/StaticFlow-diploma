@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Шаблоны и темы</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
+    
+    
     
     <style>
         :root {
@@ -268,6 +270,7 @@
 
     <main>
         <div class="content">
+            
     <h1>Шаблоны</h1><p>В этом разделе мы рассмотрим, как работать с шаблонами в StaticFlow.</p><h2>Движок шаблонов</h2><p>StaticFlow использует Jinja2 как движок шаблонов. Jinja2 предоставляет мощный и гибкий способ создания HTML шаблонов.</p><h2>Структура шаблонов</h2><h3>Базовый шаблон</h3><pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt; &lt;title&gt;{% block title %}{{ page.title }} - {{ config.site_name }}{% endblock %}&lt;/title&gt; &lt;meta name="description" content="{{ page.description }}"&gt; &lt;link rel="stylesheet" href="/static/css/style.css"&gt; {% block extra_head %}{% endblock %}
@@ -360,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() { // Инициализ
 </code></pre><h3>Переопределение шаблонов</h3><pre><code class="language-html"></code></pre><h2>Плагины для тем</h2><ul><li><code>staticflow-theme-assets</code> - управление ресурсами темы</li><li><code>staticflow-theme-builder</code> - инструменты для создания тем</li><li><code>staticflow-theme-preview</code> - предпросмотр тем</li><li><code>staticflow-theme-export</code> - экспорт тем</li></ul><h2>Лучшие практики</h2><h3>Организация</h3><ol><li>Используйте модульную структуру</li><li>Разделяйте стили по компонентам</li><li>Минимизируйте зависимости</li><li>Документируйте компоненты</li></ol><h3>Производительность</h3><ol><li>Оптимизируйте изображения</li><li>Минифицируйте CSS и JavaScript</li><li>Используйте кэширование</li><li>Следите за размером бандла</li></ol><h3>Доступность</h3><ol><li>Используйте семантическую разметку</li><li>Обеспечьте поддержку клавиатурной навигации</li><li>Добавьте ARIA-атрибуты</li><li>Проверяйте контрастность</li></ol><h3>Адаптивность</h3><ol><li>Используйте медиа-запросы</li><li>Тестируйте на разных устройствах</li><li>Применяйте mobile-first подход</li><li>Оптимизируйте изображения</li></ol><h2>Публикация темы</h2><h3>Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте примеры</li></ol><h3>Публикация</h3><ol><li>Создайте репозиторий</li><li>Настройте CI/CD</li><li>Опубликуйте в PyPI</li><li>Добавьте в каталог тем</li></ol><h2>Обновление темы</h2><h3>Версионирование</h3><pre><code class="language-toml"># theme.toml
 version = "1.0.0"
 </code></pre><h3>Миграции</h3><ol><li>Создайте миграционные скрипты</li><li>Документируйте изменения</li><li>Поддерживайте обратную совместимость</li><li>Тестируйте обновления</li></ol>
+
         </div>
     </main>
 

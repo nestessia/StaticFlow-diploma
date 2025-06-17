@@ -206,3 +206,21 @@ class Page:
     def author(self) -> Optional[str]:
         """Get the page author from metadata."""
         return self.metadata.get("author")
+
+    @property
+    def category(self) -> Optional[str]:
+        """Get the page category from metadata."""
+        return self.metadata.get("category")
+
+    @property
+    def tags(self) -> List[str]:
+        """Get the page tags from metadata."""
+        tags = self.metadata.get("tags", [])
+        if isinstance(tags, str):
+            return [tag.strip() for tag in tags.split(",")]
+        return tags if isinstance(tags, list) else []
+
+    @property
+    def template(self) -> str:
+        """Get the page template from metadata or default."""
+        return self.metadata.get("template", "page.html")

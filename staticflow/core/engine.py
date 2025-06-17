@@ -138,8 +138,10 @@ class Engine:
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
         try:
+            # Конвертируем Markdown в HTML
+            content = self.markdown.convert(page.content)
+            
             # Применяем плагины к контенту
-            content = page.content
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
                     logger.debug(
@@ -151,6 +153,7 @@ class Engine:
             # Применяем плагины к контексту страницы
             context = {
                 'content': content,
+                'page_content': content,
                 'page': page,
                 'site': self.site,
                 'url': page.url,
@@ -159,7 +162,11 @@ class Engine:
                 'author': page.author,
                 'category': page.category,
                 'tags': page.tags,
-                'metadata': page.metadata
+                'metadata': page.metadata,
+                'page_head_content': '',
+                'static_url': self.config.get("static_url", "static"),
+                'site_url': self.config.get("base_url", ""),
+                'site_name': self.config.get("site_name", "StaticFlow Site")
             }
 
             for plugin in self.plugins:

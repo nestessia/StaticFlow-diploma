@@ -240,3 +240,40 @@ class Site:
             path = str(path)
         path = path.lstrip("/")
         return f"{base_url}/{path}" if path else base_url
+
+    def get_template(self, template_name: str):
+        """Get a template by name."""
+        if not self.template_dir:
+            raise ValueError("Template directory not set")
+        
+        template_path = self.template_dir / template_name
+        if not template_path.exists():
+            return None
+            
+        try:
+            import jinja2
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(str(self.template_dir))
+            )
+            return env.get_template(template_name)
+        except Exception as e:
+            print(f"Error loading template {template_name}: {e}")
+            return None
+
+    def save_page(self, page: Page, content: str) -> None:
+        """Save a page with its rendered content."""
+        if not self.output_dir:
+            raise ValueError("Output directory not set")
+            
+        if not page.output_path:
+            raise ValueError("Page output path not set")
+            
+        # Создаем директории если их нет
+        page.output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Сохраняем контент
+        with open(page.output_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+            
+        # Устанавливаем отрендеренный контент
+        page.set_rendered_content(content)

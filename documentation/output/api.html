@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Reference</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/code_highlight.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
+    
+    
     
     <style>
         :root {
@@ -268,6 +270,7 @@
 
     <main>
         <div class="content">
+            
     <h1>API документация</h1><p>В этом разделе мы рассмотрим API StaticFlow для разработчиков.</p><h2>Основные классы</h2><h3>Application</h3><p>Основной класс приложения.</p><pre><code class="language-python">from staticflow import Application app = Application( content_dir="content", output_dir="output", static_dir="static", templates_dir="templates"
 )
 </code></pre><h4>Методы</h4><ul><li><code>build()</code> - сборка сайта</li><li><code>clean()</code> - очистка выходной директории</li><li><code>serve(host='localhost', port=8000)</code> - запуск сервера разработки</li></ul><h4>Свойства</h4><ul><li><code>config</code> - конфигурация приложения</li><li><code>content</code> - менеджер контента</li><li><code>templates</code> - менеджер шаблонов</li><li><code>plugins</code> - менеджер плагинов</li></ul><h3>Content</h3><p>Управление контентом.</p><pre><code class="language-python">from staticflow import Content content = Content(app)
@@ -334,6 +337,7 @@ metrics.record_build_time(time)
 </code></pre><h3>Логи</h3><pre><code class="language-python">from staticflow.utils.logger import Logger logger = Logger(app)
 logger.info('Сообщение')
 </code></pre>
+
         </div>
     </main>
 
