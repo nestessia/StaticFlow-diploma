@@ -1,8 +1,8 @@
 ---
 title: Блоки контента
-date: 2024-03-20
-author: None
-tags:
+date: 2025-05-20
+author: nestessia
+tags: [blocks, content, admin]
 format: markdown
 template: page.html
 ---

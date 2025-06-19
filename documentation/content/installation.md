@@ -1,7 +1,7 @@
 ---
 title: Установка
-date: 2024-03-20
-author: nastya
+date: 2025-05-20
+author: nestessia
 tags: [installation, setup, requirements]
 format: markdown
 template: page.html
