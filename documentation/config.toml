@@ -42,15 +42,7 @@ use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
 [PLUGINS]
-enabled = [ "multilingual", "rss", "sitemap", "minifier"]
-
-[PLUGIN_MULTILINGUAL]
-enabled = true
-default_language = "en"
-languages = [ "en", "ru",]
-url_prefix = true
-exclude_default_lang_prefix = false
-auto_redirect = true
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight"]
 
 [PLUGIN_RSS]
 site_name = "StaticFlow Documentation"
@@ -66,5 +58,3 @@ minify_css = true
 minify_js = true
 preserve_comments = false
 
-[syntax_highlight]
-style = "monokai"

@@ -53,6 +53,17 @@ class TipTapToolbar {
                 isActive: () => this.editor.isActive('heading', { level: 3 }),
             },
             {
+                icon: 'align-left',
+                title: 'Text Block',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'paragraph',
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
+                isActive: () => this.editor.isActive('paragraph'),
+            },
+            {
                 type: 'divider',
             },
             {

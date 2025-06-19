@@ -1,14 +1,12 @@
 from pathlib import Path
 import shutil
-import markdown
 from typing import List, Optional, Dict, Any
 from .config import Config
 from .site import Site
 from .page import Page
 from ..plugins.base import Plugin
-from ..parsers.extensions.video import makeExtension as makeVideoExtension
-from ..parsers.extensions.audio import makeExtension as makeAudioExtension
 from ..utils.logging import get_logger
+from staticflow.parsers import MarkdownParser
 
 
 logger = get_logger("core.engine")
@@ -30,23 +28,7 @@ class Engine:
         self.site = Site(self.config)
         self._cache = {}
 
-        fenced_code_config = {
-            'lang_prefix': 'language-',
-        }
-
-        self.markdown = markdown.Markdown(
-            extensions=[
-                'meta',
-                'fenced_code',
-                'tables',
-                'attr_list',
-                makeVideoExtension(),
-                makeAudioExtension(),
-            ],
-            extension_configs={
-                'fenced_code': fenced_code_config
-            }
-        )
+        self.markdown = MarkdownParser()
         self.plugins: List[Plugin] = []
         logger.info("Engine initialized")
 
@@ -139,14 +121,15 @@ class Engine:
         """Process a single page."""
         try:
             # Конвертируем Markdown в HTML
-            content = self.markdown.convert(page.content)
+            content = self.markdown.parse(page.content)
             
             # Применяем плагины к контенту
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
                     logger.debug(
                         "Processing content with plugin: %s",
-                        plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__
+                        plugin.metadata.name if hasattr(plugin, 'metadata')
+                        else plugin.__class__.__name__
                     )
                     content = plugin.process_content(content)
 
@@ -173,7 +156,8 @@ class Engine:
                 if hasattr(plugin, 'on_post_page'):
                     logger.debug(
                         "Processing page context with plugin: %s",
-                        plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__
+                        plugin.metadata.name if hasattr(plugin, 'metadata')
+                        else plugin.__class__.__name__
                     )
                     context = plugin.on_post_page(context)
 
@@ -284,25 +268,6 @@ class Engine:
         except Exception as e:
             logger.error("Error copying static files: %s", e, exc_info=True)
 
-    def _generate_code_highlight_css(self, static_dir: Path) -> None:
-        """Generate code highlight CSS based on configuration."""
-        try:
-            css_dir = static_dir / "css"
-            css_dir.mkdir(parents=True, exist_ok=True)
-
-            syntax_config = self.config.get("syntax_highlight", {})
-            style_name = syntax_config.get("style", "monokai")
-
-            from ..utils.pygments_utils import generate_pygments_css
-            css_content = generate_pygments_css(style_name)
-
-            css_file = css_dir / "code_highlight.css"
-            with open(css_file, "w", encoding="utf-8") as f:
-                f.write(css_content)
-
-        except Exception as e:
-            print(f"Error generating code highlight CSS: {e}")
-
     def clean(self) -> None:
         """Clean the build artifacts."""
         if self.site.output_dir and self.site.output_dir.exists():
@@ -341,9 +306,11 @@ class Engine:
         template_filename = page.metadata.get("template", self.config.get("default_template", "page.html"))
         template_path = template_dir / template_filename
         if not template_path.exists():
-            raise ValueError(f"Template not found: {template_path}")
+            raise ValueError(
+                f"Template not found: {template_path}"
+            )
 
-        content_html = self.markdown.convert(page.content)
+        content_html = self.markdown.parse(page.content)
         for plugin in self.plugins:
             content_html = plugin.process_content(content_html)
 
@@ -367,7 +334,9 @@ class Engine:
             "site_url": self.config.get("base_url", ""),  
             "static_url": static_url,
             "page_content": content_html,
-            "page_head_content": "\n".join(head_content) if head_content else "",
+            "page_head_content": (
+                "\n".join(head_content) if head_content else ""
+            ),
             "available_translations": {},
         }
         page.translations = {}
