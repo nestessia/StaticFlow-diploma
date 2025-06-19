@@ -126,9 +126,30 @@ class MarkdownParser(ContentParser):
                 indent = len(line) - len(line.lstrip())
                 if indent > 0:
                     # Заменяем пробелы на span с классом token whitespace
-                    space_spans = '<span class="token whitespace"> </span>' * indent
+                    space_spans = (
+                        '<span class="token whitespace"> </span>' * indent
+                    )
                     line = space_spans + line.lstrip()
                 
+                # Заменяем все <span class="w"></span> на 1 пробел
+                line = re.sub(
+                    r'<span class="w"></span>',
+                    '<span class="token whitespace"> </span>',
+                    line
+                )
+
+                # Заменяем все <span class="w">   </span> на столько же пробелов
+                def repl_ws(m):
+                    count = len(m.group(1))
+                    return (
+                        '<span class="token whitespace"> </span>' * count
+                    )
+                line = re.sub(
+                    r'<span class="w">( +)</span>',
+                    repl_ws,
+                    line
+                )
+
                 # Заменяем все оставшиеся пробелы внутри строки
                 line = re.sub(
                     r'<span class="ws"></span>',
@@ -140,6 +161,19 @@ class MarkdownParser(ContentParser):
                     '<span class="token whitespace"> </span>',
                     line
                 )
+                # Заменяем пробелы внутри тега span class="w"
+                line = re.sub(
+                    r'<span class="w">\s+</span>',
+                    '<span class="token whitespace"> </span>',
+                    line
+                )
+                # Заменяем простые пробелы между тегами
+                line = re.sub(
+                    r'(</span>)\s+(<span)',
+                    r'\1<span class="token whitespace"> </span>\2',
+                    line
+                )
+        
                 processed_lines.append(line)
             
             code_content = '\n'.join(processed_lines)
@@ -227,7 +261,9 @@ class MarkdownParser(ContentParser):
                             # Получаем все родительские токены
                             current = token_type
                             while current:
-                                token_name = str(current).lower().replace('.', ' ')
+                                token_name = (
+                                    str(current).lower().replace('.', ' ')
+                                )
                                 if token_name:
                                     token_classes.append(token_name)
                                 current = current.parent
