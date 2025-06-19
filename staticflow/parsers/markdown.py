@@ -125,25 +125,21 @@ class MarkdownParser(ContentParser):
                 # Обрабатываем начальные пробелы
                 indent = len(line) - len(line.lstrip())
                 if indent > 0:
-                    # Заменяем пробелы на span с классом token whitespace
-                    space_spans = (
-                        '<span class="token whitespace"> </span>' * indent
-                    )
+                    # Заменяем пробелы на span с классом w
+                    space_spans = '<span class="w"> </span>' * indent
                     line = space_spans + line.lstrip()
                 
-                # Заменяем все <span class="w"></span> на 1 пробел
+                # Заменяем все пробельные токены на унифицированный формат
                 line = re.sub(
                     r'<span class="w"></span>',
-                    '<span class="token whitespace"> </span>',
+                    '<span class="w"> </span>',
                     line
                 )
 
-                # Заменяем все <span class="w">   </span> на столько же пробелов
+                # Заменяем все множественные пробелы на токены w
                 def repl_ws(m):
                     count = len(m.group(1))
-                    return (
-                        '<span class="token whitespace"> </span>' * count
-                    )
+                    return '<span class="w"> </span>' * count
                 line = re.sub(
                     r'<span class="w">( +)</span>',
                     repl_ws,
@@ -152,25 +148,16 @@ class MarkdownParser(ContentParser):
 
                 # Заменяем все оставшиеся пробелы внутри строки
                 line = re.sub(
-                    r'<span class="ws"></span>',
-                    '<span class="token whitespace"> </span>',
-                    line
-                )
-                line = re.sub(
                     r'<span class="w"></span>',
-                    '<span class="token whitespace"> </span>',
+                    '<span class="w"> </span>',
                     line
                 )
-                # Заменяем пробелы внутри тега span class="w"
+
+                # Заменяем все пробельные последовательности
+                whitespace_token = '<span class="w"> </span>'
                 line = re.sub(
                     r'<span class="w">\s+</span>',
-                    '<span class="token whitespace"> </span>',
-                    line
-                )
-                # Заменяем простые пробелы между тегами
-                line = re.sub(
-                    r'(</span>)\s+(<span)',
-                    r'\1<span class="token whitespace"> </span>\2',
+                    lambda m: whitespace_token * len(m.group()),
                     line
                 )
         
@@ -237,60 +224,49 @@ class MarkdownParser(ContentParser):
                 lexer = get_lexer_by_name('text', stripall=False)
             
             class TokenFormatter(HtmlFormatter):
+                def __init__(self, **options):
+                    super().__init__(**options)
+                    # Используем стандартные типы токенов Pygments
+                    self.token_styles = {}  # Не переопределяем стили
+
+                def _get_css_class(self, ttype):
+                    """Используем стандартные классы Pygments"""
+                    return super()._get_css_class(ttype)
+
                 def wrap(self, source, outfile):
+                    """Обрабатываем токены"""
                     for i, (token_type, value) in enumerate(source):
                         if token_type == Token.Text and value.isspace():
                             # Обрабатываем пробельные символы
                             for char in value:
                                 if char == ' ':
-                                    # Для пробела
-                                    yield Token.Text, (
-                                        '<span class="token whitespace"> </span>'
-                                    )
+                                    # Используем стандартный класс w
+                                    yield Token.Text.Whitespace, ' '
                                 elif char == '\t':
-                                    # Для табуляции
-                                    yield Token.Text, (
-                                        '<span class="token tab">    </span>'
-                                    )
+                                    # Для табуляции используем 4 пробела
+                                    yield Token.Text.Whitespace, '    '
                                 elif char == '\n':
                                     # Для переноса строки
                                     yield Token.Text, '\n'
                         else:
-                            # Добавляем span с классом token и типом токена
-                            token_classes = []
-                            # Получаем все родительские токены
-                            current = token_type
-                            while current:
-                                token_name = (
-                                    str(current).lower().replace('.', ' ')
-                                )
-                                if token_name:
-                                    token_classes.append(token_name)
-                                current = current.parent
-                            
-                            class_str = ' '.join(
-                                f'token {cls}' for cls in token_classes
-                            )
-                            yield Token.Text, f'<span class="{class_str}">'
                             yield token_type, value
-                            yield Token.Text, '</span>'
 
             formatter = TokenFormatter(
                 style='monokai',
                 noclasses=False,
                 cssclass='highlight',
                 linenos=False,
-                nowrap=True,  # Отключаем автоматический перенос строк
-                wrapcode=True  # Оборачиваем код в pre>code
+                nowrap=True,
+                wrapcode=True,
+                nobackground=True
             )
-            
-            # Подсвечиваем код
+
             highlighted = highlight(code, lexer, formatter)
-            
-            # Заменяем все оставшиеся пробелы
+
+            # Заменяем все оставшиеся пробелы на унифицированный формат
             highlighted = re.sub(
-                r'<span class="ws"></span>',
-                '<span class="token whitespace"> </span>',
+                r'<span class="w"></span>',
+                '<span class="w"> </span>',
                 highlighted
             )
             

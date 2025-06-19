@@ -25,17 +25,18 @@ class SyntaxHighlightPlugin(Plugin):
             syntax_config = self.engine.config.get("syntax_highlight", {})
             style = syntax_config.get("style", style)
         
-        # Create formatter with explicit settings for tabulation
+        # Create formatter with explicit settings for whitespace
         self.formatter = HtmlFormatter(
             style=style,
             cssclass=self.config.get('css_class', 'highlight'),
             linenos=linenums,
             noclasses=False,
             tabsize=4,
-            # Critical settings for preserving tabs and newlines
+            # Critical settings for preserving whitespace
             prestyles="white-space: pre !important; tab-size: 4 !important;",
             nobackground=True,
-            tabreplace='',  # Preserve tabs instead of converting to spaces
+            wrapcode=True,  # Wrap code in additional div for better control
+            nowrap=False,   # Allow long lines to wrap
         )
         
     def _detect_language_from_code(self, code):
@@ -124,55 +125,51 @@ class SyntaxHighlightPlugin(Plugin):
         return html.unescape(content)
     
     def _process_code_with_linebreaks(self, code, lexer):
-        """Process code with Pygments while preserving line breaks and tabs.
-        
-        This method preserves the structure of the original code by adding
-        line breaks and proper spacing.
-        """
-        # Запоминаем, есть ли табы
+        """Process code with Pygments while preserving line breaks and tabs."""
+        # Remember if we have tabs
         has_tabs = '\t' in code
         
-        # Сохраняем шаблонные строки для последующего восстановления
+        # Save template strings for later restoration
         template_strings = {}
         if hasattr(lexer, 'aliases') and any(
             lang in lexer.aliases for lang in 
             ['js', 'javascript', 'jsx', 'typescript', 'ts', 'tsx',
              'ruby', 'erb', 'php', 'kotlin', 'swift']
         ):
-            # Общий шаблонный паттерн для многих языков (`...${...}...` или `...#{...}...`)
             template_pattern = r'`([^`]*?)[#$]\{([^}]*?)\}([^`]*?)`'
             template_matches = list(re.finditer(template_pattern, code))
             
-            # Сохраняем и заменяем временными маркерами
             for i, match in enumerate(template_matches):
                 placeholder = f"__TEMPLATE_STRING_{i}__"
                 template_strings[placeholder] = match.group(0)
                 code = code.replace(match.group(0), placeholder)
         
-        # Получаем HTML-разметку от Pygments с базовой подсветкой
+        # Get HTML markup from Pygments with basic highlighting
         formatted_html = highlight(code, lexer, self.formatter)
         
-        # Универсальная обработка пробелов для всех языков
-        # Определяем регулярное выражение для добавления пробелов после ключевых слов
+        # Process spaces after keywords
         keyword_pattern = r'<span class="(?:k|kd|kc|kr|kt)">(\w+)</span>'
         
         def add_space_after_keyword(m):
             keyword = m.group(1)
-            # Используем более точный подход - просто один пробел вместо &nbsp;
             return f'<span class="k">{keyword}</span><span class="w"> </span>'
         
-        # Применяем универсальную замену пробелов после ключевых слов
-        formatted_html = re.sub(keyword_pattern, add_space_after_keyword, formatted_html)
+        formatted_html = re.sub(
+            keyword_pattern, 
+            add_space_after_keyword, 
+            formatted_html
+        )
         
-        # Добавляем пробелы вокруг операторов
+        # Add spaces around operators
         operator_pattern = r'(<span class="o">[+\-*/=<>!&|^%]+</span>)'
+        space_token = '<span class="w"> </span>'
         formatted_html = re.sub(
             operator_pattern, 
-            r'<span class="w"> </span>\1<span class="w"> </span>', 
+            f'{space_token}\\1{space_token}', 
             formatted_html
         )
                 
-        # Извлекаем содержимое между тегами <pre>
+        # Extract content between pre tags
         pattern = r'<pre[^>]*>(.*?)</pre>'
         pre_match = re.search(pattern, formatted_html, re.DOTALL)
         if not pre_match:
@@ -180,106 +177,86 @@ class SyntaxHighlightPlugin(Plugin):
             
         pre_content = pre_match.group(1)
         
-        # Разбиваем по строкам и добавляем line spans
+        # Split by lines and add line spans
         lines = pre_content.split('\n')
         processed_lines = []
         
-        # Получаем оригинальные строки для сравнения
+        # Get original lines for comparison
         orig_lines = code.split('\n')
         
         for i, (line, orig_line) in enumerate(zip(lines, orig_lines)):
-            # Если строка пустая, добавляем пустую строку
+            # If line is empty, add empty line
             if not orig_line.strip():
                 processed_lines.append(
                     f'<span class="line" id="L{i+1}">&nbsp;</span>'
                 )
                 continue
             
-            # Точное копирование отступов из оригинального кода
-            # Находим отступы в оригинальной строке
+            # Copy indentation from original code
             indent_match = re.match(r'^(\s+)', orig_line)
             if indent_match:
                 orig_indent = indent_match.group(1)
                 
-                # Подсчитываем количество табов и пробелов
+                # Count tabs and spaces
                 tab_count = orig_indent.count('\t')
                 space_count = orig_indent.count(' ')
                 
-                # Создаем отображаемые отступы - обрабатываем каждый таб отдельно
+                # Create visible indentation
                 if tab_count > 0:
-                    # Если есть табы, добавляем атрибут data-tabs
                     indent_html = f'<span class="ws" data-tabs="{tab_count}">'
                     
-                    # Обрабатываем последовательные табы в строке
                     indent_chars = []
                     for char in orig_indent:
                         if char == '\t':
-                            # Добавляем каждый таб отдельно
                             indent_chars.append('&nbsp;&nbsp;&nbsp;&nbsp;')
                         elif char == ' ':
                             indent_chars.append('&nbsp;')
                     
-                    # Объединяем символы в строку
                     indent_html += ''.join(indent_chars)
                 else:
                     indent_html = '<span class="ws">'
-                    # Добавляем неразрывные пробелы для каждого пробела
                     indent_html += '&nbsp;' * space_count
                 
                 indent_html += '</span>'
                 
-                # Заменяем отступы в текущей строке HTML
                 line = re.sub(r'^\s*', indent_html, line)
             
-            # Оборачиваем в span с классом line
             processed_lines.append(
                 f'<span class="line" id="L{i+1}">{line}</span>'
             )
         
-        # Собираем все строки в один блок
         processed_content = '\n'.join(processed_lines)
         
-        # Заменяем содержимое на обработанное
         formatted_html = formatted_html.replace(
             pre_match.group(1), processed_content
         )
         
-        # Восстанавливаем шаблонные строки
-        if hasattr(lexer, 'aliases') and any(
-            lang in lexer.aliases for lang in 
-            ['js', 'javascript', 'jsx', 'typescript', 'ts', 'tsx',
-             'ruby', 'erb', 'php', 'kotlin', 'swift']
-        ) and template_strings:
+        # Restore template strings
+        if template_strings:
             for placeholder, template in template_strings.items():
-                # Общий паттерн для разбора шаблонной строки
                 parts = re.match(
                     r'`([^`]*?)[#$]\{([^}]*?)\}([^`]*?)`', 
                     template
                 )
                 if parts:
                     before, expr, after = parts.groups()
-                    
-                    # Создаем HTML-разметку для шаблонной строки
-                    # Важно: используем более простую разметку, чтобы избежать отображения HTML-тегов
                     template_html = (
                         f'<span class="sb">`{html.escape(before)}'
                         f'${{{expr}}}'
                         f'{html.escape(after)}`</span>'
                     )
-                    
-                    # Заменяем плейсхолдер на шаблонную строку
                     formatted_html = formatted_html.replace(
                         html.escape(placeholder), template_html
                     )
         
-        # Включаем пробелы в стили
+        # Include whitespace in styles
         if 'white-space: pre' not in formatted_html:
             style = 'white-space: pre !important; tab-size: 4 !important;'
             formatted_html = formatted_html.replace(
                 '<pre>', f'<pre style="{style}">'
             )
         
-        # Добавляем класс has-tabs, если есть табы
+        # Add has-tabs class if we have tabs
         if has_tabs:
             formatted_html = formatted_html.replace(
                 'class="highlight"', 

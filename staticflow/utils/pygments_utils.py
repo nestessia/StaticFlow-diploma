@@ -47,77 +47,71 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     overflow-x: auto;
     background: transparent !important;
     white-space: pre !important;
+    display: block !important;
 }
 
-.highlight .line {
-    display: block;
-    white-space: pre !important;  /* Сохраняем пробелы и табуляцию */
-    position: relative;
-    padding-left: 0; /* Уберем отступ */
-}
-
-/* ВАЖНО: CSS для корректного отображения пробелов */
-.highlight .w {
-    display: inline !important;
+.highlight code {
+    display: block !important;
+    background: transparent;
+    color: inherit;
     white-space: pre !important;
-    width: 0.25em !important; /* Фиксированная ширина для пробела */
-    margin: 0 !important;
-    padding: 0 !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
+    position: relative;
 }
 
-/* Фикс для пробелов между ключевыми словами и идентификаторами */
-.highlight .k + .w, 
-.highlight .kd + .w,
-.highlight .kn + .w,
-.highlight .kr + .w,
-.highlight .kt + .w,
-.highlight .ow + .w {
+/* Стили для строк */
+.highlight .line {
+    display: block !important;
+    white-space: pre !important;
+    position: relative;
+    padding-left: 0;
+    min-height: 1.2em;
+}
+
+/* Стили для пробелов */
+.highlight .w {
+    display: inline-block !important;
+    white-space: pre !important;
+    color: inherit !important;
+    width: 0.6em !important;
+    min-width: 0.6em !important;
     visibility: visible !important;
-    display: inline !important;
-    width: auto !important;
-    margin-right: 0.35em !important;
 }
 
 /* Специальные классы для отступов в начале строки */
 .highlight .ws {
     white-space: pre !important;
-    display: inline !important;
+    display: inline-block !important;
     visibility: visible !important;
     color: transparent !important;
     position: relative !important;
+    width: 0.6em !important;
+    min-width: 0.6em !important;
 }
 
-/* Добавляем отступы после ws */
-.highlight .ws:after {
-    content: ' ';
-    display: inline;
-    white-space: pre;
-    margin-right: 0.5em;
+/* Стили для span элементов внутри highlight */
+.highlight span {
+    white-space: pre !important;
+    display: inline-block !important;
 }
 
-/* Более надежное отображение пробелов */
-.highlight .ws, .highlight .w {
-    font-size: inherit !important;
+/* Фиксированная ширина для пробелов после ключевых слов */
+.highlight .k + .w,
+.highlight .kd + .w,
+.highlight .kr + .w,
+.highlight .kt + .w {
+    width: 0.6em !important;
+    min-width: 0.6em !important;
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Принудительные переносы строк */
+.highlight br {
+    display: block !important;
+    content: "" !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
     line-height: inherit !important;
-}
-
-/* Убираем слияние пробелов */
-.highlight * {
-    word-spacing: normal !important;
-    letter-spacing: normal !important;
-}
-
-/* Усиленный фикс для пробелов */
-.highlight .w:after {
-    content: '' !important; /* Убираем дополнительный контент */
-}
-
-.highlight .w:before {
-    content: '' !important;
 }
 
 /* Стили для кода с табуляцией */
@@ -125,38 +119,14 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     position: relative;
 }
 
-/* ======= Универсальные стили для всех языков ======= */
-
-/* Фикс для отображения шаблонных строк JavaScript */
-.highlight .sb, .highlight .s, .highlight .sa, .highlight .sc, 
-.highlight .dl, .highlight .sd, .highlight .s2, .highlight .se, 
-.highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, 
-.highlight .s1, .highlight .ss {
-    white-space: pre !important;
-}
-
-/* Фикс для специальных символов во всех языках */
-.highlight .nb, .highlight .nf, .highlight .nx, .highlight .nc {
-    margin-left: 0.25em !important;
-}
-
-/* Фикс для отображения операторов во всех языках */
-.highlight .o, .highlight .ow {
-    margin: 0 0.25em !important;
-}
-
-/* Фикс для пунктуации */
-.highlight .p {
-    white-space: pre !important;
-}
-
+/* Стили для блока кода */
 .code-block {
     position: relative;
     margin: 1em 0;
     border-radius: 4px;
     overflow: hidden;
-    background: #272822;  /* Фон Monokai */
-    color: #f8f8f2;       /* Цвет текста Monokai */
+    background: #272822;
+    color: #f8f8f2;
 }
 
 .language-tag {
@@ -171,6 +141,42 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     z-index: 10;
 }
 
+/* Специфичные стили для разных языков */
+.language-python .k + .n,
+.language-javascript .k + .n,
+.language-typescript .k + .n,
+.language-java .k + .n,
+.language-csharp .k + .n,
+.language-go .k + .n,
+.language-rust .k + .n,
+.language-swift .k + .n,
+.language-kotlin .k + .n {
+    margin-left: 0.25em !important;
+}
+
+/* Стили для операторов */
+.highlight .o, .highlight .ow {
+    margin: 0 0.25em !important;
+}
+
+/* Стили для пунктуации */
+.highlight .p {
+    white-space: pre !important;
+}
+
+/* Фикс для отображения шаблонных строк JavaScript */
+.highlight .sb, .highlight .s, .highlight .sa, .highlight .sc, 
+.highlight .dl, .highlight .sd, .highlight .s2, .highlight .se, 
+.highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, 
+.highlight .s1, .highlight .ss {
+    white-space: pre !important;
+}
+
+/* Фикс для специальных символов во всех языках */
+.highlight .nb, .highlight .nf, .highlight .nx, .highlight .nc {
+    margin-left: 0.25em !important;
+}
+
 /* JavaScript специфичные фиксы */
 .language-javascript .sb code.inline-code,
 .javascript .sb code.inline-code,
@@ -181,12 +187,6 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
     font-family: inherit !important;
     font-size: inherit !important;
     display: inline !important;
-}
-
-/* Python специфичные фиксы */
-.language-python .k + .n,
-.python .k + .n {
-    margin-left: 0.25em !important;
 }
 
 /* Ruby специфичные фиксы */
@@ -240,17 +240,12 @@ def generate_pygments_css(style_name="monokai", custom_styles=None):
 .language-kotlin .k + .n, .kotlin .k + .n {
     margin-left: 0.25em !important;
 }
+
 """
-        
-        # Объединяем стили
         css = f"{pygments_css}\n\n{essential_css}"
-        
-        # Добавляем пользовательские стили, если они предоставлены
         if custom_styles:
             css = f"{css}\n\n{custom_styles}"
-        
         return css
-        
     except Exception as e:
         logger.error(f"Error generating Pygments CSS: {e}")
-        return "/* Error generating Pygments CSS */" 
+        return "/* Error generating Pygments CSS */"
