@@ -122,11 +122,24 @@ class MarkdownParser(ContentParser):
             processed_lines = []
             
             for line in code_lines:
-                # Подсчитываем начальные пробелы
-                leading_spaces = len(line) - len(line.lstrip())
-                if leading_spaces > 0:
-                    # Заменяем пробелы на неразрывные пробелы
-                    line = '&nbsp;' * leading_spaces + line.lstrip()
+                # Обрабатываем начальные пробелы
+                indent = len(line) - len(line.lstrip())
+                if indent > 0:
+                    # Заменяем пробелы на span с классом token whitespace
+                    space_spans = '<span class="token whitespace"> </span>' * indent
+                    line = space_spans + line.lstrip()
+                
+                # Заменяем все оставшиеся пробелы внутри строки
+                line = re.sub(
+                    r'<span class="ws"></span>',
+                    '<span class="token whitespace"> </span>',
+                    line
+                )
+                line = re.sub(
+                    r'<span class="w"></span>',
+                    '<span class="token whitespace"> </span>',
+                    line
+                )
                 processed_lines.append(line)
             
             code_content = '\n'.join(processed_lines)
@@ -192,8 +205,22 @@ class MarkdownParser(ContentParser):
             class TokenFormatter(HtmlFormatter):
                 def wrap(self, source, outfile):
                     for i, (token_type, value) in enumerate(source):
-                        if token_type == Token.Text and value == '\n':
-                            yield token_type, '\n'
+                        if token_type == Token.Text and value.isspace():
+                            # Обрабатываем пробельные символы
+                            for char in value:
+                                if char == ' ':
+                                    # Для пробела
+                                    yield Token.Text, (
+                                        '<span class="token whitespace"> </span>'
+                                    )
+                                elif char == '\t':
+                                    # Для табуляции
+                                    yield Token.Text, (
+                                        '<span class="token tab">    </span>'
+                                    )
+                                elif char == '\n':
+                                    # Для переноса строки
+                                    yield Token.Text, '\n'
                         else:
                             # Добавляем span с классом token и типом токена
                             token_classes = []
@@ -221,22 +248,19 @@ class MarkdownParser(ContentParser):
                 wrapcode=True  # Оборачиваем код в pre>code
             )
             
-            # Сохраняем оригинальные отступы
-            lines = code.split('\n')
-            indents = [len(line) - len(line.lstrip()) for line in lines]
-            
             # Подсвечиваем код
             highlighted = highlight(code, lexer, formatter)
             
-            # Восстанавливаем отступы
-            highlighted_lines = highlighted.split('\n')
-            for i, (indent, line) in enumerate(zip(indents, highlighted_lines)):
-                if indent > 0:
-                    highlighted_lines[i] = ' ' * indent + line.lstrip()
+            # Заменяем все оставшиеся пробелы
+            highlighted = re.sub(
+                r'<span class="ws"></span>',
+                '<span class="token whitespace"> </span>',
+                highlighted
+            )
             
-            return '\n'.join(highlighted_lines)
+            return highlighted
             
-        except Exception as e:
+        except Exception:
             # Если подсветка не удалась, возвращаем исходный код
             # с сохранением форматирования
             return code

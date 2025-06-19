@@ -107,12 +107,164 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 .highlight .line {
     display: block;
-    white-space: pre !important;  /* Сохраняем пробелы и табуляцию */
+    white-space: pre !important;
     position: relative;
-    padding-left: 0; /* Уберем отступ */
+    padding-left: 0;
 }
 
-/* ВАЖНО: CSS для корректного отображения пробелов */
+/* Улучшенные стили для пробелов */
+.highlight .w {
+    display: inline-block !important;
+    white-space: pre !important;
+    width: 0.5em !important;
+    height: 1.2em !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    opacity: 0.15 !important;
+    background-color: #ffffff !important;
+    border-radius: 1px !important;
+    position: relative !important;
+}
+
+/* Стили для табуляции */
+.highlight .tab {
+    display: inline-block !important;
+    white-space: pre !important;
+    width: 2em !important;
+    height: 1.2em !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    opacity: 0.1 !important;
+    background-color: #ffffff !important;
+    border-radius: 1px !important;
+    position: relative !important;
+}
+
+/* Показываем символы для пробелов и табуляции при наведении */
+.highlight .w:hover,
+.highlight .tab:hover {
+    opacity: 0.3 !important;
+}
+
+/* Стили для начала строки */
+.highlight .line-start {
+    position: relative !important;
+}
+
+/* Фикс для отображения пробелов в начале строки */
+.highlight .line-start .w {
+    margin-left: 0 !important;
+}
+
+/* Специальные стили для HTML */
+.language-html .w {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Стили для отображения отступов в разных языках */
+.language-python .w,
+.language-javascript .w,
+.language-typescript .w,
+.language-css .w,
+.language-html .w {
+    width: 0.5em !important;
+}
+
+/* Сохраняем пробелы внутри строк */
+.highlight .s1 .w,
+.highlight .s2 .w,
+.highlight .sr .w {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Стили для подсветки синтаксиса с сохранением пробелов */
+.token.whitespace {
+    display: inline-block !important;
+    position: relative !important;
+    width: 1ch !important;
+    height: 1.2em !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 2px !important;
+}
+
+.token.whitespace::before {
+    content: "·" !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
+    font-size: 0.8em !important;
+}
+
+.token.tab {
+    display: inline-block !important;
+    position: relative !important;
+    width: 4ch !important;
+    height: 1.2em !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 2px !important;
+}
+
+.token.tab::before {
+    content: "→" !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: rgba(255, 255, 255, 0.15) !important;
+    font-size: 0.8em !important;
+}
+
+/* Увеличиваем видимость при наведении */
+.token.whitespace:hover,
+.token.tab:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.token.whitespace:hover::before,
+.token.tab:hover::before {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Стили для начала строки */
+.highlight .line-start {
+    position: relative !important;
+}
+
+/* Фикс для отображения пробелов в начале строки */
+.highlight .line-start .w {
+    margin-left: 0 !important;
+}
+
+/* Специальные стили для HTML */
+.language-html .w {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Стили для отображения отступов в разных языках */
+.language-python .w,
+.language-javascript .w,
+.language-typescript .w,
+.language-css .w,
+.language-html .w {
+    width: 0.5em !important;
+}
+
+/* Сохраняем пробелы внутри строк */
+.highlight .s1 .w,
+.highlight .s2 .w,
+.highlight .sr .w {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Фикс для корректного отображения пробелов */
 .highlight .w {
     display: inline !important;
     white-space: pre !important;
@@ -295,4 +447,70 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 /* Kotlin специфичные фиксы */
 .language-kotlin .k + .n, .kotlin .k + .n {
     margin-left: 0.25em !important;
+}
+
+/* Увеличиваем видимость при наведении */
+.token.whitespace:hover,
+.token.tab:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.token.whitespace:hover::before,
+.token.tab:hover::before {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Стили для начала строки */
+.highlight .line-start {
+    position: relative !important;
+}
+
+/* Фикс для отображения пробелов в начале строки */
+.highlight .line-start .w {
+    margin-left: 0 !important;
+}
+
+/* Основные стили для блока кода */
+.highlight pre {
+    background-color: #272822 !important;
+    padding: 1em !important;
+    margin: 0 !important;
+    overflow-x: auto !important;
+    font-family: "Consolas", "Monaco", "Courier New", monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+.highlight code {
+    font-family: "Consolas", "Monaco", "Courier New", monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+/* Убираем лишние отступы */
+.highlight pre code {
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* Стили для строк кода */
+.highlight .line {
+    display: block !important;
+    position: relative !important;
+    min-height: 1em !important;
+}
+
+/* Специальные стили для разных языков */
+.language-html .token.whitespace,
+.language-css .token.whitespace,
+.language-javascript .token.whitespace,
+.language-python .token.whitespace {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Сохраняем пробелы внутри строк */
+.highlight .s1 .token.whitespace,
+.highlight .s2 .token.whitespace,
+.highlight .sr .token.whitespace {
+    background-color: rgba(255, 255, 255, 0.03) !important;
 }
