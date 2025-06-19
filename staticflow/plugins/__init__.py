@@ -1,7 +1,6 @@
 from .core.base import Plugin, PluginMetadata, HookType
 from .core.manager import PluginManager
 from .builtin import SEOPlugin, SitemapPlugin, RSSPlugin, MinifierPlugin
-from .syntax_highlight import SyntaxHighlightPlugin
 from .math import MathPlugin
 from .diagrams import MermaidPlugin
 from .media import MediaPlugin
@@ -86,11 +85,6 @@ def initialize_plugins(engine) -> None:
     """Initialize all plugins for the engine with default configurations."""
     default_configs = get_default_plugin_configs()
     enabled_plugins = engine.config.get("PLUGINS", {}).get("enabled", [])
-
-    # Initialize syntax highlighting plugin
-    if "syntax_highlight" in enabled_plugins:
-        syntax_plugin = SyntaxHighlightPlugin()
-        engine.add_plugin(syntax_plugin, default_configs.get("syntax_highlight"))
 
     # Initialize math plugin
     if "math" in enabled_plugins:

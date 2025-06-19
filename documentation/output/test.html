@@ -8,16 +8,7 @@
     <link rel="canonical" href="http://localhost:8000" />
     
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (window.hljs) {
-                    hljs.highlightAll();
-                }
-            });
-        </script>
-
+    
     <style>
         :root {
             --primary-color: #2563eb;
@@ -277,14 +268,15 @@
     <main>
         <div class="content">
             
-    <h2 id="test">Test</h2><p>123</p><div class="highlight"><pre><span></span><code>graph TD
-A[Старт] --&gt; B[Процесс]
-B --&gt; C{Условие?}
-C --&gt;|Да| D[Процесс 1]
-C --&gt;|Нет| E[Процесс 2]
-D --&gt; F[Конец]
-E --&gt; F
-</code></pre></div>
+    <h2 id="test"> Test
+</h2><p> 123
+</p><p><pre>&lt;code class="language-mermaid"&gt;graph TD
+A[Старт] --&amp;gt; B[Процесс]
+B --&amp;gt; C{Условие?}
+C --&amp;gt;|Да| D[Процесс 1]
+C --&amp;gt;|Нет| E[Процесс 2]
+D --&amp;gt; F[Конец]
+E --&amp;gt; F&lt;/code&gt;</pre></p>
 
         </div>
     </main>

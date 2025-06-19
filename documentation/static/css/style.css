@@ -1,0 +1,551 @@
+/* Base styles */
+:root {
+    --primary-color: #3b82f6;
+    --text-color: #1f2937;
+    --bg-color: #ffffff;
+    --border-color: #e5e7eb;
+    --container-width: 800px;
+    --page-margin: 2rem;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --page-margin: 1rem;
+    }
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background: var(--bg-color);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 var(--page-margin);
+}
+
+header {
+    background: var(--primary-color);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+main {
+    min-height: calc(100vh - 300px);
+    padding: 2rem var(--page-margin);
+    margin: 0 auto;
+    max-width: var(--container-width);
+}
+
+main .content {
+    width: 100%;
+}
+
+footer {
+    color: var(--text-color);
+    padding: 2rem 0;
+    margin-top: 4rem;
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    margin: 1rem 0;
+}
+
+/* Улучшенные стили для Mermaid диаграмм */
+.mermaid {
+    display: block;
+    text-align: center;
+    background: white !important;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+    /* Предотвращаем переполнение */
+    max-width: 100%;
+    overflow-x: auto;
+    min-height: 50px;
+    position: relative;
+}
+
+/* Индикатор загрузки для диаграмм */
+.mermaid:empty::before {
+    content: "Загрузка диаграммы...";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--primary-color);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Стили для элементов подсветки синтаксиса внутри Mermaid */
+.mermaid .highlight,
+.mermaid pre,
+.mermaid code,
+.mermaid .code-block,
+.mermaid .language-tag {
+    /* Убираем скрытие элементов, чтобы диаграммы были видны */
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    color: inherit !important;
+}
+
+/* Скрыть все элементы подсветки синтаксиса внутри Mermaid */
+.mermaid .highlight *,
+.mermaid pre *,
+.mermaid code *,
+.mermaid .code-block * {
+    /* Не скрываем элементы, чтобы диаграмма отображалась */
+    font-family: inherit !important;
+    background: transparent !important;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto !important;
+    /* Центрируем диаграмму */
+    margin: 0 auto;
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Делаем элементы диаграммы видимыми */
+.mermaid g,
+.mermaid path,
+.mermaid text,
+.mermaid rect,
+.mermaid circle,
+.mermaid ellipse,
+.mermaid polygon,
+.mermaid polyline,
+.mermaid line {
+    visibility: visible !important;
+    display: inline !important;
+    /* Оптимизации рендеринга */
+    vector-effect: non-scaling-stroke;
+    shape-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
+}
+
+/* Оптимизация отображения больших диаграмм */
+@media (max-width: 768px) {
+    .mermaid svg {
+        max-width: 100% !important;
+        height: auto !important;
+        transform-origin: left top;
+        transform: scale(0.9);
+    }
+    
+    .mermaid {
+        padding: 1rem;
+    }
+}
+
+/* Дополнительно убедимся, что Mermaid имеет приоритет стилей */
+body .mermaid {
+    background: white !important;
+}
+
+body .mermaid * {
+    font-family: inherit !important;
+}
+
+/* Не применять классы подсветки в mermaid */
+.mermaid .language-mermaid::before,
+.mermaid.language-mermaid::before {
+    display: none !important;
+}
+
+/* Стили для блоков кода */
+pre {
+    white-space: pre !important;
+    tab-size: 4 !important;
+    -moz-tab-size: 4 !important;
+    -o-tab-size: 4 !important;
+    -webkit-tab-size: 4 !important;
+    overflow-x: auto;
+    padding: 1rem !important;
+    background-color: #1e1e1e !important;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    color: #d4d4d4;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+}
+
+/* Стили для нумерации строк */
+pre::before {
+    content: attr(data-line-numbers);
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3em;
+    padding: 1rem 0.5rem;
+    background: #252525;
+    color: #858585;
+    text-align: right;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+    border-right: 1px solid #404040;
+    white-space: pre !important;
+    letter-spacing: 0 !important;
+}
+
+/* Отступ для кода при наличии нумерации */
+pre[data-line-numbers] code {
+    margin-left: 3.5em !important;
+    padding-left: 1em !important;
+}
+
+pre code {
+    display: block !important;
+    white-space: pre !important;
+    tab-size: 4 !important;
+    -moz-tab-size: 4 !important;
+    -o-tab-size: 4 !important;
+    -webkit-tab-size: 4 !important;
+    overflow-x: auto;
+    max-width: 100%;
+    min-width: 100px;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    background: transparent !important;
+}
+
+.highlight {
+    background-color: #1e1e1e !important;
+    padding: 0 !important;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.highlight pre {
+    margin: 0 !important;
+    background-color: transparent !important;
+}
+
+.highlight code {
+    white-space: pre !important;
+    tab-size: 4 !important;
+    -moz-tab-size: 4 !important;
+    -o-tab-size: 4 !important;
+    -webkit-tab-size: 4 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Улучшенное форматирование кода */
+.highlight code br {
+    display: block !important;
+    content: "" !important;
+    margin-top: 0 !important;
+    line-height: inherit !important;
+}
+
+.highlight code span {
+    white-space: pre !important;
+    word-wrap: normal !important;
+    word-break: normal !important;
+    letter-spacing: 0 !important;
+}
+
+/* Сохранение пробелов и отступов */
+.highlight pre code,
+.highlight code span,
+pre code,
+pre code span {
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    -webkit-font-feature-settings: "liga" 0;
+    font-feature-settings: "liga" 0;
+    font-variant-ligatures: none;
+    white-space: pre !important;
+}
+
+/* Принудительное сохранение пробелов */
+.highlight pre code *,
+.highlight code *,
+pre code * {
+    white-space: pre !important;
+}
+
+/* Стили для пробелов и табуляции */
+.highlight .w { display: inline !important; }
+.highlight .s2 { white-space: pre !important; }
+.highlight br { display: block !important; }
+.highlight span { display: inline !important; }
+
+/* Принудительное сохранение пробелов в начале строк */
+.highlight code > span:first-child,
+pre code > span:first-child {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* Сохранение отступов внутри тегов */
+.highlight .nt + .w,
+.highlight .na + .w,
+.highlight .s + .w {
+    white-space: pre !important;
+    display: inline !important;
+}
+
+/* Стили для HTML тегов */
+.highlight .nt { color: #569cd6 !important; } /* HTML tags */
+.highlight .na { color: #9cdcfe !important; } /* HTML attributes */
+.highlight .s, .highlight .s1, .highlight .s2 { color: #ce9178 !important; } /* Strings */
+.highlight .p { color: #d4d4d4 !important; } /* Punctuation */
+.highlight .c, .highlight .c1 { color: #6a9955 !important; } /* Comments */
+
+/* Стили для Jinja2 тегов */
+.highlight .cp { color: #569cd6 !important; } /* Jinja2 tags */
+.highlight .nv { color: #9cdcfe !important; } /* Variables */
+.highlight .o { color: #d4d4d4 !important; } /* Operators */
+
+/* Стили для языка кода */
+.highlight::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    color: #858585;
+    background-color: #252525;
+    border-radius: 0 6px 0 6px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 1;
+}
+
+/* Стили для inline кода */
+code:not(pre code) {
+    background-color: rgba(175, 184, 193, 0.2);
+    color: #0550ae;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875em;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    pre,
+    .highlight {
+        font-size: 13px;
+        border-radius: 4px;
+    }
+    
+    pre[data-line-numbers]::before {
+        font-size: 13px;
+        width: 2.5em;
+        padding: 1rem 0.4rem;
+    }
+    
+    pre[data-line-numbers] code {
+        margin-left: 3em !important;
+    }
+    
+    .highlight::before {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Language dropdown styles */
+.lang-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.lang-dropbtn {
+    background-color: white;
+    color: var(--primary-color);
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lang-dropbtn .arrow-down {
+    font-size: 10px;
+}
+
+.lang-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.lang-dropdown-content a {
+    color: var(--text-color);
+    padding: 10px 12px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+
+.lang-dropdown-content a.active {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.lang-dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.lang-dropdown:hover .lang-dropdown-content {
+    display: block;
+}
+
+.lang-dropdown:hover .lang-dropbtn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive styling for mobile */
+@media (max-width: 768px) {
+    .lang-dropdown {
+        margin: 10px 0;
+    }
+    
+    .lang-dropdown-content {
+        width: 100%;
+        position: relative;
+    }
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    max-height: 600px;
+    object-fit: contain;
+}
+
+video {
+    max-width: 480px;
+    max-height: 270px;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    object-fit: contain;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2rem 0;
+    background: #fff;
+    border-radius: 0.7rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    overflow: hidden;
+}
+
+thead {
+    background: #f3f6fa;
+}
+
+thead th {
+    color: var(--primary-color);
+    font-weight: 700;
+    padding: 1rem 0.7rem;
+    border-bottom: 2px solid var(--primary-color);
+    text-align: left;
+}
+
+tbody td {
+    padding: 0.8rem 0.7rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+tbody tr:hover {
+    background: #e8f0fe;
+    transition: background 0.2s;
+}
+
+table, th, td {
+    border: none;
+}
+
+/* Скругления только для внешних углов */
+table tr:first-child th:first-child {
+    border-top-left-radius: 0.7rem;
+}
+table tr:first-child th:last-child {
+    border-top-right-radius: 0.7rem;
+}
+table tr:last-child td:first-child {
+    border-bottom-left-radius: 0.7rem;
+}
+table tr:last-child td:last-child {
+    border-bottom-right-radius: 0.7rem;
+}
