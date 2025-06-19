@@ -284,25 +284,6 @@ class Engine:
         except Exception as e:
             logger.error("Error copying static files: %s", e, exc_info=True)
 
-    def _generate_code_highlight_css(self, static_dir: Path) -> None:
-        """Generate code highlight CSS based on configuration."""
-        try:
-            css_dir = static_dir / "css"
-            css_dir.mkdir(parents=True, exist_ok=True)
-
-            syntax_config = self.config.get("syntax_highlight", {})
-            style_name = syntax_config.get("style", "monokai")
-
-            from ..utils.pygments_utils import generate_pygments_css
-            css_content = generate_pygments_css(style_name)
-
-            css_file = css_dir / "code_highlight.css"
-            with open(css_file, "w", encoding="utf-8") as f:
-                f.write(css_content)
-
-        except Exception as e:
-            print(f"Error generating code highlight CSS: {e}")
-
     def clean(self) -> None:
         """Clean the build artifacts."""
         if self.site.output_dir and self.site.output_dir.exists():
