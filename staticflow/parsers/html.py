@@ -1,6 +1,7 @@
 from typing import Dict, Any
 from bs4 import BeautifulSoup
 from .base import ContentParser
+from staticflow.plugins.syntax_highlight import SyntaxHighlightPlugin
 
 
 class HTMLParser(ContentParser):
@@ -9,6 +10,7 @@ class HTMLParser(ContentParser):
     def __init__(self, beautify: bool = True):
         super().__init__()
         self.beautify = beautify
+        self.syntax_highlighter = SyntaxHighlightPlugin()
 
     def parse(self, content: str) -> str:
         """Обрабатывает HTML контент."""

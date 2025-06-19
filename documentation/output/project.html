@@ -8,7 +8,16 @@
     <link rel="canonical" href="http://localhost:8000" />
     
     
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.hljs) {
+                    hljs.highlightAll();
+                }
+            });
+        </script>
+
     <style>
         :root {
             --primary-color: #2563eb;
@@ -268,63 +277,35 @@
     <main>
         <div class="content">
             
-    <h1 id="staticflow"> Проект StaticFlow
-</h1><p> В этом разделе мы рассмотрим основные концепции и структуру проекта StaticFlow.
-</p><h2 id="_1"> Структура проекта
-</h2><p> Типичный проект StaticFlow имеет следующую структуру:
-</p><p><pre>&lt;code&gt;project/
+    <h1 id="staticflow">Проект StaticFlow</h1><p>В этом разделе мы рассмотрим основные концепции и структуру проекта StaticFlow.</p><h2 id="_1">Структура проекта</h2><p>Типичный проект StaticFlow имеет следующую структуру:</p><div class="highlight"><pre><span></span><code>project/
 ├── content/ # Исходные файлы контента
 ├── templates/ # HTML шаблоны
 ├── static/ # Статические файлы (CSS, JS, изображения)
 ├── output/ # Сгенерированный сайт
 ├── media/ # Медиафайлы
-└── config.toml # Конфигурация проекта&lt;/code&gt;</pre></p><h2 id="_2"> Основные концепции
-</h2><h3 id="_3"> Контент
-</h3><p> Контент в StaticFlow хранится в виде Markdown файлов в директории <code class="language-text"> content/ </code> . Каждый файл может содержать метаданные в формате front matter:
-</p><p><pre>&lt;code class="language-yaml"&gt;---
-title: Заголовок страницы
-date: 2024-03-20
-author: автор
-tags: [тег1, тег2]
-format: markdown
-template: page.html
----&lt;/code&gt;</pre></p><h3 id="_4"> Шаблоны
-</h3><p> Шаблоны определяют внешний вид страниц. Они используют Jinja2 как движок шаблонов и могут включать:
+└── config.toml # Конфигурация проекта
+</code></pre></div><h2 id="_2">Основные концепции</h2><h3 id="_3">Контент</h3><p>Контент в StaticFlow хранится в виде Markdown файлов в директории <code>content/</code>. Каждый файл может содержать метаданные в формате front matter:</p><div class="highlight"><pre><span></span><code><span class="nn">---</span><span class="nt">title</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Заголовок страницы</span><span class="nt">date</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">2024-03-20</span><span class="nt">author</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">автор</span><span class="nt">tags</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">[</span><span class="nv">тег1</span><span class="p p-Indicator">,</span><span class="w"></span><span class="nv">тег2</span><span class="p p-Indicator">]</span><span class="nt">format</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">markdown</span><span class="nt">template</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">page.html</span><span class="nn">---</span></code></pre></div><h3 id="_4">Шаблоны</h3><p>Шаблоны определяют внешний вид страниц. Они используют Jinja2 как движок шаблонов и могут включать:
 - Базовые шаблоны
 - Частичные шаблоны (partials)
 - Макросы
-- Наследование шаблонов
-</p><h3 id="_5"> Статические файлы
-</h3><p> Директория <code class="language-text"> static/ </code> содержит все статические файлы, которые копируются в <code class="language-text"> output/ </code> без изменений:
+- Наследование шаблонов</p><h3 id="_5">Статические файлы</h3><p>Директория <code>static/</code> содержит все статические файлы, которые копируются в <code>output/</code> без изменений:
 - CSS стили
 - JavaScript файлы
 - Изображения
-- Другие медиафайлы
-</p><h3 id="_6"> Конфигурация
-</h3><p> Файл <code class="language-text"> config.toml </code> определяет основные настройки проекта:
+- Другие медиафайлы</p><h3 id="_6">Конфигурация</h3><p>Файл <code>config.toml</code> определяет основные настройки проекта:
 - Имя сайта
 - Базовый URL
 - Языки
 - URL паттерны
 - Плагины
-- Другие настройки
-</p><h2 id="_7"> Организация контента
-</h2><h3 id="_8"> Категории
-</h3><p> StaticFlow поддерживает иерархическую организацию контента через категории:
-- Категории могут быть вложенными
-</p><ul><li><p> Максимальная глубина вложенности настраивается </p></li><li><p> Каждая категория может иметь свою страницу </p></li></ul><h3 id="_9"> Теги
-</h3><p> Теги позволяют группировать контент по темам:
-- Нечувствительны к регистру
-</p><ul><li><p> Ограничение на количество тегов </p></li><li><p> Автоматическая генерация страниц тегов </p></li></ul><h3 id="_10"> Авторы
-</h3><p> Система авторов позволяет:
-- Привязывать контент к авторам
-</p><ul><li><p> Создавать профили авторов </p></li><li><p> Генерировать страницы авторов </p></li></ul><h2 id="_11"> Плагины
-</h2><p> StaticFlow имеет систему плагинов, которая позволяет:
+- Другие настройки</p><h2 id="_7">Организация контента</h2><h3 id="_8">Категории</h3><p>StaticFlow поддерживает иерархическую организацию контента через категории:
+- Категории могут быть вложенными</p><ul><li><p>Максимальная глубина вложенности настраивается</p></li><li><p>Каждая категория может иметь свою страницу</p></li></ul><h3 id="_9">Теги</h3><p>Теги позволяют группировать контент по темам:
+- Нечувствительны к регистру</p><ul><li><p>Ограничение на количество тегов</p></li><li><p>Автоматическая генерация страниц тегов</p></li></ul><h3 id="_10">Авторы</h3><p>Система авторов позволяет:
+- Привязывать контент к авторам</p><ul><li><p>Создавать профили авторов</p></li><li><p>Генерировать страницы авторов</p></li></ul><h2 id="_11">Плагины</h2><p>StaticFlow имеет систему плагинов, которая позволяет:
 - Расширять функциональность
 - Добавлять новые форматы контента
 - Интегрировать внешние сервисы
-- Кастомизировать процесс сборки
-</p>
+- Кастомизировать процесс сборки</p>
 
         </div>
     </main>

@@ -126,13 +126,10 @@ class Engine:
             # Применяем плагины к контенту
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
-                    plugin_name = (
+                    logger.debug(
+                        "Processing content with plugin: %s",
                         plugin.metadata.name if hasattr(plugin, 'metadata')
                         else plugin.__class__.__name__
-                    )
-                    logger.info(
-                        "Processing content with plugin: %s",
-                        plugin_name
                     )
                     content = plugin.process_content(content)
 

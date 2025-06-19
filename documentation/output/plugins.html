@@ -8,7 +8,16 @@
     <link rel="canonical" href="http://localhost:8000" />
     
     
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.hljs) {
+                    hljs.highlightAll();
+                }
+            });
+        </script>
+
     <style>
         :root {
             --primary-color: #2563eb;
@@ -268,21 +277,8 @@
     <main>
         <div class="content">
             
-    <h1 id="_1"> Плагины
-</h1><p> В этом разделе мы рассмотрим систему плагинов StaticFlow и как создавать свои плагины.
-</p><h2 id="_2"> Что такое плагин?
-</h2><p> Плагин в StaticFlow - это расширение, которое добавляет новую функциональность или изменяет существующую. Плагины могут:
-</p><ul><li> Добавлять новые форматы контента </li><li> Расширять функциональность шаблонов </li><li> Добавлять новые команды CLI </li><li> Интегрировать внешние сервисы </li><li> Оптимизировать процесс сборки </li></ul><h2 id="_3"> Установка плагинов
-</h2><h3 id="pip"> Через pip
-</h3><p><pre>&lt;code class="language-bash"&gt;pip install staticflow-plugin-name&lt;/code&gt;</pre></p><h3 id="_4"> В конфигурации
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre></p><h2 id="_5"> Создание плагина
-</h2><h3 id="1"> 1. Структура плагина
-</h3><p><pre>&lt;code&gt;my-plugin/
+    <h1 id="_1">Плагины</h1><p>В этом разделе мы рассмотрим систему плагинов StaticFlow и как создавать свои плагины.</p><h2 id="_2">Что такое плагин?</h2><p>Плагин в StaticFlow - это расширение, которое добавляет новую функциональность или изменяет существующую. Плагины могут:</p><ul><li>Добавлять новые форматы контента</li><li>Расширять функциональность шаблонов</li><li>Добавлять новые команды CLI</li><li>Интегрировать внешние сервисы</li><li>Оптимизировать процесс сборки</li></ul><h2 id="_3">Установка плагинов</h2><h3 id="pip">Через pip</h3><div class="highlight"><pre><span></span><code>pip<span class="w"></span>install<span class="w"></span>staticflow-plugin-name
+</code></pre></div><h3 id="_4">В конфигурации</h3><div class="highlight"><pre><span></span><code><span class="c1"># config.toml</span><span class="k">[PLUGINS]</span><span class="n">enabled</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">[</span><span class="w"></span><span class="s2">"plugin-name"</span><span class="p">,</span><span class="w"></span><span class="s2">"another-plugin"</span><span class="p">]</span><span class="k">[PLUGIN_PLUGIN_NAME]</span><span class="n">setting1</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"value1"</span><span class="n">setting2</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"value2"</span></code></pre></div><h2 id="_5">Создание плагина</h2><h3 id="1">1. Структура плагина</h3><div class="highlight"><pre><span></span><code>my-plugin/
 ├── staticflow_my_plugin/
 │ ├── __init__.py
 │ ├── plugin.py
@@ -291,175 +287,10 @@ setting2 = "value2"&lt;/code&gt;</pre></p><h2 id="_5"> Создание плаг
 │ └── test_plugin.py
 ├── setup.py
 ├── README.md
-└── LICENSE&lt;/code&gt;</pre></p><h3 id="2"> 2. Основной код плагина
-</h3><p><pre>&lt;code class="language-python"&gt;# staticflow_my_plugin/plugin.py
-from staticflow.plugins import Plugin class MyPlugin(Plugin): name = "my-plugin" version = "1.0.0" description = "Описание моего плагина" def __init__(self, app): super().__init__(app) self.settings = app.config.get('PLUGIN_MY_PLUGIN', {}) def on_build_start(self): # Код, выполняемый перед сборкой pass def on_build_end(self): # Код, выполняемый после сборки pass def on_page_render(self, page, template): # Модификация страницы перед рендерингом return page, template&lt;/code&gt;</pre></p><h3 id="3"> 3. Регистрация плагина
-</h3><p><pre>&lt;code class="language-python"&gt;# staticflow_my_plugin/__init__.py
-from .plugin import MyPlugin def register(app): return MyPlugin(app)&lt;/code&gt;</pre></p><h3 id="4-setuppy"> 4. Настройка setup.py
-</h3><p><pre>&lt;code class="language-python"&gt;# setup.py
-from setuptools import setup, find_packages setup( name="staticflow-my-plugin", version="1.0.0", packages=find_packages(), install_requires=[ "staticflow&amp;gt;=1.0.0", ], entry_points={ "staticflow.plugins": [ "my-plugin = staticflow_my_plugin:register", ], }, author="Your Name", author_email="your.email@example.com", description="Описание моего плагина", long_description=open("README.md").read(), long_description_content_type="text/markdown", url="https://github.com/your-username/staticflow-my-plugin", classifiers=[ "Development Status :: 4 - Beta", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3", ],
-)&lt;/code&gt;</pre></p><h2 id="_6"> Типы плагинов
-</h2><h3 id="_7"> Плагины контента
-</h3><p><pre>&lt;code class="language-python"&gt;class ContentPlugin(Plugin): def on_content_load(self, content): # Модификация контента return content def on_content_save(self, content): # Обработка перед сохранением return content&lt;/code&gt;</pre></p><h3 id="_8"> Плагины шаблонов
-</h3><p><pre>&lt;code class="language-python"&gt;class TemplatePlugin(Plugin): def on_template_render(self, template, context): # Модификация шаблона или контекста return template, context def register_filters(self, env): # Регистрация пользовательских фильтров env.filters['my_filter'] = my_filter_function&lt;/code&gt;</pre></p><h3 id="cli"> Плагины CLI
-</h3><p><pre>&lt;code class="language-python"&gt;class CLIPlugin(Plugin): def register_commands(self, cli): @cli.command() def my_command(): """Описание команды""" # Код команды pass&lt;/code&gt;</pre></p><h3 id="_9"> Плагины сборки
-</h3><p><pre>&lt;code class="language-python"&gt;class BuildPlugin(Plugin): def on_build_start(self): # Подготовка к сборке pass def on_build_end(self): # Очистка после сборки pass def on_asset_process(self, asset): # Обработка ассетов return asset&lt;/code&gt;</pre></p><h2 id="_10"> Хуки плагинов
-</h2><h3 id="_11"> Хуки жизненного цикла
-</h3><ul><li><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 5 - инициализация плагина </li><li><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 6 - начало сборки </li><li><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 7 - конец сборки </li><li><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 8 - очистка </li></ul><h3 id="_12"> Хуки контента
-</h3><ul><li><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 9 - загрузка контента </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 0 - сохранение контента </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 1 - рендеринг страницы </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 2 - рендеринг поста </li></ul><h3 id="_13"> Хуки шаблонов
-</h3><ul><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 3 - рендеринг шаблона </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 4 - компиляция шаблона </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 5 - обновление контекста </li></ul><h3 id="_14"> Хуки ассетов
-</h3><ul><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 6 - обработка ассета </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 7 - сохранение ассета </li><li><pre>&lt;code&gt;my-plugin/
-├── staticflow_my_plugin/
-│ ├── __init__.py
-│ ├── plugin.py
-│ └── utils.py
-├── tests/
-│ └── test_plugin.py
-├── setup.py
-├── README.md
-└── LICENSE&lt;/code&gt;</pre> 8 - очистка ассета </li></ul><h2 id="_15"> Конфигурация плагина
-</h2><h3 id="_16"> Настройки по умолчанию
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 0
-</p><h3 id="_17"> Валидация настроек
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 1
-</p><h2 id="_18"> Тестирование плагинов
-</h2><h3 id="_19"> Модульные тесты
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 2
-</p><h3 id="_20"> Интеграционные тесты
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 3
-</p><h2 id="_21"> Публикация плагина
-</h2><h3 id="_22"> Подготовка
-</h3><ol><li> Создайте README.md </li><li> Добавьте лицензию </li><li> Напишите документацию </li><li> Создайте тесты </li></ol><h3 id="pypi"> Публикация в PyPI
-</h3><p><pre>&lt;code class="language-toml"&gt;# config.toml
-[PLUGINS]
-enabled = [ "plugin-name", "another-plugin"
-] [PLUGIN_PLUGIN_NAME]
-setting1 = "value1"
-setting2 = "value2"&lt;/code&gt;</pre> 4
-</p><h3 id="_23"> Обновление
-</h3><ol><li> Увеличьте версию </li><li> Обновите документацию </li><li> Добавьте миграции </li><li> Опубликуйте новую версию </li></ol><h2 id="_24"> Лучшие практики
-</h2><h3 id="_25"> Разработка
-</h3><ol><li> Следуйте PEP 8 </li><li> Пишите тесты </li><li> Документируйте код </li><li> Используйте типизацию </li></ol><h3 id="_26"> Производительность
-</h3><ol><li> Оптимизируйте операции </li><li> Используйте кэширование </li><li> Минимизируйте зависимости </li><li> Следите за памятью </li></ol><h3 id="_27"> Безопасность
-</h3><ol><li> Валидируйте входные данные </li><li> Используйте безопасные настройки </li><li> Обрабатывайте ошибки </li><li> Следите за обновлениями </li></ol><h3 id="_28"> Совместимость
-</h3><ol><li> Поддерживайте версии Python </li><li> Тестируйте на разных версиях </li><li> Документируйте зависимости </li><li> Следите за изменениями API </li></ol>
+└── LICENSE
+</code></pre></div><h3 id="2">2. Основной код плагина</h3><div class="highlight"><pre><span></span><code><span class="c1"># staticflow_my_plugin/plugin.py</span><span class="kn">from</span><span class="nn">staticflow.plugins</span><span class="kn">import</span><span class="n">Plugin</span><span class="k">class</span><span class="nc">MyPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="n">name</span><span class="o">=</span><span class="s2">"my-plugin"</span><span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="n">description</span><span class="o">=</span><span class="s2">"Описание моего плагина"</span><span class="k">def</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">app</span><span class="p">)</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PLUGIN_MY_PLUGIN'</span><span class="p">,</span><span class="p">{})</span><span class="k">def</span><span class="nf">on_build_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span class="c1"># Код, выполняемый перед сборкой</span><span class="k">pass</span><span class="k">def</span><span class="nf">on_build_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span class="c1"># Код, выполняемый после сборки</span><span class="k">pass</span><span class="k">def</span><span class="nf">on_page_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">page</span><span class="p">,</span><span class="n">template</span><span class="p">):</span><span class="c1"># Модификация страницы перед рендерингом</span><span class="k">return</span><span class="n">page</span><span class="p">,</span><span class="n">template</span></code></pre></div><h3 id="3">3. Регистрация плагина</h3><div class="highlight"><pre><span></span><code><span class="c1"># staticflow_my_plugin/__init__.py</span><span class="kn">from</span><span class="nn">.plugin</span><span class="kn">import</span><span class="n">MyPlugin</span><span class="k">def</span><span class="nf">register</span><span class="p">(</span><span class="n">app</span><span class="p">):</span><span class="k">return</span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></code></pre></div><h3 id="4-setuppy">4. Настройка setup.py</h3><div class="highlight"><pre><span></span><code><span class="c1"># setup.py</span><span class="kn">from</span><span class="nn">setuptools</span><span class="kn">import</span><span class="n">setup</span><span class="p">,</span><span class="n">find_packages</span><span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"staticflow-my-plugin"</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">,</span><span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(),</span><span class="n">install_requires</span><span class="o">=</span><span class="p">[</span><span class="s2">"staticflow&gt;=1.0.0"</span><span class="p">,</span><span class="p">],</span><span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">"staticflow.plugins"</span><span class="p">:</span><span class="p">[</span><span class="s2">"my-plugin = staticflow_my_plugin:register"</span><span class="p">,</span><span class="p">],</span><span class="p">},</span><span class="n">author</span><span class="o">=</span><span class="s2">"Your Name"</span><span class="p">,</span><span class="n">author_email</span><span class="o">=</span><span class="s2">"your.email@example.com"</span><span class="p">,</span><span class="n">description</span><span class="o">=</span><span class="s2">"Описание моего плагина"</span><span class="p">,</span><span class="n">long_description</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">"README.md"</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span><span class="n">long_description_content_type</span><span class="o">=</span><span class="s2">"text/markdown"</span><span class="p">,</span><span class="n">url</span><span class="o">=</span><span class="s2">"https://github.com/your-username/staticflow-my-plugin"</span><span class="p">,</span><span class="n">classifiers</span><span class="o">=</span><span class="p">[</span><span class="s2">"Development Status :: 4 - Beta"</span><span class="p">,</span><span class="s2">"Intended Audience :: Developers"</span><span class="p">,</span><span class="s2">"License :: OSI Approved :: MIT License"</span><span class="p">,</span><span class="s2">"Programming Language :: Python :: 3"</span><span class="p">,</span><span class="p">],</span><span class="p">)</span></code></pre></div><h2 id="_6">Типы плагинов</h2><h3 id="_7">Плагины контента</h3><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="nc">ContentPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="k">def</span><span class="nf">on_content_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">content</span><span class="p">):</span><span class="c1"># Модификация контента</span><span class="k">return</span><span class="n">content</span><span class="k">def</span><span class="nf">on_content_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">content</span><span class="p">):</span><span class="c1"># Обработка перед сохранением</span><span class="k">return</span><span class="n">content</span></code></pre></div><h3 id="_8">Плагины шаблонов</h3><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="nc">TemplatePlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="k">def</span><span class="nf">on_template_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">template</span><span class="p">,</span><span class="n">context</span><span class="p">):</span><span class="c1"># Модификация шаблона или контекста</span><span class="k">return</span><span class="n">template</span><span class="p">,</span><span class="n">context</span><span class="k">def</span><span class="nf">register_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">env</span><span class="p">):</span><span class="c1"># Регистрация пользовательских фильтров</span><span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s1">'my_filter'</span><span class="p">]</span><span class="o">=</span><span class="n">my_filter_function</span></code></pre></div><h3 id="cli">Плагины CLI</h3><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="nc">CLIPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="k">def</span><span class="nf">register_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cli</span><span class="p">):</span><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span><span class="k">def</span><span class="nf">my_command</span><span class="p">():</span><span class="w"></span><span class="sd">"""Описание команды"""</span><span class="c1"># Код команды</span><span class="k">pass</span></code></pre></div><h3 id="_9">Плагины сборки</h3><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="nc">BuildPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="k">def</span><span class="nf">on_build_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span class="c1"># Подготовка к сборке</span><span class="k">pass</span><span class="k">def</span><span class="nf">on_build_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span class="c1"># Очистка после сборки</span><span class="k">pass</span><span class="k">def</span><span class="nf">on_asset_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">asset</span><span class="p">):</span><span class="c1"># Обработка ассетов</span><span class="k">return</span><span class="n">asset</span></code></pre></div><h2 id="_10">Хуки плагинов</h2><h3 id="_11">Хуки жизненного цикла</h3><ul><li><code>on_init</code> - инициализация плагина</li><li><code>on_build_start</code> - начало сборки</li><li><code>on_build_end</code> - конец сборки</li><li><code>on_clean</code> - очистка</li></ul><h3 id="_12">Хуки контента</h3><ul><li><code>on_content_load</code> - загрузка контента</li><li><code>on_content_save</code> - сохранение контента</li><li><code>on_page_render</code> - рендеринг страницы</li><li><code>on_post_render</code> - рендеринг поста</li></ul><h3 id="_13">Хуки шаблонов</h3><ul><li><code>on_template_render</code> - рендеринг шаблона</li><li><code>on_template_compile</code> - компиляция шаблона</li><li><code>on_context_update</code> - обновление контекста</li></ul><h3 id="_14">Хуки ассетов</h3><ul><li><code>on_asset_process</code> - обработка ассета</li><li><code>on_asset_save</code> - сохранение ассета</li><li><code>on_asset_clean</code> - очистка ассета</li></ul><h2 id="_15">Конфигурация плагина</h2><h3 id="_16">Настройки по умолчанию</h3><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="nc">MyPlugin</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="n">default_settings</span><span class="o">=</span><span class="p">{</span><span class="s1">'option1'</span><span class="p">:</span><span class="s1">'default1'</span><span class="p">,</span><span class="s1">'option2'</span><span class="p">:</span><span class="s1">'default2'</span><span class="p">,</span><span class="p">}</span><span class="k">def</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">app</span><span class="p">)</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">default_settings</span><span class="p">,</span><span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PLUGIN_MY_PLUGIN'</span><span class="p">,</span><span class="p">{})</span><span class="p">}</span></code></pre></div><h3 id="_17">Валидация настроек</h3><div class="highlight"><pre><span></span><code><span class="k">def</span><span class="nf">validate_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">settings</span><span class="p">):</span><span class="n">required</span><span class="o">=</span><span class="p">[</span><span class="s1">'option1'</span><span class="p">,</span><span class="s1">'option2'</span><span class="p">]</span><span class="k">for</span><span class="n">option</span><span class="ow">in</span><span class="n">required</span><span class="p">:</span><span class="k">if</span><span class="n">option</span><span class="ow">not</span><span class="ow">in</span><span class="n">settings</span><span class="p">:</span><span class="k">raise</span><span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required setting: </span><span class="si">{</span><span class="n">option</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></code></pre></div><h2 id="_18">Тестирование плагинов</h2><h3 id="_19">Модульные тесты</h3><div class="highlight"><pre><span></span><code><span class="c1"># tests/test_plugin.py</span><span class="kn">import</span><span class="nn">pytest</span><span class="kn">from</span><span class="nn">staticflow_my_plugin</span><span class="kn">import</span><span class="n">MyPlugin</span><span class="k">def</span><span class="nf">test_plugin_initialization</span><span class="p">():</span><span class="n">plugin</span><span class="o">=</span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">mock_app</span><span class="p">)</span><span class="k">assert</span><span class="n">plugin</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="s2">"my-plugin"</span><span class="k">assert</span><span class="n">plugin</span><span class="o">.</span><span class="n">version</span><span class="o">==</span><span class="s2">"1.0.0"</span><span class="k">def</span><span class="nf">test_plugin_settings</span><span class="p">():</span><span class="n">plugin</span><span class="o">=</span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">mock_app</span><span class="p">)</span><span class="k">assert</span><span class="n">plugin</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">'option1'</span><span class="p">]</span><span class="o">==</span><span class="s1">'default1'</span></code></pre></div><h3 id="_20">Интеграционные тесты</h3><div class="highlight"><pre><span></span><code><span class="k">def</span><span class="nf">test_plugin_integration</span><span class="p">():</span><span class="n">app</span><span class="o">=</span><span class="n">create_test_app</span><span class="p">()</span><span class="n">plugin</span><span class="o">=</span><span class="n">MyPlugin</span><span class="p">(</span><span class="n">app</span><span class="p">)</span><span class="c1"># Тестирование функциональности</span><span class="n">result</span><span class="o">=</span><span class="n">plugin</span><span class="o">.</span><span class="n">process_content</span><span class="p">(</span><span class="s2">"test content"</span><span class="p">)</span><span class="k">assert</span><span class="n">result</span><span class="o">==</span><span class="s2">"processed test content"</span></code></pre></div><h2 id="_21">Публикация плагина</h2><h3 id="_22">Подготовка</h3><ol><li>Создайте README.md</li><li>Добавьте лицензию</li><li>Напишите документацию</li><li>Создайте тесты</li></ol><h3 id="pypi">Публикация в PyPI</h3><div class="highlight"><pre><span></span><code>python<span class="w"></span>setup.py<span class="w"></span>sdist<span class="w"></span>bdist_wheel
+twine<span class="w"></span>upload<span class="w"></span>dist/*
+</code></pre></div><h3 id="_23">Обновление</h3><ol><li>Увеличьте версию</li><li>Обновите документацию</li><li>Добавьте миграции</li><li>Опубликуйте новую версию</li></ol><h2 id="_24">Лучшие практики</h2><h3 id="_25">Разработка</h3><ol><li>Следуйте PEP 8</li><li>Пишите тесты</li><li>Документируйте код</li><li>Используйте типизацию</li></ol><h3 id="_26">Производительность</h3><ol><li>Оптимизируйте операции</li><li>Используйте кэширование</li><li>Минимизируйте зависимости</li><li>Следите за памятью</li></ol><h3 id="_27">Безопасность</h3><ol><li>Валидируйте входные данные</li><li>Используйте безопасные настройки</li><li>Обрабатывайте ошибки</li><li>Следите за обновлениями</li></ol><h3 id="_28">Совместимость</h3><ol><li>Поддерживайте версии Python</li><li>Тестируйте на разных версиях</li><li>Документируйте зависимости</li><li>Следите за изменениями API</li></ol>
 
         </div>
     </main>

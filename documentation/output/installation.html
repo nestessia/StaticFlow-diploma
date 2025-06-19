@@ -8,7 +8,16 @@
     <link rel="canonical" href="http://localhost:8000" />
     
     
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.hljs) {
+                    hljs.highlightAll();
+                }
+            });
+        </script>
+
     <style>
         :root {
             --primary-color: #2563eb;
@@ -268,20 +277,25 @@
     <main>
         <div class="content">
             
-    <h1 id="staticflow"> Установка StaticFlow
-</h1><p> В этом разделе мы рассмотрим процесс установки StaticFlow и необходимые требования.
-</p><h2 id="_1"> Требования
-</h2><p> Для работы StaticFlow требуется:
-</p><ul><li> Python 3.8 или выше </li><li> pip (менеджер пакетов Python) </li><li> Git (опционально, для работы с репозиториями) </li></ul><h2 id="pip"> Установка через pip
-</h2><p> Самый простой способ установить StaticFlow - использовать pip:
-</p><p><pre>&lt;code class="language-bash"&gt;pip install staticflow&lt;/code&gt;</pre></p><h2 id="_2"> Проверка установки
-</h2><p> После установки проверьте, что StaticFlow доступен:
-</p><p><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre></p><h2 id="_3"> Обновление
-</h2><p> Для обновления до последней версии:
-</p><p><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre></p><h2 id="windows"> Установка на Windows
-</h2><ol><li> Скачайте и установите Python с официального сайта: https://www.python.org/downloads/ </li><li> При установке обязательно выберите опцию "Add Python to PATH". </li><li> Откройте командную строку (Win+R → cmd). </li><li><p> Проверьте версию Python и pip: <code> ` <code class="language-text"> bash python --version pip --version </code></code><code class="language-text"> 4. Установите StaticFlow: </code><code><code class="language-text"> bash pip install staticflow </code></code><code class="language-text"> 5. Запустите StaticFlow: </code><code><code class="language-text"> bash staticflow --version </code></code><code class="language-text"> ## Установка на Ubuntu 1. Обновите пакеты: </code><code><code class="language-text"> bash sudo apt update &amp;&amp; sudo apt upgrade </code></code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 0 <code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 1 </code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 2 <code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 3 </code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 4 <code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 5 </code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 6 <code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 7 </code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 8 <code><pre>&lt;code class="language-bash"&gt;staticflow --version&lt;/code&gt;</pre> 9 </code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 0 <code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 1 </code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 2 <code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 3 </code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 4 <code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 5 </code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 6 <code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 7 </code><pre>&lt;code class="language-bash"&gt;pip install --upgrade staticflow&lt;/code&gt;</pre> 8pip install --upgrade pip` </p></li><li><p><strong> Ошибки при сборке </strong></p></li><li> Проверьте версию Python </li><li> Убедитесь, что все зависимости установлены </li></ol><p> ### Получение помощи
-</p><p> Если у вас возникли проблемы:
-</p><ul><li><p> Проверьте <a href="https://github.com/nestessia/StaticFlow-diploma/issues"> GitHub Issues </a></p></li><li><p> Создайте новый issue с подробным описанием проблемы </p></li></ul>
+    <h1 id="staticflow">Установка StaticFlow</h1><p>В этом разделе мы рассмотрим процесс установки StaticFlow и необходимые требования.</p><h2 id="_1">Требования</h2><p>Для работы StaticFlow требуется:</p><ul><li>Python 3.8 или выше</li><li>pip (менеджер пакетов Python)</li><li>Git (опционально, для работы с репозиториями)</li></ul><h2 id="pip">Установка через pip</h2><p>Самый простой способ установить StaticFlow - использовать pip:</p><div class="highlight"><pre><span></span><code>pip<span class="w"></span>install<span class="w"></span>staticflow
+</code></pre></div><h2 id="_2">Проверка установки</h2><p>После установки проверьте, что StaticFlow доступен:</p><div class="highlight"><pre><span></span><code>staticflow<span class="w"></span>--version
+</code></pre></div><h2 id="_3">Обновление</h2><p>Для обновления до последней версии:</p><div class="highlight"><pre><span></span><code>pip<span class="w"></span>install<span class="w"></span>--upgrade<span class="w"></span>staticflow
+</code></pre></div><h2 id="windows">Установка на Windows</h2><ol><li>Скачайте и установите Python с официального сайта: <a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a></li><li>При установке обязательно выберите опцию "Add Python to PATH".</li><li>Откройте командную строку (Win+R → cmd).</li><li>Проверьте версию Python и pip: <div class="highlight"><pre><span></span><code>python<span class="w"></span>--version
+pip<span class="w"></span>--version
+</code></pre></div></li><li>Установите StaticFlow: <div class="highlight"><pre><span></span><code>pip<span class="w"></span>install<span class="w"></span>staticflow
+</code></pre></div></li><li>Запустите StaticFlow: <div class="highlight"><pre><span></span><code>staticflow<span class="w"></span>--version
+</code></pre></div></li></ol><h2 id="ubuntu">Установка на Ubuntu</h2><ol><li>Обновите пакеты: <div class="highlight"><pre><span></span><code>sudo<span class="w"></span>apt<span class="w"></span>update<span class="w"></span><span class="o">&amp;&amp;</span><span class="w"></span>sudo<span class="w"></span>apt<span class="w"></span>upgrade
+</code></pre></div></li><li>Установите Python и pip: <div class="highlight"><pre><span></span><code>sudo<span class="w"></span>apt<span class="w"></span>install<span class="w"></span>python3<span class="w"></span>python3-pip
+</code></pre></div></li><li>Проверьте версию Python: <div class="highlight"><pre><span></span><code>python3<span class="w"></span>--version
+pip3<span class="w"></span>--version
+</code></pre></div></li><li>Установите StaticFlow: <div class="highlight"><pre><span></span><code>pip3<span class="w"></span>install<span class="w"></span>staticflow
+</code></pre></div></li><li>Запустите StaticFlow: <div class="highlight"><pre><span></span><code>staticflow<span class="w"></span>--version
+</code></pre></div></li></ol><h2 id="macos">Установка на macOS</h2><ol><li>Убедитесь, что установлен Homebrew (если нет — установите с <a href="https://brew.sh/">https://brew.sh/</a>): <div class="highlight"><pre><span></span><code>/bin/bash<span class="w"></span>-c<span class="w"></span><span class="s2">"</span><span class="k">$(</span>curl<span class="w"></span>-fsSL<span class="w"></span>https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span class="k">)</span><span class="s2">"</span></code></pre></div></li><li>Установите Python и pip: <div class="highlight"><pre><span></span><code>brew<span class="w"></span>install<span class="w"></span>python
+</code></pre></div></li><li>Проверьте версию Python: <div class="highlight"><pre><span></span><code>python3<span class="w"></span>--version
+pip3<span class="w"></span>--version
+</code></pre></div></li><li>Установите StaticFlow: <div class="highlight"><pre><span></span><code>pip3<span class="w"></span>install<span class="w"></span>staticflow
+</code></pre></div></li><li>Запустите StaticFlow: <div class="highlight"><pre><span></span><code>staticflow<span class="w"></span>--version
+</code></pre></div></li></ol><h2 id="_4">Устранение неполадок</h2><h3 id="_5">Распространенные проблемы</h3><ol><li><strong>Ошибка "command not found"</strong></li><li>Убедитесь, что Python и pip установлены</li><li><p>Проверьте, что директория с исполняемыми файлами Python в PATH</p></li><li><p><strong>Проблемы с зависимостями</strong></p></li><li>Попробуйте создать новое виртуальное окружение</li><li><p>Обновите pip: <code>pip install --upgrade pip</code></p></li><li><p><strong>Ошибки при сборке</strong></p></li><li>Проверьте версию Python</li><li>Убедитесь, что все зависимости установлены</li></ol><h3 id="_6">Получение помощи</h3><p>Если у вас возникли проблемы:</p><ul><li><p>Проверьте <a href="https://github.com/nestessia/StaticFlow-diploma/issues">GitHub Issues</a></p></li><li><p>Создайте новый issue с подробным описанием проблемы</p></li></ul>
 
         </div>
     </main>

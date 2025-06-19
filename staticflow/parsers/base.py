@@ -17,7 +17,6 @@ class ContentParser(ABC):
             'tables': True,
             'footnotes': True,
             'code_blocks': True,
-            'syntax_highlight': True,
             'smart_quotes': True,
             'link_anchors': True,
             'image_processing': True,
