@@ -11,41 +11,6 @@ from .base import Plugin
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SyntaxHighlight")
 
-HIGHLIGHTJS_CDN = (
-    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-    "highlight.min.js"
-)
-HIGHLIGHTJS_STYLES = {
-    "monokai": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/monokai.min.css"
-    ),
-    "github": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/github.min.css"
-    ),
-    "dracula": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/dracula.min.css"
-    ),
-    "atom-one-dark": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/atom-one-dark.min.css"
-    ),
-    "atom-one-light": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/atom-one-light.min.css"
-    ),
-    "stackoverflow-dark": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/stackoverflow-dark.min.css"
-    ),
-    "stackoverflow-light": (
-        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/"
-        "styles/stackoverflow-light.min.css"
-    ),
-}
-
 
 class SyntaxHighlightPlugin(Plugin):
     """Plugin for syntax highlighting code blocks in content."""
@@ -461,39 +426,3 @@ class SyntaxHighlightPlugin(Plugin):
         content = fix_js_template_literals(content)
         
         return content
-
-    def on_post_page(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Добавляет <link> и <script> для highlight.js в head страницы."""
-        # Получаем текущий page_head_content
-        page_head_content = context.get('page_head_content', '')
-        
-        # Получаем стиль из конфигурации
-        style = self.config.get('style', 'monokai')
-        css_url = HIGHLIGHTJS_STYLES.get(
-            style, HIGHLIGHTJS_STYLES['monokai']
-        )
-        
-        # Добавляем CSS стили highlight.js
-        css_link = f'<link rel="stylesheet" href="{css_url}">\n'
-        
-        # Добавляем JavaScript файл highlight.js
-        js_script = f'<script defer src="{HIGHLIGHTJS_CDN}"></script>\n'
-        
-        # Добавляем инициализацию highlight.js
-        init_script = '''<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (window.hljs) {
-                    hljs.highlightAll();
-                }
-            });
-        </script>\n'''
-        
-        # Объединяем все в page_head_content
-        new_head_content = (
-            page_head_content + css_link + js_script + init_script
-        )
-        
-        # Обновляем контекст
-        context['page_head_content'] = new_head_content
-        
-        return context

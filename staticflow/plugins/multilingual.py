@@ -6,7 +6,6 @@ from .base import Plugin
 if TYPE_CHECKING:
     from ..core.page import Page
 
-
 class MultilingualPlugin(Plugin):
     """Плагин для поддержки многоязычности."""
     

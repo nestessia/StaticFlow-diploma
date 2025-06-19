@@ -6,7 +6,6 @@ from .extensions.video import makeExtension as makeVideoExtension
 from .extensions.audio import makeExtension as makeAudioExtension
 from datetime import datetime
 import frontmatter
-import pymdownx.superfences
 
 
 class MarkdownParser(ContentParser):
@@ -54,24 +53,26 @@ class MarkdownParser(ContentParser):
         ]
         self.extension_configs: Dict[str, Dict[str, Any]] = {
             'toc': {
+                'permalink': True,
+                'permalink_class': 'headerlink',
                 'toc_depth': 3
             },
-            # 'pymdownx.highlight': {
-            #     'css_class': 'highlight',
-            #     'guess_lang': True
-            # },
-            # 'pymdownx.superfences': {
-            #     'custom_fences': [
-            #         {
-            #             'name': 'mermaid',
-            #             'class': 'mermaid',
-            #             'format': pymdownx.superfences.fence_div_format
-            #         }
-            #     ]
-            # },
-            # 'pymdownx.arithmatex': {
-            #     'generic': True
-            # },
+            'pymdownx.highlight': {
+                'css_class': 'highlight',
+                'guess_lang': True
+            },
+            'pymdownx.superfences': {
+                'custom_fences': [
+                    {
+                        'name': 'mermaid',
+                        'class': 'mermaid',
+                        'format': str
+                    }
+                ]
+            },
+            'pymdownx.arithmatex': {
+                'generic': True
+            },
         }
         self._md: markdown.Markdown = markdown.Markdown(
             extensions=self.extensions,

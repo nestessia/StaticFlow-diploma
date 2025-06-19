@@ -11,6 +11,7 @@ class ContentParser(ABC):
 
     def __init__(self):
         self.options: Dict[str, Any] = {
+            'syntax_highlight': True,
             'math_support': True,
             'toc': True,
             'callouts': True,

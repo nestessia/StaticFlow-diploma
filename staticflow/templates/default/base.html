@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page.title }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+    <link rel="stylesheet" href="{{ static_url }}/css/code_highlight.css">
 
     <link rel="canonical" href="{{ site_url }}" />
     {% for lang, url in page.translations.items() %}
