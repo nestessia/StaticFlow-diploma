@@ -9,3 +9,9 @@ __pycache__
 /testsite
 /test-site
 node_modules
+
+# PyPI publishing
+.pypirc
+build/
+*.egg-info/
+dist/
