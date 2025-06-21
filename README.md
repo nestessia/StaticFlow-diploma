@@ -73,7 +73,6 @@ my-awesome-site/
 title: Мой первый пост
 date: 2023-03-23
 tags: [tutorial, staticflow]
-draft: false
 ---
 
 # Добро пожаловать

@@ -45,6 +45,13 @@ def get_default_plugin_configs():
         "notion_blocks": {
             "enabled": True
         },
+        "minifier": {
+            "enabled": True,
+            "minify_html": True,
+            "minify_css": True,
+            "minify_js": True,
+            "preserve_comments": False
+        },
         "media": {
             "output_dir": "media",
             "source_dir": "static",
@@ -78,50 +85,65 @@ def get_default_plugin_configs():
 def initialize_plugins(engine) -> None:
     """Initialize all plugins for the engine with default configurations."""
     default_configs = get_default_plugin_configs()
+    enabled_plugins = engine.config.get("PLUGINS", {}).get("enabled", [])
 
     # Initialize syntax highlighting plugin
-    syntax_plugin = SyntaxHighlightPlugin()
-    engine.add_plugin(syntax_plugin, default_configs.get("syntax_highlight"))
+    if "syntax_highlight" in enabled_plugins:
+        syntax_plugin = SyntaxHighlightPlugin()
+        engine.add_plugin(syntax_plugin, default_configs.get("syntax_highlight"))
 
     # Initialize math plugin
-    math_plugin = MathPlugin()
-    engine.add_plugin(math_plugin, default_configs.get("math"))
+    if "math" in enabled_plugins:
+        math_plugin = MathPlugin()
+        engine.add_plugin(math_plugin, default_configs.get("math"))
 
     # Initialize diagrams plugin
-    diagrams_plugin = MermaidPlugin()
-    engine.add_plugin(diagrams_plugin, default_configs.get("diagrams"))
+    if "diagrams" in enabled_plugins:
+        diagrams_plugin = MermaidPlugin()
+        engine.add_plugin(diagrams_plugin, default_configs.get("diagrams"))
 
     # Initialize media plugin
-    media_plugin = MediaPlugin()
-    engine.add_plugin(media_plugin, default_configs.get("media"))
+    if "media" in enabled_plugins:
+        media_plugin = MediaPlugin()
+        engine.add_plugin(media_plugin, default_configs.get("media"))
 
     # Initialize minifier plugin
-    minifier_plugin = MinifierPlugin()
-    engine.add_plugin(minifier_plugin)
+    if "minifier" in enabled_plugins:
+        minifier_config = engine.config.get("PLUGIN_MINIFIER", {})
+        minifier_plugin = MinifierPlugin()
+        config = {
+            **default_configs.get("minifier"),
+            **minifier_config
+        }
+        engine.add_plugin(minifier_plugin, config)
 
     # Initialize SEO plugin
-    seo_plugin = SEOPlugin()
-    engine.add_plugin(seo_plugin)
+    if "seo" in enabled_plugins:
+        seo_plugin = SEOPlugin()
+        engine.add_plugin(seo_plugin)
 
     base_url = engine.config.get("base_url")
     if base_url:
-
         if isinstance(base_url, Path):
             base_url = str(base_url)
 
-        sitemap_config = {
-            "base_url": base_url,
-            "output_path": engine.config.get("output_dir")
-        }
-        sitemap_plugin = SitemapPlugin()
-        engine.add_plugin(sitemap_plugin, sitemap_config)
+        # Initialize sitemap plugin if enabled
+        if "sitemap" in enabled_plugins:
+            sitemap_config = {
+                "base_url": base_url,
+                "output_path": engine.config.get("output_dir")
+            }
+            sitemap_plugin = SitemapPlugin()
+            engine.add_plugin(sitemap_plugin, sitemap_config)
 
-        rss_config = {
-            "site_name": engine.config.get("site_name", "StaticFlow Site"),
-            "site_description": engine.config.get("description", ""),
-            "base_url": base_url,
-            "output_path": engine.config.get("output_dir"),
-            "language": engine.config.get("language", "en")
-        }
-        rss_plugin = RSSPlugin()
-        engine.add_plugin(rss_plugin, rss_config)
+        # Initialize RSS plugin if enabled
+        if "rss" in enabled_plugins:
+            rss_config = {
+                "site_name": engine.config.get("site_name", "StaticFlow Site"),
+                "site_description": engine.config.get("description", ""),
+                "base_url": base_url,
+                "output_path": engine.config.get("output_dir"),
+                "language": engine.config.get("language", "en")
+            }
+            rss_plugin = RSSPlugin()
+            engine.add_plugin(rss_plugin, rss_config)

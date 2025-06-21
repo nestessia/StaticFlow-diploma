@@ -1,7 +1,7 @@
 ---
 title: Быстрый старт
-date: 2024-03-20
-author: nastya
+date: 2025-05-20
+author: nestessia
 tags: [quickstart, tutorial, basics]
 format: markdown
 template: page.html
@@ -206,9 +206,7 @@ template: page.html
 - `tags` - список тегов
 - `category` - категория
 - `template` - используемый шаблон
-- `draft` - черновик (true/false)
 - `description` - описание страницы
-- `image` - главное изображение
 - `slug` - URL-friendly версия заголовка
 
 ## Организация контента
@@ -271,30 +269,8 @@ template: category.html
 ![Описание](/media/image.jpg)
 ```
 
-### Другие медиафайлы
-
-- Видео
-- Аудио
-- PDF документы
-- Другие файлы
 
 ## Шаблоны контента
-
-### Страницы
-
-```markdown
----
-template: page.html
----
-```
-
-### Посты
-
-```markdown
----
-template: post.html
----
-```
 
 ### Пользовательские шаблоны
 
@@ -332,26 +308,6 @@ C -->|Нет| E[Результат 2]
 def hello_world():
     print("Привет, StaticFlow!")
 ```
-```
-
-## Локализация
-
-### Многоязычный контент
-
-```markdown
----
-language: ru
----
-
-# Русский контент
-```
-
-```markdown
----
-language: en
----
-
-# English content
 ```
 
 ## Плагины для контента

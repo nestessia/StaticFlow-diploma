@@ -1,8 +1,9 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 from ..core.base import Plugin, PluginMetadata
+from ...core.page import Page
 
 
 class RSSPlugin(Plugin):
@@ -34,23 +35,37 @@ class RSSPlugin(Plugin):
         }
         return all(key in self.config for key in required)
     
-    def on_post_build(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def post_build(self, site) -> None:
         """Генерирует RSS-ленту после сборки сайта."""
-        pages = context.get('pages', [])
+        print("RSS Plugin: post_build called")
+        pages = site.get_all_pages()
+        print(f"RSS Plugin: found {len(pages)} pages")
         if not pages:
-            return context
+            print("RSS Plugin: no pages found")
+            return
             
-        # Фильтруем только страницы с датой публикации
-        pages = [p for p in pages if 'date' in p]
+        # Фильтруем только страницы с валидной датой публикации
+        pages = [
+            p for p in pages 
+            if 'date' in p.metadata and p.metadata['date'] is not None
+        ]
+        print(f"RSS Plugin: {len(pages)} pages with valid date")
+        
         # Сортируем по дате (новые первыми)
-        pages.sort(key=lambda x: x['date'], reverse=True)
+        pages.sort(
+            key=lambda x: (
+                x.metadata['date'] if x.metadata['date'] else datetime.min
+            ),
+            reverse=True
+        )
         
-        rss = self._create_rss(pages[:10])  # Берем только 10 последних записей
+        # Берем только 10 последних записей
+        rss = self._create_rss(pages[:10], site)
+        print("RSS Plugin: created RSS structure")
         self._save_rss(rss)
-        
-        return context
+        print("RSS Plugin: saved RSS feed")
     
-    def _create_rss(self, pages: List[Dict[str, Any]]) -> ET.Element:
+    def _create_rss(self, pages: List[Page], site) -> ET.Element:
         """Создает XML структуру RSS."""
         # Создаем корневой элемент
         rss = ET.Element('rss', {'version': '2.0'})
@@ -84,7 +99,7 @@ class RSSPlugin(Plugin):
             
             # Заголовок
             item_title = ET.SubElement(item, 'title')
-            item_title.text = page.get('title', '')
+            item_title.text = page.metadata.get('title', '')
             
             # Ссылка
             item_link = ET.SubElement(item, 'link')
@@ -92,60 +107,49 @@ class RSSPlugin(Plugin):
             if isinstance(base_url, Path):
                 base_url = str(base_url)
             else:
-                base_url = str(base_url)  # Всегда преобразуем к строке
+                base_url = str(base_url)
                 
-            # Ensure page['url'] is a string before calling lstrip
-            page_url = page['url']
-            if isinstance(page_url, Path):
-                page_url = str(page_url)
+            # Получаем URL страницы
+            if page.output_path and site.output_dir:
+                page_url = str(
+                    page.output_path.relative_to(site.output_dir)
+                )
             else:
-                page_url = str(page_url)  # Всегда преобразуем к строке
+                page_url = str(page.source_path)
                 
             # Теперь оба значения точно строки
             base_url_str = base_url.rstrip('/')
             page_url_str = page_url.lstrip('/')
-            item_link.text = f"{base_url_str}/{page_url_str}"
+            item_link.text = (
+                f"{base_url_str}/"
+                f"{page_url_str}"
+            )
             
             # Описание
             item_desc = ET.SubElement(item, 'description')
-            item_desc.text = page.get('description', '')
+            item_desc.text = page.metadata.get('description', '')
             
             # Дата публикации
-            if 'date' in page:
+            if 'date' in page.metadata:
                 pub_date = ET.SubElement(item, 'pubDate')
-                pub_date.text = page['date'].strftime('%a, %d %b %Y %H:%M:%S %z')
+                pub_date.text = page.metadata['date'].strftime('%a, %d %b %Y %H:%M:%S %z')
             
             # Уникальный идентификатор для RSS-агрегаторов
             guid = ET.SubElement(item, 'guid')
             guid.set('isPermaLink', 'true')
-            base_url = self.config['base_url']
-            if isinstance(base_url, Path):
-                base_url = str(base_url)
-            else:
-                base_url = str(base_url)  # Всегда преобразуем к строке
-                
-            # Ensure page['url'] is a string before calling lstrip
-            page_url = page['url']
-            if isinstance(page_url, Path):
-                page_url = str(page_url)
-            else:
-                page_url = str(page_url)  # Всегда преобразуем к строке
-                
-            # Теперь оба значения точно строки
-            base_url_str = base_url.rstrip('/')
-            page_url_str = page_url.lstrip('/')
-            guid.text = f"{base_url_str}/{page_url_str}"
+            guid.text = item_link.text
             
             # Автор
-            if 'author' in page:
+            if 'author' in page.metadata and page.metadata['author'] is not None:
                 author = ET.SubElement(item, 'author')
-                author.text = page['author']
+                author.text = page.metadata['author']
                 
             # Категории
-            if 'tags' in page:
-                for tag in page['tags']:
-                    category = ET.SubElement(item, 'category')
-                    category.text = tag
+            if 'tags' in page.metadata and page.metadata['tags'] is not None:
+                for tag in page.metadata['tags']:
+                    if tag is not None:  # Пропускаем None теги
+                        category = ET.SubElement(item, 'category')
+                        category.text = str(tag)  # Преобразуем в строку на всякий случай
                     
         return rss
     

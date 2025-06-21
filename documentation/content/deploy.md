@@ -1,7 +1,7 @@
 ---
-title: Развертывание
-date: 2024-03-20
-author: nastya
+title: Деплой
+date: 2025-05-20
+author: nestessia
 tags: [deployment, hosting, server]
 format: markdown
 template: page.html

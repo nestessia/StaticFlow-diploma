@@ -14,6 +14,19 @@ class TipTapToolbar {
     createToolbar() {
         const buttons = [
             {
+                icon: 'align-left',
+                title: 'Text',
+                action: () => {
+                    this.editor.chain().focus().insertContentAt(0, {
+                        type: 'paragraph',
+                        content: [{ type: 'text', text: ' ' }]
+                    }).run();
+                },
+            },
+            {
+                type: 'divider',
+            },
+            {
                 icon: 'heading',
                 title: 'Header 1',
                 label: '1',

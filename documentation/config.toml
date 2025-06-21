@@ -42,7 +42,7 @@ use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
 [PLUGINS]
-enabled = [ "multilingual",]
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight"]
 
 [PLUGIN_MULTILINGUAL]
 enabled = true
@@ -51,6 +51,20 @@ languages = [ "en", "ru",]
 url_prefix = true
 exclude_default_lang_prefix = false
 auto_redirect = true
+
+[PLUGIN_RSS]
+site_name = "StaticFlow Documentation"
+site_description = "Документация по фреймворку StaticFlow"
+base_url = "http://localhost:8000"
+output_path = "output"
+language = "ru"
+
+[PLUGIN_MINIFIER]
+enabled = true
+minify_html = true
+minify_css = true
+minify_js = true
+preserve_comments = false
 
 [syntax_highlight]
 style = "monokai"

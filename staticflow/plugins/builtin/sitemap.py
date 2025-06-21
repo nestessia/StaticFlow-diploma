@@ -2,10 +2,16 @@ from pathlib import Path
 from typing import Dict, Any, List
 from xml.etree import ElementTree as ET
 from ..core.base import Plugin, PluginMetadata
+from ...utils.logging import get_logger
 
+logger = get_logger("plugins.sitemap")
 
 class SitemapPlugin(Plugin):
     """Плагин для генерации Sitemap."""
+    
+    def __init__(self):
+        super().__init__()
+        logger.info("Sitemap plugin initialized")
     
     @property
     def metadata(self) -> PluginMetadata:
@@ -25,21 +31,37 @@ class SitemapPlugin(Plugin):
     def validate_config(self) -> bool:
         """Проверяет конфигурацию плагина."""
         required = {'base_url', 'output_path'}
-        return all(key in self.config for key in required)
+        is_valid = all(key in self.config for key in required)
+        if not is_valid:
+            logger.error(f"Sitemap plugin config validation failed. Required keys: {required}")
+        return is_valid
     
-    def on_post_build(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def post_build(self, site) -> None:
         """Генерирует sitemap.xml после сборки сайта."""
-        pages = context.get('pages', [])
-        if not pages:
-            return context
-            
-        sitemap = self._create_sitemap(pages)
-        self._save_sitemap(sitemap)
+        logger.info("Sitemap plugin: post_build called")
         
-        return context
+        if not self.validate_config():
+            logger.error("Sitemap plugin: invalid configuration")
+            return
+            
+        pages = site.get_all_pages()
+        if not pages:
+            logger.warning("Sitemap plugin: no pages found")
+            return
+            
+        logger.info(f"Sitemap plugin: found {len(pages)} pages")
+        
+        try:
+            sitemap = self._create_sitemap(pages)
+            self._save_sitemap(sitemap)
+            logger.info("Sitemap plugin: sitemap.xml generated successfully")
+        except Exception as e:
+            logger.error(f"Sitemap plugin: error generating sitemap: {str(e)}")
     
-    def _create_sitemap(self, pages: List[Dict[str, Any]]) -> ET.Element:
+    def _create_sitemap(self, pages: List[Any]) -> ET.Element:
         """Создает XML структуру sitemap."""
+        logger.info("Sitemap plugin: creating sitemap structure")
+        
         # Создаем корневой элемент
         urlset = ET.Element('urlset', {
             'xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
@@ -62,30 +84,55 @@ class SitemapPlugin(Plugin):
             else:
                 base_url = str(base_url)  # Всегда преобразуем к строке
                 
-            # Ensure page['url'] is a string before calling lstrip
-            page_url = page['url']
+            # Получаем URL страницы
+            if hasattr(page, 'url'):
+                page_url = page.url
+            elif isinstance(page, dict) and 'url' in page:
+                page_url = page['url']
+            else:
+                logger.warning(f"Sitemap plugin: page has no URL: {page}")
+                continue
+                
             if isinstance(page_url, Path):
                 page_url = str(page_url)
             else:
                 page_url = str(page_url)  # Всегда преобразуем к строке
-                
+
+            page_url = page_url.replace('output/', '').replace('output\\', '')
+            
             # Теперь оба значения точно строки
             base_url_str = base_url.rstrip('/')
             page_url_str = page_url.lstrip('/')
+            
+            # Формируем финальный URL
+            if page_url_str.endswith('index.html'):
+                page_url_str = page_url_str[:-10]  # Убираем 'index.html'
+            elif page_url_str.endswith('.html'):
+                page_url_str = page_url_str[:-5]  # Убираем '.html'
+                
             loc.text = f"{base_url_str}/{page_url_str}"
             
             # Дата последнего изменения
-            if 'modified_at' in page:
+            if hasattr(page, 'modified_at'):
+                lastmod = ET.SubElement(url, 'lastmod')
+                lastmod.text = page.modified_at.strftime('%Y-%m-%d')
+            elif isinstance(page, dict) and 'modified_at' in page:
                 lastmod = ET.SubElement(url, 'lastmod')
                 lastmod.text = page['modified_at'].strftime('%Y-%m-%d')
             
             # Частота изменения
-            if 'change_freq' in page:
+            if hasattr(page, 'change_freq'):
+                changefreq = ET.SubElement(url, 'changefreq')
+                changefreq.text = page.change_freq
+            elif isinstance(page, dict) and 'change_freq' in page:
                 changefreq = ET.SubElement(url, 'changefreq')
                 changefreq.text = page['change_freq']
             
             # Приоритет
-            if 'priority' in page:
+            if hasattr(page, 'priority'):
+                priority = ET.SubElement(url, 'priority')
+                priority.text = str(page.priority)
+            elif isinstance(page, dict) and 'priority' in page:
                 priority = ET.SubElement(url, 'priority')
                 priority.text = str(page['priority'])
                 
@@ -94,6 +141,7 @@ class SitemapPlugin(Plugin):
     def _save_sitemap(self, root: ET.Element) -> None:
         """Сохраняет файл карты сайта."""
         output_path_str = self.config['output_path']
+        logger.info(f"Sitemap plugin: saving sitemap to {output_path_str}")
         
         # Преобразуем к Path только если это строка
         if not isinstance(output_path_str, Path):
@@ -113,4 +161,5 @@ class SitemapPlugin(Plugin):
             encoding='utf-8',
             xml_declaration=True,
             method='xml'
-        ) 
+        )
+        logger.info(f"Sitemap plugin: sitemap.xml saved to {output_path}") 

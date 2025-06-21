@@ -1,5 +1,8 @@
 ---
 title: Контакты
+date: 2025-05-20
+author: nestessia
+tags: [contacts, support, development]
 format: markdown
 template: page.html
 ---

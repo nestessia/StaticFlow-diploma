@@ -1,8 +1,8 @@
 ---
-title: Welcome to StaticFlow
-date: 
-author: None
-tags:
+title: Блоки контента
+date: 2025-05-20
+author: nestessia
+tags: [blocks, content, admin]
 format: markdown
 template: page.html
 ---

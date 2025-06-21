@@ -1,8 +1,8 @@
 ---
 title: Добро пожаловать в документацию StaticFlow
-date:
-author: None
-tags:
+date: 2025-05-20
+author: nestessia
+tags: [documentation, staticflow, static, cms, markdown]
 format: markdown
 template: page.html
 ---

@@ -81,6 +81,19 @@ class Page:
         return self.metadata.get("title", self.source_path.stem)
 
     @property
+    def date(self) -> Optional[datetime]:
+        """Get the page date."""
+        if "date" in self.metadata:
+            date_value = self.metadata["date"]
+            if isinstance(date_value, str):
+                try:
+                    return datetime.fromisoformat(date_value)
+                except ValueError:
+                    return None
+            return date_value
+        return None
+
+    @property
     def url(self) -> str:
         """Get the page URL."""
         if self.output_path:
@@ -188,3 +201,26 @@ class Page:
             self.rendered_content = html_content
             
         return self.rendered_content
+
+    @property
+    def author(self) -> Optional[str]:
+        """Get the page author from metadata."""
+        return self.metadata.get("author")
+
+    @property
+    def category(self) -> Optional[str]:
+        """Get the page category from metadata."""
+        return self.metadata.get("category")
+
+    @property
+    def tags(self) -> List[str]:
+        """Get the page tags from metadata."""
+        tags = self.metadata.get("tags", [])
+        if isinstance(tags, str):
+            return [tag.strip() for tag in tags.split(",")]
+        return tags if isinstance(tags, list) else []
+
+    @property
+    def template(self) -> str:
+        """Get the page template from metadata or default."""
+        return self.metadata.get("template", "page.html")
