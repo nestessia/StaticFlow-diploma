@@ -8,7 +8,7 @@ template: en_page.html
 language: en
 ---
 
-# Welcome to StaticFlow Documentation
+# 🚀 Welcome to StaticFlow Documentation
 
 Here you'll find everything you need to work with StaticFlow — from first steps to advanced features. The documentation is designed for both developers and content editors.
 
@@ -16,35 +16,35 @@ Here you'll find everything you need to work with StaticFlow — from first step
 
 ---
 
-## Documentation Sections
+## 📚 Documentation Sections
 
-- **[About](about.html)**  
+- **[About](about.html)** 🎯  
   Brief introduction and StaticFlow philosophy.
 
-- **[Installation](installation.html)**  
+- **[Installation](installation.html)** ⚙️  
   How to install StaticFlow on Windows, Ubuntu, and macOS.
 
-- **[Quick Start](quickstart.html)**  
+- **[Quick Start](quickstart.html)** 🚀  
   Create your first site in 5 minutes.
 
-- **[Content](content.html)**  
+- **[Content](content.html)** 📝  
   How to store, edit, and structure content.
 
-- **[Templates](templates.html)**  
+- **[Templates](templates.html)** 🎨  
   Template basics and usage examples.
 
-- **[Themes](themes.html)**  
+- **[Themes](themes.html)** 🎭  
   Using and creating themes.
 
-- **[Plugins](plugins.html)**  
+- **[Plugins](plugins.html)** 🔌  
   Extending functionality with plugins.
 
-- **[Deployment](deploy.html)**  
+- **[Deployment](deploy.html)** 🌐  
   Publishing your site on various platforms.
 
-- **[API](api.html)**  
+- **[API](api.html)** 📖  
   StaticFlow public API documentation.
 
 ---
 
-The documentation is constantly evolving and being updated. If you have suggestions or want to help — join the project on [GitHub](https://github.com/nestessia/StaticFlow-diploma)! 
+The documentation is constantly evolving and being updated. If you have suggestions or want to help — join the project on [GitHub](https://github.com/nestessia/StaticFlow-diploma)! 🤝 

@@ -232,7 +232,7 @@
     
 <nav class="navbar">
     <div class="navbar-container">
-        <a href="/" class="navbar-brand">
+        <a href="http://localhost:8000" class="navbar-brand">
             <img src="http://localhost:8000//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
             StaticFlow
         </a>
@@ -242,6 +242,9 @@
         <ul class="navbar-menu" id="navbar-menu">
             <li><a href="http://localhost:8000/about.html" class="navbar-item ">
                 <i class="fas fa-info-circle"></i> О проекте
+            </a></li>
+            <li><a href="http://localhost:8000/contacts.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> Контакты
             </a></li>
             <li><a href="http://localhost:8000/installation.html" class="navbar-item ">
                 <i class="fas fa-download"></i> Установка
@@ -273,12 +276,22 @@
         if (langToggle) {
             langToggle.addEventListener('click', function() {
                 var current = window.location.pathname;
-                if (current.startsWith('/en/')) {
-                    var newUrl = current.replace(/^\/en\//, '/');
-                } else {
-                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                var pathParts = current.split('/');
+                var basePath = '';
+                if (pathParts.length > 2) {
+                    basePath = '/' + pathParts[1];
                 }
-                window.location.pathname = newUrl;
+                var relativePath = current;
+                if (basePath && current.startsWith(basePath)) {
+                    relativePath = current.substring(basePath.length);
+                }
+                
+                if (relativePath.startsWith('/en/')) {
+                    var newUrl = relativePath.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (relativePath.startsWith('/') ? relativePath : '/' + relativePath);
+                }
+                window.location.pathname = basePath + newUrl;
             });
         }
     });
@@ -288,8 +301,8 @@
     <main>
         <div class="content">
             
-    <h1>Контакты</h1><p>StaticFlow — это проект с открытым исходным кодом, распространяемый по лицензии MIT.</p><h2>Автор и поддержка</h2><p><strong>Анастасия (nestessia)</strong><br/>
-E-mail: <a href="mailto:nestessia@gmail.com">nestessia@gmail.com</a></p><p>GitHub: <a href="https://github.com/nestessia/StaticFlow-diploma">https://github.com/nestessia/StaticFlow-diploma</a></p><hr/><p>Если у вас есть вопросы, предложения или вы хотите принять участие в развитии проекта — пишите на почту или создавайте issue на GitHub!</p>
+    <h1>📞 Контакты</h1><p>StaticFlow — это проект с открытым исходным кодом, распространяемый по лицензии MIT.</p><h2>👤 Автор и поддержка</h2><p><strong>Анастасия (nestessia)</strong><br/>
+📧 E-mail: <a href="mailto:nestessia@gmail.com">nestessia@gmail.com</a></p><p>📱 Telegram: <a href="https://t.me/nestessia">nestessia</a></p><p>🐙 GitHub: <a href="https://github.com/nestessia/StaticFlow-diploma">https://github.com/nestessia/StaticFlow-diploma</a></p><hr/><p>Если у вас есть вопросы, предложения или вы хотите принять участие в развитии проекта — пишите или создавайте issue на GitHub! 🤝</p>
 
         </div>
     </main>

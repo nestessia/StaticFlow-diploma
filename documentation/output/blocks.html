@@ -232,7 +232,7 @@
     
 <nav class="navbar">
     <div class="navbar-container">
-        <a href="/" class="navbar-brand">
+        <a href="http://localhost:8000" class="navbar-brand">
             <img src="http://localhost:8000//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
             StaticFlow
         </a>
@@ -242,6 +242,9 @@
         <ul class="navbar-menu" id="navbar-menu">
             <li><a href="http://localhost:8000/about.html" class="navbar-item ">
                 <i class="fas fa-info-circle"></i> О проекте
+            </a></li>
+            <li><a href="http://localhost:8000/contacts.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> Контакты
             </a></li>
             <li><a href="http://localhost:8000/installation.html" class="navbar-item ">
                 <i class="fas fa-download"></i> Установка
@@ -273,12 +276,22 @@
         if (langToggle) {
             langToggle.addEventListener('click', function() {
                 var current = window.location.pathname;
-                if (current.startsWith('/en/')) {
-                    var newUrl = current.replace(/^\/en\//, '/');
-                } else {
-                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                var pathParts = current.split('/');
+                var basePath = '';
+                if (pathParts.length > 2) {
+                    basePath = '/' + pathParts[1];
                 }
-                window.location.pathname = newUrl;
+                var relativePath = current;
+                if (basePath && current.startsWith(basePath)) {
+                    relativePath = current.substring(basePath.length);
+                }
+                
+                if (relativePath.startsWith('/en/')) {
+                    var newUrl = relativePath.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (relativePath.startsWith('/') ? relativePath : '/' + relativePath);
+                }
+                window.location.pathname = basePath + newUrl;
             });
         }
     });
@@ -288,7 +301,7 @@
     <main>
         <div class="content">
             
-    <h1>Руководство по созданию контента в панели администратора</h1><h2>Блоки</h2><p>В режиме редактирования контента можно добавлять блоки. Тулбар блоков находится в верхней части экрана.</p><p><img alt="Toolbar" src="media/toolbar.png"/></p><h2>Создание заголовков и перемещение блоков</h2><video controls="controls">Your browser does not support the video tag.<source src="media/headings.mp4" type="video/mp4"/></video><h2>Создание гиперссылки</h2><video controls="controls">Your browser does not support the video tag.<source src="media/hyperlink.mp4" type="video/mp4"/></video><h2>Создание изображения</h2><video controls="controls">Your browser does not support the video tag.<source src="media/photo.mp4" type="video/mp4"/></video><h2>Создание видео</h2><video controls="controls">Your browser does not support the video tag.<source src="media/video.mp4" type="video/mp4"/></video><h2>Создание аудио</h2><video controls="controls">Your browser does not support the video tag.<source src="media/audio.mp4" type="video/mp4"/></video><h2>Создание таблицы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/table.mp4" type="video/mp4"/></video><h2>Создание математической формулы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/formula.mp4" type="video/mp4"/></video><h2>Создание диаграммы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/diagram.mp4" type="video/mp4"/></video>
+    <h1>📝 Руководство по созданию контента в панели администратора</h1><h2>🧱 Блоки</h2><p>В режиме редактирования контента можно добавлять блоки. Тулбар блоков находится в верхней части экрана.</p><p><img alt="Toolbar" src="media/toolbar.png"/></p><h2>📋 Создание заголовков и перемещение блоков</h2><video controls="controls">Your browser does not support the video tag.<source src="media/headings.mp4" type="video/mp4"/></video><h2>🔗 Создание гиперссылки</h2><video controls="controls">Your browser does not support the video tag.<source src="media/hyperlink.mp4" type="video/mp4"/></video><h2>🖼️ Создание изображения</h2><video controls="controls">Your browser does not support the video tag.<source src="media/photo.mp4" type="video/mp4"/></video><h2>🎥 Создание видео</h2><video controls="controls">Your browser does not support the video tag.<source src="media/video.mp4" type="video/mp4"/></video><h2>🎵 Создание аудио</h2><video controls="controls">Your browser does not support the video tag.<source src="media/audio.mp4" type="video/mp4"/></video><h2>📊 Создание таблицы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/table.mp4" type="video/mp4"/></video><h2>📐 Создание математической формулы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/formula.mp4" type="video/mp4"/></video><h2>📈 Создание диаграммы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/diagram.mp4" type="video/mp4"/></video>
 
         </div>
     </main>

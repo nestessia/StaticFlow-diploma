@@ -15,3 +15,5 @@ node_modules
 build/
 *.egg-info/
 dist/
+
+documentation/deploy/github_pages.json

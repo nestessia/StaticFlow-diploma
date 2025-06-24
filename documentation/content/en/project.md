@@ -8,11 +8,11 @@ template: en_page.html
 language: en
 ---
 
-# StaticFlow Project
+# 🏗️ StaticFlow Project
 
 This section covers the main concepts and structure of a StaticFlow project.
 
-## Project structure
+## 📁 Project structure
 
 A typical StaticFlow project has the following structure:
 
@@ -26,9 +26,9 @@ project/
 └── config.toml      # Project configuration
 ```
 
-## Main concepts
+## 🧠 Main concepts
 
-### Content
+### 📝 Content
 
 Content in StaticFlow is stored as Markdown files in the `content/` directory. Each file can contain metadata in front matter format:
 
@@ -43,65 +43,65 @@ template: page.html
 ---
 ```
 
-### Templates
+### 🎨 Templates
 
 Templates define the appearance of pages. They use Jinja2 as the template engine and can include:
-- Base templates
-- Partial templates
-- Macros
-- Template inheritance
+- 🏠 Base templates
+- 🧩 Partial templates
+- 🔧 Macros
+- 🧬 Template inheritance
 
-### Static files
+### 📦 Static files
 
 The `static/` directory contains all static files that are copied to `output/` without changes:
-- CSS styles
-- JavaScript files
-- Images
-- Other media files
+- 🎨 CSS styles
+- ⚡ JavaScript files
+- 🖼️ Images
+- 📁 Other media files
 
-### Configuration
+### ⚙️ Configuration
 
 The `config.toml` file defines the main project settings:
-- Site name
-- Base URL
-- Languages
-- URL patterns
-- Plugins
-- Other settings
+- 🏷️ Site name
+- 🌐 Base URL
+- 🌍 Languages
+- 🔗 URL patterns
+- 🔌 Plugins
+- ⚙️ Other settings
 
-## Content organization
+## 📂 Content organization
 
-### Categories
+### 📁 Categories
 
 StaticFlow supports hierarchical content organization through categories:
-- Categories can be nested
+- 📂 Categories can be nested
 
-- Maximum nesting depth is configurable
+- 🔢 Maximum nesting depth is configurable
 
-- Each category can have its own page
+- 📄 Each category can have its own page
 
-### Tags
+### 🏷️ Tags
 
 Tags allow grouping content by topics:
-- Case insensitive
+- 🔤 Case insensitive
 
-- Limit on number of tags
+- 📊 Limit on number of tags
 
-- Automatic tag page generation
+- 🔄 Automatic tag page generation
 
-### Authors
+### 👥 Authors
 
 The author system allows:
-- Linking content to authors
+- 👤 Linking content to authors
 
-- Creating author profiles
+- 📋 Creating author profiles
 
-- Generating author pages
+- 📄 Generating author pages
 
-## Plugins
+## 🔌 Plugins
 
 StaticFlow has a plugin system that allows:
-- Extending functionality
-- Adding new content formats
-- Integrating external services
-- Customizing the build process 
+- 🔧 Extending functionality
+- 📄 Adding new content formats
+- 🔗 Integrating external services
+- ⚙️ Customizing the build process 
