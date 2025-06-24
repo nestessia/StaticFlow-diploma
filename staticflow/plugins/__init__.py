@@ -122,6 +122,16 @@ def initialize_plugins(engine) -> None:
         seo_plugin = SEOPlugin()
         engine.add_plugin(seo_plugin)
 
+    # Initialize CDN plugin
+    if "cdn" in enabled_plugins:
+        cdn_config = engine.config.get("PLUGIN_CDN", {})
+        cdn_plugin = CDNPlugin()
+        config = {
+            **default_configs.get("cdn"),
+            **cdn_config
+        }
+        engine.add_plugin(cdn_plugin, config)
+
     base_url = engine.config.get("base_url")
     if base_url:
         if isinstance(base_url, Path):
