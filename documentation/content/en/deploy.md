@@ -8,13 +8,13 @@ template: en_page.html
 language: en
 ---
 
-# Deployment
+# 🌐 Deployment
 
 This section covers various ways to deploy a site created with StaticFlow.
 
-## Preparing for deployment
+## 🚀 Preparing for deployment
 
-### Building the site
+### 📦 Building the site
 
 ```bash
 staticflow build
@@ -22,15 +22,15 @@ staticflow build
 
 This will create static files in the `output/` directory.
 
-### Checking the build
+### ✅ Checking the build
 
 ```bash
 staticflow serve --build-dir output
 ```
 
-## Hosting options
+## 🏠 Hosting options
 
-### GitHub Pages
+### 🐙 GitHub Pages
 
 1. Create a `username.github.io` repository
 2. Configure GitHub Actions:
@@ -69,7 +69,7 @@ jobs:
           publish_dir: ./output
 ```
 
-### Netlify
+### ⚡ Netlify
 
 1. Create `netlify.toml`:
 
@@ -87,7 +87,7 @@ jobs:
    - Specify build command: `staticflow build`
    - Specify publish directory: `output`
 
-### Vercel
+### 🚀 Vercel
 
 1. Create `vercel.json`:
 
@@ -119,7 +119,7 @@ jobs:
 }
 ```
 
-### Amazon S3
+### ☁️ Amazon S3
 
 1. Install AWS CLI:
 
@@ -141,7 +141,7 @@ staticflow build
 aws s3 sync output/ s3://your-bucket-name/ --delete
 ```
 
-### Nginx
+### 🐧 Nginx
 
 1. Install Nginx:
 
@@ -170,9 +170,9 @@ server {
 sudo cp -r output/* /var/www/html/
 ```
 
-## Domain configuration
+## 🌍 Domain configuration
 
-### DNS settings
+### 📡 DNS settings
 
 1. Add A record:
 ```
@@ -184,9 +184,9 @@ your-domain.com.  A  your-server-ip
 www.your-domain.com.  CNAME  your-domain.com.
 ```
 
-### SSL certificate
+### 🔒 SSL certificate
 
-#### Let's Encrypt
+#### 🔐 Let's Encrypt
 
 1. Install Certbot:
 

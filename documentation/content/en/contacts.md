@@ -8,17 +8,19 @@ template: en_page.html
 language: en
 ---
 
-# Contacts
+# 📞 Contacts
 
 StaticFlow is an open-source project distributed under the MIT license.
 
-## Author and support
+## 👤 Author and support
 
 **Anastasia (nestessia)**  
-E-mail: <a href="mailto:nestessia@gmail.com">nestessia@gmail.com</a>
+📧 E-mail: <a href="mailto:nestessia@gmail.com">nestessia@gmail.com</a>
 
-GitHub: [https://github.com/nestessia/StaticFlow-diploma](https://github.com/nestessia/StaticFlow-diploma)
+📱 Telegram: <a href="https://t.me/nestessia">nestessia</a> 
+
+🐙 GitHub: [https://github.com/nestessia/StaticFlow-diploma](https://github.com/nestessia/StaticFlow-diploma)
 
 ---
 
-If you have questions, suggestions, or want to participate in project development — write to the email or create an issue on GitHub! 
+If you have questions, suggestions, or want to participate in project development — write to me or create an issue on GitHub! 🤝 

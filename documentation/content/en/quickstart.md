@@ -8,11 +8,11 @@ template: en_page.html
 language: en
 ---
 
-# Quick Start with StaticFlow
+# 🚀 Quick Start with StaticFlow
 
 This guide will help you quickly get started with StaticFlow. We'll create a simple blog site with basic functionality.
 
-## Creating a project
+## 🏗️ Creating a project
 
 1. Create a new project:
 
@@ -33,7 +33,7 @@ staticflow build
 staticflow serve
 ```
 
-## Project structure
+## 📁 Project structure
 
 After creating a project, you'll have the following structure:
 
@@ -52,7 +52,7 @@ my-blog/
 └── config.toml      # Configuration
 ```
 
-## Creating your first page
+## ✍️ Creating your first page
 
 1. Open `content/index.md` and edit it:
 
@@ -71,7 +71,7 @@ template: page.html
 This is my first page created with StaticFlow.
 ```
 
-## Template configuration
+## 🎨 Template configuration
 
 1. You can change templates and inherit from them. Base templates are located in the `templates/` folder. Create your own template in `templates/` and specify it in the front matter.
 
@@ -98,7 +98,7 @@ template: blog.html # Change to your template
 ---
 ```
 
-## Adding styles
+## 🎨 Adding styles
 
 1. Create a file `static/css/style.css`:
 
@@ -125,7 +125,7 @@ And connect it to the template:
 <link rel="stylesheet" href="{{ static_dir }}/css/style.css">
 ```
 
-## Admin panel
+## ⚙️ Admin panel
 StaticFlow provides an admin panel for content management. To use it, start the development server and go to `http://localhost:8000/admin/`. You'll see all your site content:
 ![Toolbar](media/toolbar.png)
 
@@ -133,25 +133,25 @@ You can then edit content or create new pages in the admin panel by clicking "Ed
 
 For more information about the admin panel, see the [Admin Panel](admin.html) section.
 
-# Working with content
+# 📝 Working with content
 
 This section covers how to create and manage content in StaticFlow.
 
-## Content formats
+## 📄 Content formats
 
 StaticFlow supports several content formats:
 
-- Markdown (`.md`)
-- HTML (`.html`)
+- 📝 Markdown (`.md`)
+- 🌐 HTML (`.html`)
 
-## Content file structure
+## 📋 Content file structure
 
 Each content file consists of two parts:
 
 1. **Front Matter** - metadata in YAML format
 2. **Content** - main content in the chosen format
 
-## Metadata (Front Matter)
+## 🏷️ Metadata (Front Matter)
 
 ### Required fields
 - `format` - content format
@@ -166,9 +166,9 @@ Each content file consists of two parts:
 - `description` - page description
 - `slug` - URL-friendly version of title
 
-## Content organization
+## 📂 Content organization
 
-### Categories
+### 📁 Categories
 
 Categories allow you to organize content hierarchically:
 
@@ -184,7 +184,7 @@ content/
 └── about.md
 ```
 
-### Tags
+### 🏷️ Tags
 
 Tags help group content by topics:
 
@@ -194,9 +194,9 @@ tags: [python, web, tutorial]
 ---
 ```
 
-## Working with media files
+## 🖼️ Working with media files
 
-### Images
+### 🖼️ Images
 
 1. Place images in the `media/` directory
 2. Use in content:
@@ -205,9 +205,9 @@ tags: [python, web, tutorial]
 ![Description](/media/image.jpg)
 ```
 
-## Advanced content
+## 🔬 Advanced content
 
-### Mathematical formulas
+### 📐 Mathematical formulas
 
 ```markdown
 Inline formula: $E = mc^2$
@@ -218,7 +218,7 @@ $$
 $$
 ```
 
-### Diagrams
+### 📊 Diagrams
 
 ```markdown
 ```mermaid

@@ -8,49 +8,49 @@ template: en_page.html
 language: en
 ---
 
-# Content Creation Guide in Admin Panel
+# 📝 Content Creation Guide in Admin Panel
 
-## Blocks
+## 🧱 Blocks
 In content editing mode, you can add blocks. The block toolbar is located at the top of the screen.
 
 
 ![Toolbar](/media/toolbar.png)
 
 
-## Creating headings and moving blocks
+## 📋 Creating headings and moving blocks
 
 
 !VIDEO(/media/headings.mp4)
 
 
-## Creating hyperlinks
+## 🔗 Creating hyperlinks
 
 
 !VIDEO(/media/hyperlink.mp4)
 
 
-## Creating images
+## 🖼️ Creating images
 
 
 !VIDEO(/media/photo.mp4)
 
 
-## Creating video
+## 🎥 Creating video
 
 !VIDEO(/media/video.mp4)
 
-## Creating audio
+## 🎵 Creating audio
 
 !VIDEO(/media/audio.mp4)
 
-## Creating tables
+## 📊 Creating tables
 
 !VIDEO(/media/table.mp4)
 
-## Creating mathematical formulas
+## 📐 Creating mathematical formulas
 
 !VIDEO(/media/formula.mp4)
 
-## Creating diagrams
+## 📈 Creating diagrams
 
 !VIDEO(/media/diagram.mp4) 
