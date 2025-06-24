@@ -138,10 +138,8 @@ class Engine:
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
         try:
-            # Конвертируем Markdown в HTML
             content = self.markdown.convert(page.content)
-            
-            # Применяем плагины к контенту
+
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
                     logger.debug(
@@ -150,7 +148,6 @@ class Engine:
                     )
                     content = plugin.process_content(content)
 
-            # Применяем плагины к контексту страницы
             context = {
                 'content': content,
                 'page_content': content,
@@ -177,7 +174,6 @@ class Engine:
                     )
                     context = plugin.on_post_page(context)
 
-            # Рендерим страницу
             template = self.site.get_template(page.template)
             if template:
                 logger.debug("Rendering page with template: %s", page.template)
@@ -199,7 +195,6 @@ class Engine:
             )
             return
 
-        # Получаем путь к директории статических файлов из конфигурации
         static_dir = Path(self.site.config.get("static_dir", "static"))
         if not static_dir.exists():
             logger.error("Static directory does not exist: %s", static_dir)
@@ -210,28 +205,26 @@ class Engine:
             static_dir,
             self.site.output_dir
         )
-        
+
         try:
             for file_path in static_dir.rglob("*"):
                 if file_path.is_file():
                     rel_path = file_path.relative_to(static_dir)
                     output_path = self.site.output_dir / "static" / rel_path
                     output_path.parent.mkdir(parents=True, exist_ok=True)
-                    
+
                     logger.info(
                         "Processing static file: %s -> %s",
                         file_path,
                         output_path
                     )
-                    
-                    # Создаем контекст для хука on_pre_asset
+
                     context = {
                         "file_path": str(file_path),
                         "output_path": str(output_path),
                         "relative_path": str(rel_path)
                     }
-                    
-                    # Применяем хуки плагинов
+
                     for plugin in self.plugins:
                         if hasattr(plugin, 'on_pre_asset'):
                             plugin_name = (
@@ -250,8 +243,7 @@ class Engine:
                                     plugin_name,
                                     file_path
                                 )
-                    
-                    # Если файл был изменен плагинами, используем его новое содержимое
+
                     if "content" in context:
                         logger.info(
                             "Writing modified content to %s",
@@ -260,15 +252,13 @@ class Engine:
                         with open(output_path, 'w', encoding='utf-8') as f:
                             f.write(context["content"])
                     else:
-                        # Иначе просто копируем файл
                         logger.info(
                             "Copying file %s to %s",
                             file_path,
                             output_path
                         )
                         shutil.copy2(file_path, output_path)
-                    
-                    # Применяем хуки post_asset
+
                     for plugin in self.plugins:
                         if hasattr(plugin, 'on_post_asset'):
                             plugin_name = (
