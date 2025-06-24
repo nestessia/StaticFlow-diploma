@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installation</title>
+    <title>API</title>
     <link rel="stylesheet" href="http://localhost:8000/static/css/style.css">
     <link rel="stylesheet" href="http://localhost:8000/static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -232,42 +232,42 @@
     
 <nav class="navbar">
     <div class="navbar-container">
-        <a href="http://localhost:8000/en/" class="navbar-brand">
+        <a href="http://localhost:8000" class="navbar-brand">
             <img src="http://localhost:8000//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
             StaticFlow
         </a>
-        <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Переключить навигацию">
             <i class="fas fa-bars"></i>
         </button>
         <ul class="navbar-menu" id="navbar-menu">
-            <li><a href="http://localhost:8000/en/about.html" class="navbar-item ">
-                <i class="fas fa-info-circle"></i> About
+            <li><a href="http://localhost:8000/about.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> О проекте
             </a></li>
-            <li><a href="http://localhost:8000/en/contacts.html" class="navbar-item ">
-                <i class="fas fa-info-circle"></i> Contacts
+            <li><a href="http://localhost:8000/contacts.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> Контакты
             </a></li>
-            <li><a href="http://localhost:8000/en/installation.html" class="navbar-item ">
-                <i class="fas fa-download"></i> Installation
+            <li><a href="http://localhost:8000/installation.html" class="navbar-item ">
+                <i class="fas fa-download"></i> Установка
             </a></li>
-            <li><a href="http://localhost:8000/en/quickstart.html" class="navbar-item ">
-                <i class="fas fa-rocket"></i> Quick Start
+            <li><a href="http://localhost:8000/quickstart.html" class="navbar-item ">
+                <i class="fas fa-rocket"></i> Быстрый старт
             </a></li>
-            <li><a href="http://localhost:8000/en/blocks.html" class="navbar-item ">
-                <i class="fas fa-palette"></i> Block Editor
+            <li><a href="http://localhost:8000/blocks.html" class="navbar-item ">
+                <i class="fas fa-palette"></i> Блочный редактор
             </a></li>
-            <li><a href="http://localhost:8000/en/plugins.html" class="navbar-item ">
-                <i class="fas fa-puzzle-piece"></i> Plugins
+            <li><a href="http://localhost:8000/plugins.html" class="navbar-item ">
+                <i class="fas fa-puzzle-piece"></i> Плагины
             </a></li>
-            <li><a href="http://localhost:8000/en/deploy.html" class="navbar-item ">
-                <i class="fas fa-cloud-upload-alt"></i> Deployment
+            <li><a href="http://localhost:8000/deploy.html" class="navbar-item ">
+                <i class="fas fa-cloud-upload-alt"></i> Деплой
             </a></li>
-            <li><a href="http://localhost:8000/en/api.html" class="navbar-item ">
+            <li><a href="http://localhost:8000/api.html" class="navbar-item ">
                 <i class="fas fa-cloud-upload-alt"></i> API
             </a></li>
             <li>
                 <button id="lang-toggle" class="navbar-item" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.3em;">
                     <i class="fas fa-globe"></i>
-                    <span>RU</span>
+                    <span>EN</span>
                 </button>
             </li>
         </ul>
@@ -304,7 +304,7 @@
     <main>
         <div class="content">
             
-    <h1>⚙️ Installing StaticFlow</h1><p>This section covers the StaticFlow installation process and requirements.</p><h2>📋 Requirements</h2><p>StaticFlow requires:</p><ul><li>🐍 Python 3.8 or higher</li><li>📦 pip (Python package manager)</li><li>🔧 Git (optional, for repository work)</li></ul><h2>📦 Installation via pip</h2><p>The easiest way to install StaticFlow is using pip:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>pip<span class="w"></span>install<span class="w"></span>staticflow-framework</code></span><span class="line" id="L2"></span></pre></div></div><h2>✅ Verifying installation</h2><p>After installation, check that StaticFlow is available:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>--version</code></span><span class="line" id="L2"></span></pre></div></div><h2>🔄 Updating</h2><p>To update to the latest version:</p><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>pip<span class="w"></span>install<span class="w"></span>--upgrade<span class="w"></span>staticflow-framework</code></span><span class="line" id="L2"></span></pre></div></div><h2>🪟 Installation on Windows</h2><ol><li>📥 Download and install Python from the official website: https://www.python.org/downloads/</li><li>During installation, be sure to select "Add Python to PATH".</li><li>💻 Open Command Prompt (Win+R → cmd).</li><li>🔍 Check Python and pip versions: <code>bash python --version pip --version</code></li><li>📦 Install StaticFlow: <code>bash pip install staticflow-framework</code></li><li>🚀 Run StaticFlow: <code>bash staticflow-framework --version</code></li></ol><h2>🐧 Installation on Ubuntu</h2><ol><li>🔄 Update packages: <code>bash sudo apt update &amp;&amp; sudo apt upgrade</code></li><li>📦 Install Python and pip: <code>bash sudo apt install python3 python3-pip</code></li><li>🔍 Check Python version: <code>bash python3 --version pip3 --version</code></li><li>📦 Install StaticFlow: <code>bash pip3 install staticflow-framework</code></li><li>🚀 Run StaticFlow: <code>bash staticflow-framework --version</code></li></ol><h2>🍎 Installation on macOS</h2><ol><li>🍺 Make sure Homebrew is installed (if not — install from https://brew.sh/): <code>bash /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li><li>📦 Install Python and pip: <code>bash brew install python</code></li><li>🔍 Check Python version: <code>bash python3 --version pip3 --version</code></li><li>📦 Install StaticFlow: <code>bash pip3 install staticflow-framework</code></li><li>🚀 Run StaticFlow: <code>bash staticflow-framework --version</code></li></ol><h2>🔧 Troubleshooting</h2><h3>❗ Common issues</h3><ol><li><strong>"command not found" error</strong></li><li>Make sure Python and pip are installed</li><li><p>Check that the Python executable directory is in PATH</p></li><li><p><strong>Dependency issues</strong></p></li><li>Try creating a new virtual environment</li><li><p>Update pip: <code>pip install --upgrade pip</code></p></li><li><p><strong>Build errors</strong></p></li><li>Check Python version</li><li>Make sure all dependencies are installed</li></ol><h3>🆘 Getting help</h3><p>If you encounter problems:</p><ul><li><p>🔍 Check <a href="https://github.com/nestessia/StaticFlow-diploma/issues">GitHub Issues</a></p></li><li><p>📝 Create a new issue with detailed problem description</p></li></ul>
+    <h2>🏗️ Программный API</h2><p>StaticFlow предоставляет мощный API для программного создания и управления сайтами:</p><div class="code-block language-python"><div class="language-tag">python</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="kn">from</span><span class="nn">staticflow</span><span class="kn">import</span><span class="n">Engine</span><span class="p">,</span><span class="n">Config</span><span class="p">,</span><span class="n">Page</span></code></span><span class="line" id="L2"><span class="kn">from</span><span class="nn">pathlib</span><span class="kn">import</span><span class="n">Path</span></span><span class="line" id="L3"></span><span class="line" id="L4"><span class="c1"># Создаем конфигурацию</span></span><span class="line" id="L5"><span class="n">config</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">Config</span><span class="p">(</span><span class="s2">"config.toml"</span><span class="p">)</span></span><span class="line" id="L6"></span><span class="line" id="L7"><span class="c1"># Инициализируем движок</span></span><span class="line" id="L8"><span class="n">engine</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">Engine</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="c1"># Создаем страницу программно</span></span><span class="line" id="L11"><span class="n">page</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">Page</span><span class="p">(</span></span><span class="line" id="L12"><span class="ws"></span><span class="n">source_path</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="n">Path</span><span class="p">(</span><span class="s2">"programmatic.md"</span><span class="p">),</span></span><span class="line" id="L13"><span class="ws"></span><span class="n">content</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s2">"# Программно созданная страница</span><span class="se">\n\n</span><span class="s2">Эта страница создана с помощью Python API."</span><span class="p">,</span></span><span class="line" id="L14"><span class="ws"></span><span class="n">metadata</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L15"><span class="ws"></span><span class="s2">"title"</span><span class="p">:</span><span class="s2">"Программная страница"</span><span class="p">,</span></span><span class="line" id="L16"><span class="ws"></span><span class="s2">"date"</span><span class="p">:</span><span class="s2">"2023-03-23"</span><span class="p">,</span></span><span class="line" id="L17"><span class="ws"></span><span class="s2">"tags"</span><span class="p">:</span><span class="p">[</span><span class="s2">"api"</span><span class="p">,</span><span class="s2">"python"</span><span class="p">]</span></span><span class="line" id="L18"><span class="ws"></span><span class="p">}</span></span><span class="line" id="L19"><span class="p">)</span></span><span class="line" id="L20"></span><span class="line" id="L21"><span class="c1"># Добавляем страницу в движок</span></span><span class="line" id="L22"><span class="n">engine</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span></span><span class="line" id="L23"></span><span class="line" id="L24"><span class="c1"># Собираем сайт</span></span><span class="line" id="L25"><span class="n">engine</span><span class="o">.</span><span class="n">build</span><span class="p">()</span></span><span class="line" id="L26"></span></pre></div></div>
 
         </div>
     </main>
@@ -312,7 +312,7 @@
     
 <footer>
     <div class="container">
-        <p>&copy; nestessia | Made with <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+        <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
     </div>
 </footer>
 
