@@ -3,53 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to StaticFlow</title>
-    <link rel="stylesheet" href="/StaticFlow-diploma/static/css/style.css">
-    <link rel="stylesheet" href="/StaticFlow-diploma/static/css/code_highlight.css">
+    <title>Блоки контента</title>
+    <link rel="stylesheet" href="https://nestessia.github.io/StaticFlow-diploma/StaticFlow-diploma/static/css/style.css">
+    <link rel="stylesheet" href="https://nestessia.github.io/StaticFlow-diploma/StaticFlow-diploma/static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="https://nestessia.github.io/StaticFlow-diploma" />
     
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    renderMathInElement(document.body, {
-                        delimiters: [
-                            {left: "$$", right: "$$", display: true},
-                            {left: "$", right: "$", display: false}
-                        ],
-                        throwOnError: false
-                    });
-                });
-            </script>
-        
-<script src="https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js"></script>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({
-                    startOnLoad: true,
-                    theme: 'default',
-                    securityLevel: 'loose'
-                });
-            }
-        });
-        </script>
-        <style>
-        /* Простые стили для диаграмм */
-        .mermaid {
-            margin: 1.5rem 0;
-            text-align: center;
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-        }
-        </style>
-            <style>
+    
+    <style>
         :root {
             --primary-color: #2563eb;
             --primary-hover: #1d4ed8;
@@ -267,55 +229,77 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">
-                <img src="https://nestessia.github.io/StaticFlow-diploma/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
-                StaticFlow
-            </a>
-            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="navbar-menu" id="navbar-menu">
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/about.html" class="navbar-item ">
-                    <i class="fas fa-info-circle"></i> О проекте
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/installation.html" class="navbar-item ">
-                    <i class="fas fa-download"></i> Установка
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/quickstart.html" class="navbar-item ">
-                    <i class="fas fa-rocket"></i> Быстрый старт
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/templates.html" class="navbar-item ">
-                    <i class="fas fa-paint-brush"></i> Шаблоны
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/blocks.html" class="navbar-item ">
-                    <i class="fas fa-palette"></i> Блочный редактор
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/plugins.html" class="navbar-item ">
-                    <i class="fas fa-puzzle-piece"></i> Плагины
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/deploy.html" class="navbar-item ">
-                    <i class="fas fa-cloud-upload-alt"></i> Деплой
-                </a></li>
-                <li><a href="https://nestessia.github.io/StaticFlow-diploma/api.html" class="navbar-item ">
-                    <i class="fas fa-code"></i> API
-                </a></li>
-            </ul>
-        </div>
-    </nav>
+    
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-brand">
+            <img src="https://nestessia.github.io/StaticFlow-diploma//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+            StaticFlow
+        </a>
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Переключить навигацию">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="navbar-menu" id="navbar-menu">
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/about.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> О проекте
+            </a></li>
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/installation.html" class="navbar-item ">
+                <i class="fas fa-download"></i> Установка
+            </a></li>
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/quickstart.html" class="navbar-item ">
+                <i class="fas fa-rocket"></i> Быстрый старт
+            </a></li>
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/blocks.html" class="navbar-item ">
+                <i class="fas fa-palette"></i> Блочный редактор
+            </a></li>
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/plugins.html" class="navbar-item ">
+                <i class="fas fa-puzzle-piece"></i> Плагины
+            </a></li>
+            <li><a href="https://nestessia.github.io/StaticFlow-diploma/deploy.html" class="navbar-item ">
+                <i class="fas fa-cloud-upload-alt"></i> Деплой
+            </a></li>
+            <li>
+                <button id="lang-toggle" class="navbar-item" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.3em;">
+                    <i class="fas fa-globe"></i>
+                    <span>EN</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', function() {
+                var current = window.location.pathname;
+                if (current.startsWith('/en/')) {
+                    var newUrl = current.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                }
+                window.location.pathname = newUrl;
+            });
+        }
+    });
+</script>
+
 
     <main>
         <div class="content">
-    <h1>Руководство по созданию контента в панели администратора</h1><h2>Блоки</h2><p>В режиме редактирования контента можно добавлять блоки. Тулбар блоков находится в верхней части экрана.</p><p><img alt="Toolbar" src="media\toolbar.png"/></p><h2>Создание заголовков и перемещение блоков</h2><video controls="controls">Your browser does not support the video tag.<source src="media/headings.mp4" type="video/mp4"/></video><h2>Создание гиперссылки</h2><video controls="controls">Your browser does not support the video tag.<source src="media/hyperlink.mp4" type="video/mp4"/></video><h2>Создание изображения</h2><video controls="controls">Your browser does not support the video tag.<source src="media/photo.mp4" type="video/mp4"/></video><h2>Создание видео</h2><video controls="controls">Your browser does not support the video tag.<source src="media/video.mp4" type="video/mp4"/></video><h2>Создание аудио</h2><video controls="controls">Your browser does not support the video tag.<source src="media/audio.mp4" type="video/mp4"/></video><h2>Создание таблицы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/table.mp4" type="video/mp4"/></video><h2>Создание математической формулы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/formula.mp4" type="video/mp4"/></video><h2>Создание диаграммы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/diagram.mp4" type="video/mp4"/></video>
+            
+    <h1>Руководство по созданию контента в панели администратора</h1><h2>Блоки</h2><p>В режиме редактирования контента можно добавлять блоки. Тулбар блоков находится в верхней части экрана.</p><p><img alt="Toolbar" src="media/toolbar.png"/></p><h2>Создание заголовков и перемещение блоков</h2><video controls="controls">Your browser does not support the video tag.<source src="media/headings.mp4" type="video/mp4"/></video><h2>Создание гиперссылки</h2><video controls="controls">Your browser does not support the video tag.<source src="media/hyperlink.mp4" type="video/mp4"/></video><h2>Создание изображения</h2><video controls="controls">Your browser does not support the video tag.<source src="media/photo.mp4" type="video/mp4"/></video><h2>Создание видео</h2><video controls="controls">Your browser does not support the video tag.<source src="media/video.mp4" type="video/mp4"/></video><h2>Создание аудио</h2><video controls="controls">Your browser does not support the video tag.<source src="media/audio.mp4" type="video/mp4"/></video><h2>Создание таблицы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/table.mp4" type="video/mp4"/></video><h2>Создание математической формулы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/formula.mp4" type="video/mp4"/></video><h2>Создание диаграммы</h2><video controls="controls">Your browser does not support the video tag.<source src="media/diagram.mp4" type="video/mp4"/></video>
+
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
-        </div>
-    </footer>
+    
+<footer>
+    <div class="container">
+        <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+    </div>
+</footer>
+
 
     <script>
         // Улучшенная обработка мобильного меню
@@ -332,7 +316,9 @@
                 '<i class="fas fa-bars"></i>';
         }
 
-        navbarToggle.addEventListener('click', toggleMenu);
+        if (navbarToggle) {
+            navbarToggle.addEventListener('click', toggleMenu);
+        }
 
         // Закрытие меню при клике на пункт меню
         document.querySelectorAll('.navbar-item').forEach(item => {
