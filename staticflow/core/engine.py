@@ -157,23 +157,7 @@ class Engine:
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
         try:
-            # Process markdown content for media links before converting to HTML
-            markdown_content = page.content
-            for plugin in self.plugins:
-                if hasattr(plugin, 'process_markdown_content'):
-                    plugin_name = (
-                        plugin.metadata.name if hasattr(plugin, 'metadata') 
-                        else plugin.__class__.__name__
-                    )
-                    logger.debug(
-                        "Processing markdown content with plugin: %s",
-                        plugin_name
-                    )
-                    markdown_content = plugin.process_markdown_content(
-                        markdown_content
-                    )
-            
-            content = self.markdown.convert(markdown_content)
+            content = self.markdown.convert(page.content)
 
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
@@ -201,6 +185,7 @@ class Engine:
                 'metadata': page.metadata,
                 'page_head_content': '',
                 'static_dir': self._get_static_dir(),
+                'media_dir': self._get_media_dir(),
                 'site_url': self.config.get("base_url", ""),
                 'site_name': self.config.get(
                     "site_name", "StaticFlow Site"
@@ -385,6 +370,7 @@ class Engine:
             "site_name": self.config.get("site_name", "StaticFlow Site"),
             "site_url": self.config.get("base_url", ""),  
             "static_dir": static_dir,
+            "media_dir": self._get_media_dir(),
             "page_content": content_html,
             "page_head_content": (
                 "\n".join(head_content) if head_content else ""
@@ -406,3 +392,12 @@ class Engine:
         logger.info("Static directory: %s", static_dir)
         print(f"DEBUG: _get_static_dir called, returning: {static_dir}")
         return static_dir
+
+    def _get_media_dir(self):
+        media_dir = self.config.get("media_dir", "media")
+        if not (media_dir.startswith("/") or media_dir.startswith("http")):
+            media_dir = "/" + media_dir
+        if media_dir != "/" and media_dir.endswith("/"):
+            media_dir = media_dir[:-1]
+        logger.info("Media directory: %s", media_dir)
+        return media_dir

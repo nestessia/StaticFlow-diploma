@@ -42,7 +42,7 @@ use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
 [PLUGINS]
-enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight"]
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight", "media"]
 
 [PLUGIN_MULTILINGUAL]
 enabled = true

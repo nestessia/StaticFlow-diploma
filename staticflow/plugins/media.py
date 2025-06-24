@@ -153,24 +153,115 @@ class MediaPlugin(Plugin):
                 self._process_audio(source_path)
         return context
     
+    def on_post_page(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Post-page hook: process final HTML after template rendering."""
+        if "content" in context:
+            context["content"] = self.process_content(context["content"])
+        return context
+    
     def process_content(self, content: str) -> str:
-        """Process content and replace image/media tags with optimized versions."""
-        if not self.media_dir:
+        """Process content and replace media URLs with absolute URLs."""
+        if not hasattr(self, "engine") or not self.engine:
             return content
         
-        # Process image tags
-        content = self.img_pattern.sub(self._replace_image, content)
+        # Get configuration
+        site_url = self.engine.config.get("base_url", "")
+        media_dir = self.engine.config.get("media_dir", "media")
         
-        # Skip if srcset is already defined
-        if not self.srcset_pattern.search(content):
-            content = self.img_pattern.sub(self._add_srcset, content)
+        if site_url.endswith("/"):
+            site_url = site_url[:-1]
+        
+        # Pattern for HTML img tags with src starting with /media/
+        img_pattern = re.compile(
+            r'<img\s+[^>]*src=["\'](/[^"\']*?)["\'][^>]*>'
+        )
+        
+        def replace_img_src(match):
+            img_tag = match.group(0)
+            src = match.group(1)
+            
+            # Check if src starts with /media/ (or configured media_dir)
+            if (src.startswith(f'/{media_dir}/') or 
+                    src == f'/{media_dir}'):
+                # Replace relative media path with absolute URL
+                absolute_src = f"{site_url}{src}"
+                return img_tag.replace(
+                    f'src="{src}"', f'src="{absolute_src}"'
+                )
+            
+            return img_tag
+        
+        # Process image tags
+        content = img_pattern.sub(replace_img_src, content)
+        
+        # Pattern for HTML video tags with src starting with /media/
+        video_pattern = re.compile(
+            r'<video\s+[^>]*src=["\'](/[^"\']*?)["\'][^>]*>'
+        )
+        
+        def replace_video_src(match):
+            video_tag = match.group(0)
+            src = match.group(1)
+            
+            # Check if src starts with /media/ (or configured media_dir)
+            if (src.startswith(f'/{media_dir}/') or
+                    src == f'/{media_dir}'):
+                # Replace relative media path with absolute URL
+                absolute_src = f"{site_url}{src}"
+                return video_tag.replace(
+                    f'src="{src}"', f'src="{absolute_src}"'
+                )
+            
+            return video_tag
         
         # Process video tags
-        if self.config["process_videos"]:
-            content = self.video_pattern.sub(self._replace_video, content)
+        content = video_pattern.sub(replace_video_src, content)
+        
+        # Pattern for HTML audio tags with src starting with /media/
+        audio_pattern = re.compile(
+            r'<audio\s+[^>]*src=["\'](/[^"\']*?)["\'][^>]*>'
+        )
+        
+        def replace_audio_src(match):
+            audio_tag = match.group(0)
+            src = match.group(1)
+            
+            # Check if src starts with /media/ (or configured media_dir)
+            if (src.startswith(f'/{media_dir}/') or
+                    src == f'/{media_dir}'):
+                # Replace relative media path with absolute URL
+                absolute_src = f"{site_url}{src}"
+                return audio_tag.replace(
+                    f'src="{src}"', f'src="{absolute_src}"'
+                )
+            
+            return audio_tag
         
         # Process audio tags
-        content = self.audio_pattern.sub(self._replace_audio, content)
+        content = audio_pattern.sub(replace_audio_src, content)
+        
+        # Pattern for HTML source tags with src starting with /media/
+        source_pattern = re.compile(
+            r'<source\s+[^>]*src=["\'](/[^"\']*?)["\'][^>]*>'
+        )
+        
+        def replace_source_src(match):
+            source_tag = match.group(0)
+            src = match.group(1)
+            
+            # Check if src starts with /media/ (or configured media_dir)
+            if (src.startswith(f'/{media_dir}/') or
+                    src == f'/{media_dir}'):
+                # Replace relative media path with absolute URL
+                absolute_src = f"{site_url}{src}"
+                return source_tag.replace(
+                    f'src="{src}"', f'src="{absolute_src}"'
+                )
+            
+            return source_tag
+        
+        # Process source tags
+        content = source_pattern.sub(replace_source_src, content)
         
         return content
     
@@ -750,194 +841,3 @@ class MediaPlugin(Plugin):
                 return f"{base_url}/{file_path.relative_to(engine.site.output_dir)}"
                 
         return str(file_path)
-        
-    def process_content(self, content: str) -> str:
-        """Process content and replace media URLs with CDN URLs if available."""
-        # Process images
-        content = self.img_pattern.sub(
-            lambda m: self._process_image_tag(m.group(0)),
-            content
-        )
-        
-        # Process videos
-        content = self.video_pattern.sub(
-            lambda m: self._process_video_tag(m.group(0)),
-            content
-        )
-        
-        # Process audio
-        content = self.audio_pattern.sub(
-            lambda m: self._process_audio_tag(m.group(0)),
-            content
-        )
-        
-        return content
-        
-    def _process_image_tag(self, tag: str) -> str:
-        """Process image tag and update src/srcset attributes."""
-        # Extract src attribute
-        src_match = re.search(r'src=["\'](.*?)["\']', tag)
-        if not src_match:
-            return tag
-            
-        src = src_match.group(1)
-        file_path = Path(src)
-        
-        # Get CDN URL
-        cdn_url = self._get_media_dir(file_path)
-        
-        # Update src attribute
-        tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
-        
-        # Update srcset if present
-        srcset_match = re.search(r'srcset=["\'](.*?)["\']', tag)
-        if srcset_match:
-            srcset = srcset_match.group(1)
-            new_srcset = []
-            for item in srcset.split(','):
-                url, size = item.strip().split(' ')
-                url_path = Path(url)
-                cdn_url = self._get_media_dir(url_path)
-                new_srcset.append(f"{cdn_url} {size}")
-            tag = tag.replace(f'srcset="{srcset}"', f'srcset="{", ".join(new_srcset)}"')
-            
-        return tag
-        
-    def _process_video_tag(self, tag: str) -> str:
-        """Process video tag and update src/poster attributes."""
-        # Extract src attribute
-        src_match = re.search(r'src=["\'](.*?)["\']', tag)
-        if src_match:
-            src = src_match.group(1)
-            file_path = Path(src)
-            cdn_url = self._get_media_dir(file_path)
-            tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
-            
-        # Extract poster attribute
-        poster_match = re.search(r'poster=["\'](.*?)["\']', tag)
-        if poster_match:
-            poster = poster_match.group(1)
-            file_path = Path(poster)
-            cdn_url = self._get_media_dir(file_path)
-            tag = tag.replace(f'poster="{poster}"', f'poster="{cdn_url}"')
-            
-        return tag
-        
-    def _process_audio_tag(self, tag: str) -> str:
-        """Process audio tag and update src attribute."""
-        src_match = re.search(r'src=["\'](.*?)["\']', tag)
-        if src_match:
-            src = src_match.group(1)
-            file_path = Path(src)
-            cdn_url = self._get_media_dir(file_path)
-            tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
-            
-        return tag
-
-    def process_markdown_content(self, content: str) -> str:
-        """Process markdown content and replace relative media links with absolute URLs."""
-        if not hasattr(self, "engine") or not self.engine:
-            return content
-        
-        # Get configuration
-        site_url = self.engine.config.get("base_url", "")
-        media_dir = self.engine.config.get("media_dir", "media")
-        
-        if site_url.endswith("/"):
-            site_url = site_url[:-1]
-        
-        # Pattern for markdown image links: ![alt](src)
-        markdown_img_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
-        
-        def replace_markdown_image(match):
-            alt_text = match.group(1)
-            src = match.group(2)
-            
-            # Skip external images
-            if src.startswith(('http://', 'https://', '//')):
-                return match.group(0)
-            
-            # Skip already absolute URLs
-            if src.startswith(f'{site_url}/'):
-                return match.group(0)
-            
-            # Remove leading slash if present
-            if src.startswith('/'):
-                src = src[1:]
-            
-            # If it's a media file, make it absolute
-            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
-                # Already in media directory
-                absolute_src = f"{site_url}/{src}"
-            else:
-                # Assume it's in media directory
-                absolute_src = f"{site_url}/{media_dir}/{src}"
-            
-            return f"![{alt_text}]({absolute_src})"
-        
-        # Process markdown image links
-        content = markdown_img_pattern.sub(replace_markdown_image, content)
-        
-        # Pattern for markdown video links: !VIDEO(src)
-        markdown_video_pattern = re.compile(r'!VIDEO\(([^)]+)\)')
-        
-        def replace_markdown_video(match):
-            src = match.group(1)
-            
-            # Skip external videos
-            if src.startswith(('http://', 'https://', '//')):
-                return match.group(0)
-            
-            # Skip already absolute URLs
-            if src.startswith(f'{site_url}/'):
-                return match.group(0)
-            
-            # Remove leading slash if present
-            if src.startswith('/'):
-                src = src[1:]
-            
-            # If it's a media file, make it absolute
-            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
-                # Already in media directory
-                absolute_src = f"{site_url}/{src}"
-            else:
-                # Assume it's in media directory
-                absolute_src = f"{site_url}/{media_dir}/{src}"
-            
-            return f"!VIDEO({absolute_src})"
-        
-        # Process markdown video links
-        content = markdown_video_pattern.sub(replace_markdown_video, content)
-        
-        # Pattern for markdown audio links: !AUDIO(src)
-        markdown_audio_pattern = re.compile(r'!AUDIO\(([^)]+)\)')
-        
-        def replace_markdown_audio(match):
-            src = match.group(1)
-            
-            # Skip external audio
-            if src.startswith(('http://', 'https://', '//')):
-                return match.group(0)
-            
-            # Skip already absolute URLs
-            if src.startswith(f'{site_url}/'):
-                return match.group(0)
-            
-            # Remove leading slash if present
-            if src.startswith('/'):
-                src = src[1:]
-            
-            # If it's a media file, make it absolute
-            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
-                # Already in media directory
-                absolute_src = f"{site_url}/{src}"
-            else:
-                # Assume it's in media directory
-                absolute_src = f"{site_url}/{media_dir}/{src}"
-            
-            return f"!AUDIO({absolute_src})"
-        
-        # Process markdown audio links
-        content = markdown_audio_pattern.sub(replace_markdown_audio, content)
-        
-        return content

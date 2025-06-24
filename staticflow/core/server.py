@@ -152,12 +152,16 @@ class Server:
         self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
 
         # Static files
-        static_dir = self.config.get('static_dir', '/static')
         static_dir = self.config.get('static_dir', 'static')
         if not isinstance(static_dir, Path):
             static_path = Path(static_dir)
         else:
             static_path = static_dir
+        
+        # Ensure static_dir starts with / for aiohttp
+        if not static_dir.startswith('/'):
+            static_dir = '/' + static_dir
+            
         self.app.router.add_static(static_dir, static_path)
 
         # All other routes
