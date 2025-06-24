@@ -164,6 +164,25 @@ class Server:
             
         self.app.router.add_static(static_dir, static_path)
 
+        # Media files - use output/media instead of root media
+        output_dir = self.config.get('output_dir', 'output')
+        if not isinstance(output_dir, Path):
+            output_path = Path(output_dir)
+        else:
+            output_path = output_dir
+            
+        media_path = output_path / 'media'
+        
+        # Create media directory if it doesn't exist
+        if not media_path.exists():
+            media_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Created media directory: {media_path}")
+        
+        # Ensure media_dir starts with / for aiohttp
+        media_dir = '/media'
+            
+        self.app.router.add_static(media_dir, media_path)
+
         # All other routes
         self.app.router.add_get('/{tail:.*}', self.handle_request)
 
