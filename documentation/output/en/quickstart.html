@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/code_highlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="canonical" href="http://localhost:8000" />
+    
+    
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-light: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+            line-height: 1.5;
+            background-color: var(--bg-light);
+        }
+
+        .navbar {
+            background: var(--bg-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 2.5rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .navbar-brand img.logo-sf {
+            height: 2.6rem;
+            width: 2.6rem;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+            min-width: unset;
+            font-size: 1rem;
+        }
+
+        .navbar-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+        }
+
+        .navbar-item.active {
+            color: var(--primary-color);
+            background-color: var(--bg-light);
+            font-weight: 700;
+            box-shadow: 0 2px 8px 0 rgb(37 99 235 / 0.08);
+        }
+
+        .navbar-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background-color: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .navbar-toggle:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1100px) {
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-menu {
+                display: none;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-item {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem 1rem;
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background: var(--bg-color);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Анимации для интерактивных элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navbar-item, .navbar-brand {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Улучшенный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+                StaticFlow
+            </a>
+            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="navbar-menu" id="navbar-menu">
+                <li><a href="/about.html" class="navbar-item ">
+                    <i class="fas fa-info-circle"></i> О проекте
+                </a></li>
+                <li><a href="/installation.html" class="navbar-item ">
+                    <i class="fas fa-download"></i> Установка
+                </a></li>
+                <li><a href="/quickstart.html" class="navbar-item ">
+                    <i class="fas fa-rocket"></i> Быстрый старт
+                </a></li>
+                <li><a href="/blocks.html" class="navbar-item ">
+                    <i class="fas fa-palette"></i> Блочный редактор
+                </a></li>
+                <li><a href="/plugins.html" class="navbar-item ">
+                    <i class="fas fa-puzzle-piece"></i> Плагины
+                </a></li>
+                <li><a href="/deploy.html" class="navbar-item ">
+                    <i class="fas fa-cloud-upload-alt"></i> Деплой
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content">
+            
+    <h1>Quick Start with StaticFlow</h1><p>This guide will help you quickly get started with StaticFlow. We'll create a simple blog site with basic functionality.</p><h2>Creating a project</h2><ol><li>Create a new project:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>create<span class="w"></span>my-blog</code></span><span class="line" id="L2"><span class="nb">cd</span><span class="w"></span>my-blog</span><span class="line" id="L3"></span></pre></div></div><ol><li>To build the application, run:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>build</code></span><span class="line" id="L2"></span></pre></div></div><ol><li>To start the development server, run:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>serve</code></span><span class="line" id="L2"></span></pre></div></div><h2>Project structure</h2><p>After creating a project, you'll have the following structure:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>my-blog/</code></span><span class="line" id="L2">├── content/ # Site content</span><span class="line" id="L3">│ └── index.md # Home page</span><span class="line" id="L4">├── templates/ # Templates</span><span class="line" id="L5">│ ├── base.html # Base template</span><span class="line" id="L6">│ └── page.html # Page template</span><span class="line" id="L7">├── static/ # Static files</span><span class="line" id="L8">│ ├── css/ # Styles</span><span class="line" id="L9">│ └── js/ # Scripts</span><span class="line" id="L10">├── output/ # Built site</span><span class="line" id="L11">│ ├── ... # Site build</span><span class="line" id="L12">└── config.toml # Configuration</span><span class="line" id="L13"></span></pre></div></div><h2>Creating your first page</h2><ol><li>Open <code>content/index.md</code> and edit it:</li></ol><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: My Blog</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: your name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: page.html</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="gh"># Welcome to my blog!</span></span><span class="line" id="L11"></span><span class="line" id="L12">This is my first page created with StaticFlow.</span><span class="line" id="L13"></span></pre></div></div><h2>Template configuration</h2><ol><li>You can change templates and inherit from them. Base templates are located in the <code>templates/</code> folder. Create your own template in <code>templates/</code> and specify it in the front matter.</li></ol><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span class="ws"></span><span></span><code> {% extends "base.html" %}</code></span><span class="line" id="L2"></span><span class="line" id="L3"><span class="ws"></span>{% block title %}{{ page.title or "Untitled" }}{% endblock %}</span><span class="line" id="L4"></span><span class="line" id="L5"><span class="ws"></span>{% block head %}{{ page_head_content|safe }}{% endblock %}</span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span>{% block content %}</span><span class="line" id="L8"><span class="ws"></span>{{ page_content|safe }}</span><span class="line" id="L9"><span class="ws"></span>{% endblock %} </span><span class="line" id="L10"></span></pre></div></div><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: My Blog</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: your name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: blog.html # Change to your template</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span></pre></div></div><h2>Adding styles</h2><ol><li>Create a file <code>static/css/style.css</code>:</li></ol><div class="code-block language-css"><div class="language-tag">css</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="nt">body</span><span class="w"></span><span class="p">{</span></code></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="k">font-family</span><span class="p">:</span><span class="w"></span><span class="n">Arial</span><span class="p">,</span><span class="w"></span><span class="kc">sans-serif</span><span class="p">;</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="k">line-height</span><span class="p">:</span><span class="w"></span><span class="mf">1.6</span><span class="p">;</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="k">margin</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">0</span><span class="p">;</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="k">padding</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L6"><span class="p">}</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="nt">header</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="k">margin-bottom</span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L10"><span class="p">}</span></span><span class="line" id="L11"></span><span class="line" id="L12"><span class="nt">nav</span><span class="w"></span><span class="nt">a</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L13"><span class="ws"></span><span class="w"></span><span class="k">margin-right</span><span class="p">:</span><span class="w"></span><span class="mi">10</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L14"><span class="p">}</span></span><span class="line" id="L15"></span></pre></div></div><p>And connect it to the template:</p><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ static_url }}/css/style.css"</span><span class="p">&gt;</span></code></span><span class="line" id="L2"></span></pre></div></div><h2>Admin panel</h2><p>StaticFlow provides an admin panel for content management. To use it, start the development server and go to <code>http://localhost:8000/admin/</code>. You'll see all your site content:
+<img alt="Toolbar" src="media/toolbar.png"/></p><p>You can then edit content or create new pages in the admin panel by clicking "Edit" or "Create new page" respectively.</p><p>For more information about the admin panel, see the <a href="admin.html">Admin Panel</a> section.</p><h1>Working with content</h1><p>This section covers how to create and manage content in StaticFlow.</p><h2>Content formats</h2><p>StaticFlow supports several content formats:</p><ul><li>Markdown (<code>.md</code>)</li><li>HTML (<code>.html</code>)</li></ul><h2>Content file structure</h2><p>Each content file consists of two parts:</p><ol><li><strong>Front Matter</strong> - metadata in YAML format</li><li><strong>Content</strong> - main content in the chosen format</li></ol><h2>Metadata (Front Matter)</h2><h3>Required fields</h3><ul><li><code>format</code> - content format</li><li><code>template</code> - template to use</li></ul><h3>Optional fields</h3><ul><li><code>date</code> - creation/publication date</li><li><code>title</code> - page title</li><li><code>author</code> - content author</li><li><code>tags</code> - list of tags</li><li><code>category</code> - category</li><li><code>description</code> - page description</li><li><code>slug</code> - URL-friendly version of title</li></ul><h2>Content organization</h2><h3>Categories</h3><p>Categories allow you to organize content hierarchically:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>content/</code></span><span class="line" id="L2">├── blog/</span><span class="line" id="L3">│ ├── index.md</span><span class="line" id="L4">│ ├── post-1.md</span><span class="line" id="L5">│ └── post-2.md</span><span class="line" id="L6">├── projects/</span><span class="line" id="L7">│ ├── index.md</span><span class="line" id="L8">│ └── project-1.md</span><span class="line" id="L9">└── about.md</span><span class="line" id="L10"></span></pre></div></div><h3>Tags</h3><p>Tags help group content by topics:</p><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2"><span class="gu">tags: [python, web, tutorial]</span></span><span class="line" id="L3"><span class="gu">---</span></span><span class="line" id="L4"></span></pre></div></div><h2>Working with media files</h2><h3>Images</h3><ol><li>Place images in the <code>media/</code> directory</li><li>Use in content:</li></ol><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>![<span class="nt">Description</span>](<span class="na">/media/image.jpg</span>)</code></span><span class="line" id="L2"></span></pre></div></div><h2>Advanced content</h2><h3>Mathematical formulas</h3><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>Inline formula: $E = mc^2$</code></span><span class="line" id="L2"></span><span class="line" id="L3">Block formula:</span><span class="line" id="L4">$$</span><span class="line" id="L5">\int_0^\infty e^{-x} dx = 1</span><span class="line" id="L6">$$</span><span class="line" id="L7"></span></pre></div></div><h3>Diagrams</h3><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>&lt;div class="mermaid"&gt;graph TD</code></span><span class="line" id="L2">A[Start] --&gt; B[Process]</span><span class="line" id="L3">B --&gt; C{Condition}</span><span class="line" id="L4">C --&gt;|Yes| D[Result 1]</span><span class="line" id="L5">C --&gt;|No| E[Result 2]</span><span class="line" id="L6"></span></pre></div></div><p></p>
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+        </div>
+    </footer>
+
+    <script>
+        // Улучшенная обработка мобильного меню
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navbarMenu = document.getElementById('navbar-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            navbarMenu.classList.toggle('active');
+            navbarToggle.setAttribute('aria-expanded', isMenuOpen);
+            navbarToggle.innerHTML = isMenuOpen ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bars"></i>';
+        }
+
+        navbarToggle.addEventListener('click', toggleMenu);
+
+        // Закрытие меню при клике на пункт меню
+        document.querySelectorAll('.navbar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Закрытие меню при изменении размера окна
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768 && isMenuOpen) {
+                    toggleMenu();
+                }
+            }, 250);
+        });
+
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню при скролле
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        document.querySelectorAll('.navbar-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html> 
