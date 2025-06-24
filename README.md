@@ -266,47 +266,6 @@ engine.site.add_page(page)
 engine.build()
 ```
 
-## 🌐 Интеграции
-
-StaticFlow интегрируется с множеством сервисов:
-
-- 📊 **Системы аналитики**: Google Analytics, Yandex Metrika
-- 💬 **Комментарии**: Disqus, Utterances, Giscus
-- 📝 **Формы**: Formspree, Netlify Forms
-- 🎛️ **CMS для админки**: Headless CMS (через API)
-- ☁️ **CDN и деплой**: Netlify, Vercel, GitHub Pages
-
-## 📊 Продвинутые возможности
-
-### 🔍 Полнотекстовый поиск
-
-```bash
-staticflow plugin install search
-```
-
-```html
-<!-- В шаблоне -->
-<input type="text" id="search-input" placeholder="Поиск по сайту...">
-<div id="search-results"></div>
-
-<script src="/static/js/search.js"></script>
-```
-
-### 🎨 Пользовательская тема
-
-```bash
-staticflow theme create my-theme
-staticflow theme use my-theme
-```
-
-### 📡 Генерация API
-
-```bash
-staticflow api generate
-```
-
-Создает JSON API из вашего контента, доступный по `/api/content.json`.
-
 ## 📚 Шаблонизация
 
 StaticFlow использует Jinja2 для шаблонов:
@@ -360,44 +319,6 @@ StaticFlow использует Jinja2 для шаблонов:
 </html>
 ```
 
-## 🔍 Отладка и анализ
-
-```bash
-# Запуск в режиме отладки
-staticflow serve --debug
-
-# Анализ производительности
-staticflow analyze
-```
-
-## 📱 Прогрессивные веб-приложения (PWA)
-
-StaticFlow поддерживает создание PWA через плагин:
-
-```bash
-staticflow plugin install pwa
-```
-
-```toml
-# config.toml
-[plugins.pwa]
-name = "My PWA"
-short_name = "PWA"
-theme_color = "#4285f4"
-background_color = "#ffffff"
-display = "standalone"
-```
-
-## 🔒 Безопасность
-
-- 🛡️ Автоматическая генерация CSP (Content Security Policy)
-- 🚫 Защита от XSS-атак
-- 🔒 Оптимизация заголовков безопасности
-- 🔐 Безопасное хранение GitHub токенов с шифрованием
-- 🌍 Поддержка переменных окружения для токенов (`GITHUB_TOKEN` или `STATICFLOW_GITHUB_TOKEN`)
-- ⏰ Проверка срока действия токенов и предупреждения об истечении
-- 📝 Возможность указания пользовательских коммит-сообщений при деплое
-
 ## 🌐 Развертывание
 
 StaticFlow поддерживает автоматическое развертывание на различных платформах:
@@ -430,12 +351,6 @@ StaticFlow обеспечивает безопасное хранение GitHub
 - 🌿 Ветка для деплоя (по умолчанию: gh-pages)
 - 🌐 CNAME для кастомного домена (опционально)
 
-### ⚡ Другие платформы
-
-- **Netlify** - автоматический деплой при push в репозиторий
-- **Vercel** - поддержка serverless функций
-- **AWS S3** - для корпоративных решений
-- **Nginx** - для собственных серверов
 
 ## 🖼️ Обработка медиафайлов
 
@@ -511,8 +426,7 @@ StaticFlow отлично подходит для командной работ�
 StaticFlow — проект с открытым исходным кодом. Мы приветствуем вклад сообщества!
 
 - 🐙 GitHub: [https://github.com/nestessia/StaticFlow-diploma](https://github.com/nestessia/StaticFlow-diploma)
-- 📚 Документация: [docs.staticflow.dev]
-- 💬 Форум: [community.staticflow.dev]
+- 📚 Документация: [https://nestessia.github.io/StaticFlow-diploma/](https://nestessia.github.io/StaticFlow-diploma/)
 
 ## 📞 Контакты
 
@@ -534,68 +448,3 @@ MIT
 ---
 
 Создано с 💙 разработчиком StaticFlow @nestessia
-
-## Image and Media Processing
-
-StaticFlow now includes powerful image and media processing capabilities through the `MediaPlugin`. This plugin enables:
-
-- **Automatic image optimization** - Images are automatically resized and compressed for improved performance
-- **Responsive images** - Generated with `srcset` for optimal loading on different devices
-- **WebP conversion** - Modern format support with fallbacks
-- **Image placeholders** - Low-resolution placeholders for faster perceived loading
-- **Video thumbnails** - Automatically generated from video content
-- **Asset organization** - Structured media organization with content hashing
-
-### Configuration
-
-The media plugin is configured in your site's config file:
-
-```toml
-[plugins.media]
-output_dir = "media"
-source_dir = "static"
-sizes = { 
-  thumbnail = { width = 200, height = 200, quality = 70 },
-  small = { width = 400, quality = 80 },
-  medium = { width = 800, quality = 85 },
-  large = { width = 1200, quality = 90 },
-  original = { quality = 95 }
-}
-formats = ["webp", "original"]
-generate_placeholders = true
-placeholder_size = 20
-process_videos = true
-video_thumbnail = true
-hash_filenames = true
-hash_length = 8
-```
-
-### Usage
-
-Simply add images to your content, and the media plugin will handle the rest:
-
-```markdown
-![My image](/static/images/photo.jpg)
-```
-
-This will be transformed into:
-
-```html
-<img src="/media/images/photo-a1b2c3d4-medium.webp" 
-     srcset="/media/images/photo-a1b2c3d4-small.webp 400w, 
-             /media/images/photo-a1b2c3d4-medium.webp 800w, 
-             /media/images/photo-a1b2c3d4-large.webp 1200w" 
-     sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, (max-width: 1200px) 1200px, 100vw" />
-```
-
-For videos:
-
-```html
-<video src="/static/videos/demo.mp4"></video>
-```
-
-Will be transformed to include a generated thumbnail poster:
-
-```html
-<video src="/media/videos/demo-a1b2c3d4.mp4" poster="/media/videos/demo-a1b2c3d4-thumbnail.webp"></video>
-```
