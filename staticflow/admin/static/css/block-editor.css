@@ -558,47 +558,140 @@
 }
 
 /* Математические формулы */
-.sf-math-block-wrapper,
-.sf-diagram-block-wrapper {
-    width: 100%;
-    box-sizing: border-box;
+.math-block-preview-wrapper {
     display: flex;
-    flex-direction: column;
-}
-
-.sf-math-input,
-.sf-diagram-input {
-    width: 100%;
-    min-height: 80px;
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-    padding: 12px;
+    align-items: flex-start;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
     border-radius: 4px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.5;
-    font-size: 14px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-    overflow-x: hidden;
+    margin-bottom: 16px;
 }
 
-.sf-math-preview,
-.sf-diagram-preview {
+.math-drag-container {
+    display: flex;
+    align-items: flex-start;
+    margin-right: 12px;
+}
+
+.dnd-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 12px;
+    cursor: grab;
+    font-family: 'Times New Roman', serif;
+    font-size: 20px;
+    user-select: none;
+}
+
+.dnd-handle:hover {
+    background: #e0e0e0;
+}
+
+.math-content-wrapper {
+    flex: 1;
+}
+
+.math-help-text {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.math-symbols-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.math-symbol-btn {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.math-symbol-btn:hover {
+    background: #f0f0f0;
+    border-color: #ccc;
+}
+
+.math-block-input {
+    width: 100%;
+    min-height: 60px;
     padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+    cursor: text;
+    transition: cursor 0.2s ease;
+    user-select: text;
+}
+
+.math-block-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.dragging .math-block-input {
+    cursor: grab !important;
+    user-select: none;
+}
+
+.math-preview-wrapper {
+    padding: 16px;
+    background: #f9f9f9;
     border: 1px dashed #ddd;
     border-radius: 4px;
-    background-color: #f9f9f9;
-    min-height: 40px;
-    width: 100%;
-    box-sizing: border-box;
 }
 
-.sf-preview-label {
-    font-size: 12px;
+.math-preview-label {
     color: #666;
+    font-size: 14px;
     margin-bottom: 8px;
+}
+
+.math-block-preview {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+    min-height: 40px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+.math-error-display {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(211, 47, 47, 0.1);
+    border-radius: 4px;
+    display: none;
+}
+
+.math-error-display:not(:empty) {
+    display: block;
 }
 
 /* Медиа блоки */

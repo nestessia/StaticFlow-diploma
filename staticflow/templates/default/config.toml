@@ -1,4 +1,4 @@
-site_name = "my-site"
+site_name = "documentation"
 base_url = "http://localhost:8000"
 description = "A new StaticFlow site"
 author = "nastya"
@@ -26,9 +26,6 @@ category = "{category_path}/index.html"
 author = "{name}/index.html"
 index = "index.html"
 
-[PLUGINS]
-enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight"]
-
 [CATEGORY]
 enabled = true
 hierarchical = true
@@ -44,18 +41,20 @@ enabled = true
 use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
+[PLUGINS]
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight", "media"]
+
 [PLUGIN_MULTILINGUAL]
 enabled = true
-default_language = "ru"
-languages = [ "ru", "en"]
+default_language = "en"
+languages = [ "en", "ru",]
 url_prefix = true
 exclude_default_lang_prefix = false
 auto_redirect = true
 
 [PLUGIN_RSS]
-site_name = "my-site"
-site_description = "A new StaticFlow site"
-base_url = "http://localhost:8000"
+site_name = "StaticFlow Documentation"
+site_description = "Документация по фреймворку StaticFlow"
 output_path = "output"
 language = "ru"
 

@@ -230,7 +230,7 @@ class TipTapToolbar {
                 action: () => {
                     this.editor.chain().focus().insertContentAt(0, {
                         type: 'mathBlock',
-                        content: [{ type: 'text', text: ' ' }]
+                        content: [{ type: 'text', text: 'x^2 + y^2 = r^2' }]
                     }).run();
                 },
             },
