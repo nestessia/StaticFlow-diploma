@@ -48,12 +48,22 @@
         if (langToggle) {
             langToggle.addEventListener('click', function() {
                 var current = window.location.pathname;
-                if (current.startsWith('/en/')) {
-                    var newUrl = current.replace(/^\/en\//, '/');
-                } else {
-                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                var pathParts = current.split('/');
+                var basePath = '';
+                if (pathParts.length > 2) {
+                    basePath = '/' + pathParts[1];
                 }
-                window.location.pathname = newUrl;
+                var relativePath = current;
+                if (basePath && current.startsWith(basePath)) {
+                    relativePath = current.substring(basePath.length);
+                }
+                
+                if (relativePath.startsWith('/en/')) {
+                    var newUrl = relativePath.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (relativePath.startsWith('/') ? relativePath : '/' + relativePath);
+                }
+                window.location.pathname = basePath + newUrl;
             });
         }
     });
