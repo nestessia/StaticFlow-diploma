@@ -738,7 +738,7 @@ class MediaPlugin(Plugin):
         mime, _ = mimetypes.guess_type(str(path))
         return mime is not None and mime.startswith('audio/') 
     
-    def _get_media_url(self, file_path: Path) -> str:
+    def _get_media_dir(self, file_path: Path) -> str:
         """Get URL for media file, using CDN if available."""
         if self.cdn_plugin:
             if cdn_url := self.cdn_plugin.get_cdn_url(str(file_path)):
@@ -784,7 +784,7 @@ class MediaPlugin(Plugin):
         file_path = Path(src)
         
         # Get CDN URL
-        cdn_url = self._get_media_url(file_path)
+        cdn_url = self._get_media_dir(file_path)
         
         # Update src attribute
         tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
@@ -797,7 +797,7 @@ class MediaPlugin(Plugin):
             for item in srcset.split(','):
                 url, size = item.strip().split(' ')
                 url_path = Path(url)
-                cdn_url = self._get_media_url(url_path)
+                cdn_url = self._get_media_dir(url_path)
                 new_srcset.append(f"{cdn_url} {size}")
             tag = tag.replace(f'srcset="{srcset}"', f'srcset="{", ".join(new_srcset)}"')
             
@@ -810,7 +810,7 @@ class MediaPlugin(Plugin):
         if src_match:
             src = src_match.group(1)
             file_path = Path(src)
-            cdn_url = self._get_media_url(file_path)
+            cdn_url = self._get_media_dir(file_path)
             tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
             
         # Extract poster attribute
@@ -818,7 +818,7 @@ class MediaPlugin(Plugin):
         if poster_match:
             poster = poster_match.group(1)
             file_path = Path(poster)
-            cdn_url = self._get_media_url(file_path)
+            cdn_url = self._get_media_dir(file_path)
             tag = tag.replace(f'poster="{poster}"', f'poster="{cdn_url}"')
             
         return tag
@@ -829,7 +829,115 @@ class MediaPlugin(Plugin):
         if src_match:
             src = src_match.group(1)
             file_path = Path(src)
-            cdn_url = self._get_media_url(file_path)
+            cdn_url = self._get_media_dir(file_path)
             tag = tag.replace(f'src="{src}"', f'src="{cdn_url}"')
             
         return tag
+
+    def process_markdown_content(self, content: str) -> str:
+        """Process markdown content and replace relative media links with absolute URLs."""
+        if not hasattr(self, "engine") or not self.engine:
+            return content
+        
+        # Get configuration
+        site_url = self.engine.config.get("base_url", "")
+        media_dir = self.engine.config.get("media_dir", "media")
+        
+        if site_url.endswith("/"):
+            site_url = site_url[:-1]
+        
+        # Pattern for markdown image links: ![alt](src)
+        markdown_img_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+        
+        def replace_markdown_image(match):
+            alt_text = match.group(1)
+            src = match.group(2)
+            
+            # Skip external images
+            if src.startswith(('http://', 'https://', '//')):
+                return match.group(0)
+            
+            # Skip already absolute URLs
+            if src.startswith(f'{site_url}/'):
+                return match.group(0)
+            
+            # Remove leading slash if present
+            if src.startswith('/'):
+                src = src[1:]
+            
+            # If it's a media file, make it absolute
+            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
+                # Already in media directory
+                absolute_src = f"{site_url}/{src}"
+            else:
+                # Assume it's in media directory
+                absolute_src = f"{site_url}/{media_dir}/{src}"
+            
+            return f"![{alt_text}]({absolute_src})"
+        
+        # Process markdown image links
+        content = markdown_img_pattern.sub(replace_markdown_image, content)
+        
+        # Pattern for markdown video links: !VIDEO(src)
+        markdown_video_pattern = re.compile(r'!VIDEO\(([^)]+)\)')
+        
+        def replace_markdown_video(match):
+            src = match.group(1)
+            
+            # Skip external videos
+            if src.startswith(('http://', 'https://', '//')):
+                return match.group(0)
+            
+            # Skip already absolute URLs
+            if src.startswith(f'{site_url}/'):
+                return match.group(0)
+            
+            # Remove leading slash if present
+            if src.startswith('/'):
+                src = src[1:]
+            
+            # If it's a media file, make it absolute
+            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
+                # Already in media directory
+                absolute_src = f"{site_url}/{src}"
+            else:
+                # Assume it's in media directory
+                absolute_src = f"{site_url}/{media_dir}/{src}"
+            
+            return f"!VIDEO({absolute_src})"
+        
+        # Process markdown video links
+        content = markdown_video_pattern.sub(replace_markdown_video, content)
+        
+        # Pattern for markdown audio links: !AUDIO(src)
+        markdown_audio_pattern = re.compile(r'!AUDIO\(([^)]+)\)')
+        
+        def replace_markdown_audio(match):
+            src = match.group(1)
+            
+            # Skip external audio
+            if src.startswith(('http://', 'https://', '//')):
+                return match.group(0)
+            
+            # Skip already absolute URLs
+            if src.startswith(f'{site_url}/'):
+                return match.group(0)
+            
+            # Remove leading slash if present
+            if src.startswith('/'):
+                src = src[1:]
+            
+            # If it's a media file, make it absolute
+            if src.startswith(media_dir) or src.startswith(f'{media_dir}/'):
+                # Already in media directory
+                absolute_src = f"{site_url}/{src}"
+            else:
+                # Assume it's in media directory
+                absolute_src = f"{site_url}/{media_dir}/{src}"
+            
+            return f"!AUDIO({absolute_src})"
+        
+        # Process markdown audio links
+        content = markdown_audio_pattern.sub(replace_markdown_audio, content)
+        
+        return content

@@ -1,15 +1,14 @@
 import re
-import logging
 import html
 from typing import Dict, Any, Optional
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name, TextLexer, guess_lexer
 from .base import Plugin
+from ..utils.logging import get_logger
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("SyntaxHighlight")
+# Get logger using the centralized logging system
+logger = get_logger("plugins.syntax_highlight")
 
 
 class SyntaxHighlightPlugin(Plugin):

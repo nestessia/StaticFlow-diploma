@@ -152,13 +152,13 @@ class Server:
         self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
 
         # Static files
-        static_url = self.config.get('static_url', '/static')
+        static_dir = self.config.get('static_dir', '/static')
         static_dir = self.config.get('static_dir', 'static')
         if not isinstance(static_dir, Path):
             static_path = Path(static_dir)
         else:
             static_path = static_dir
-        self.app.router.add_static(static_url, static_path)
+        self.app.router.add_static(static_dir, static_path)
 
         # All other routes
         self.app.router.add_get('/{tail:.*}', self.handle_request)

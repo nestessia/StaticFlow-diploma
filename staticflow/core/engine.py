@@ -71,7 +71,8 @@ class Engine:
                 return plugin
         return None
 
-    def initialize(self, source_dir: Path, output_dir: Path, templates_dir: Path) -> None:
+    def initialize(self, source_dir: Path, output_dir: Path, 
+                   templates_dir: Path) -> None:
         """Initialize the engine with directory paths."""
         if isinstance(source_dir, str):
             source_dir = Path(source_dir)
@@ -85,7 +86,8 @@ class Engine:
             templates_dir
         )
         logger.info(
-            "Engine directories initialized: source=%s, output=%s, templates=%s",
+            "Engine directories initialized: source=%s, output=%s, "
+            "templates=%s",
             source_dir,
             output_dir,
             templates_dir
@@ -97,11 +99,21 @@ class Engine:
 
         if self.site.output_dir:
             self.site.output_dir.mkdir(parents=True, exist_ok=True)
-            logger.debug("Output directory created/verified: %s", self.site.output_dir)
+            logger.debug(
+                "Output directory created/verified: %s", 
+                self.site.output_dir
+            )
 
         for plugin in self.plugins:
             if hasattr(plugin, 'pre_build'):
-                logger.debug("Running pre_build hook for plugin: %s", plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__)
+                plugin_name = (
+                    plugin.metadata.name if hasattr(plugin, 'metadata')
+                    else plugin.__class__.__name__
+                )
+                logger.debug(
+                    "Running pre_build hook for plugin: %s", 
+                    plugin_name
+                )
                 plugin.pre_build(self.site)
 
         logger.info("Clearing site and loading pages")
@@ -112,7 +124,14 @@ class Engine:
 
         for plugin in self.plugins:
             if hasattr(plugin, 'post_build'):
-                logger.debug("Running post_build hook for plugin: %s", plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__)
+                plugin_name = (
+                    plugin.metadata.name if hasattr(plugin, 'metadata')
+                    else plugin.__class__.__name__
+                )
+                logger.debug(
+                    "Running post_build hook for plugin: %s", 
+                    plugin_name
+                )
                 plugin.post_build(self.site)
 
         try:
@@ -138,13 +157,33 @@ class Engine:
     def _process_page(self, page: Page) -> None:
         """Process a single page."""
         try:
-            content = self.markdown.convert(page.content)
+            # Process markdown content for media links before converting to HTML
+            markdown_content = page.content
+            for plugin in self.plugins:
+                if hasattr(plugin, 'process_markdown_content'):
+                    plugin_name = (
+                        plugin.metadata.name if hasattr(plugin, 'metadata') 
+                        else plugin.__class__.__name__
+                    )
+                    logger.debug(
+                        "Processing markdown content with plugin: %s",
+                        plugin_name
+                    )
+                    markdown_content = plugin.process_markdown_content(
+                        markdown_content
+                    )
+            
+            content = self.markdown.convert(markdown_content)
 
             for plugin in self.plugins:
                 if hasattr(plugin, 'process_content'):
+                    plugin_name = (
+                        plugin.metadata.name if hasattr(plugin, 'metadata') 
+                        else plugin.__class__.__name__
+                    )
                     logger.debug(
                         "Processing content with plugin: %s",
-                        plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__
+                        plugin_name
                     )
                     content = plugin.process_content(content)
 
@@ -161,16 +200,22 @@ class Engine:
                 'tags': page.tags,
                 'metadata': page.metadata,
                 'page_head_content': '',
-                'static_url': self.config.get("static_url", "static"),
+                'static_dir': self._get_static_dir(),
                 'site_url': self.config.get("base_url", ""),
-                'site_name': self.config.get("site_name", "StaticFlow Site")
+                'site_name': self.config.get(
+                    "site_name", "StaticFlow Site"
+                ),
             }
 
             for plugin in self.plugins:
                 if hasattr(plugin, 'on_post_page'):
+                    plugin_name = (
+                        plugin.metadata.name if hasattr(plugin, 'metadata') 
+                        else plugin.__class__.__name__
+                    )
                     logger.debug(
                         "Processing page context with plugin: %s",
-                        plugin.metadata.name if hasattr(plugin, 'metadata') else plugin.__class__.__name__
+                        plugin_name
                     )
                     context = plugin.on_post_page(context)
 
@@ -180,7 +225,9 @@ class Engine:
                 output = template.render(**context)
                 self.site.save_page(page, output)
             else:
-                logger.error("Template not found for page: %s", page.url)
+                logger.error(
+                    "Template not found for page: %s", page.url
+                )
 
         except Exception as e:
             logger.error("Error processing page %s: %s", page.url, e)
@@ -301,7 +348,7 @@ class Engine:
 
             return page
         except Exception as e:
-            print(f"Error loading page from file {file_path}: {e}")
+            logger.error("Error loading page from file %s: %s", file_path, e)
             return None
 
     def render_page(self, page: Page) -> str:
@@ -309,7 +356,10 @@ class Engine:
         template_dir = self.config.get("template_dir", "templates")
         if not isinstance(template_dir, Path):
             template_dir = Path(template_dir)
-        template_filename = page.metadata.get("template", self.config.get("default_template", "page.html"))
+        template_filename = page.metadata.get(
+            "template", 
+            self.config.get("default_template", "page.html")
+        )
         template_path = template_dir / template_filename
         if not template_path.exists():
             raise ValueError(f"Template not found: {template_path}")
@@ -323,22 +373,22 @@ class Engine:
             if hasattr(plugin, 'get_head_content'):
                 head_content.append(plugin.get_head_content())
 
-        static_url = self.config.get("static_url", "static")
+        static_dir = self.config.get("static_dir", "static")
 
-        if static_url.startswith('/') or static_url.startswith('http'):
-            pass
-        else:
-            static_url = f"/{static_url}"
+        if not (static_dir.startswith("/") or static_dir.startswith("http")):
+            static_dir = "/" + static_dir
 
-        static_url = static_url.rstrip('/')
+        static_dir = static_dir.rstrip('/')
 
         context = {
             "page": page,
             "site_name": self.config.get("site_name", "StaticFlow Site"),
             "site_url": self.config.get("base_url", ""),  
-            "static_url": static_url,
+            "static_dir": static_dir,
             "page_content": content_html,
-            "page_head_content": "\n".join(head_content) if head_content else "",
+            "page_head_content": (
+                "\n".join(head_content) if head_content else ""
+            ),
             "available_translations": {},
         }
         page.translations = {}
@@ -346,3 +396,13 @@ class Engine:
         from staticflow.templates.engine import TemplateEngine
         engine = TemplateEngine(template_dir)
         return engine.render(template_filename, context)
+
+    def _get_static_dir(self):
+        static_dir = self.config.get("static_dir", "static")
+        if not (static_dir.startswith("/") or static_dir.startswith("http")):
+            static_dir = "/" + static_dir
+        if static_dir != "/" and static_dir.endswith("/"):
+            static_dir = static_dir[:-1]
+        logger.info("Static directory: %s", static_dir)
+        print(f"DEBUG: _get_static_dir called, returning: {static_dir}")
+        return static_dir

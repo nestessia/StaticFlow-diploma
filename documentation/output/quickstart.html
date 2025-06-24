@@ -4,12 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Быстрый старт</title>
-    <link rel="stylesheet" href="static/css/style.css">
-    <link rel="stylesheet" href="static/css/code_highlight.css">
+    <link rel="stylesheet" href="http://localhost:8000/static/css/style.css">
+    <link rel="stylesheet" href="http://localhost:8000/static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="http://localhost:8000" />
-    
     
     
     <style>
@@ -230,52 +229,78 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">
-                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
-                StaticFlow
-            </a>
-            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="navbar-menu" id="navbar-menu">
-                <li><a href="/about.html" class="navbar-item ">
-                    <i class="fas fa-info-circle"></i> О проекте
-                </a></li>
-                <li><a href="/installation.html" class="navbar-item ">
-                    <i class="fas fa-download"></i> Установка
-                </a></li>
-                <li><a href="/quickstart.html" class="navbar-item ">
-                    <i class="fas fa-rocket"></i> Быстрый старт
-                </a></li>
-                <li><a href="/blocks.html" class="navbar-item ">
-                    <i class="fas fa-palette"></i> Блочный редактор
-                </a></li>
-                <li><a href="/plugins.html" class="navbar-item ">
-                    <i class="fas fa-puzzle-piece"></i> Плагины
-                </a></li>
-                <li><a href="/deploy.html" class="navbar-item ">
-                    <i class="fas fa-cloud-upload-alt"></i> Деплой
-                </a></li>
-            </ul>
-        </div>
-    </nav>
+    
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-brand">
+            <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+            StaticFlow
+        </a>
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Переключить навигацию">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="navbar-menu" id="navbar-menu">
+            <li><a href="/about.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> О проекте
+            </a></li>
+            <li><a href="/installation.html" class="navbar-item ">
+                <i class="fas fa-download"></i> Установка
+            </a></li>
+            <li><a href="/quickstart.html" class="navbar-item ">
+                <i class="fas fa-rocket"></i> Быстрый старт
+            </a></li>
+            <li><a href="/blocks.html" class="navbar-item ">
+                <i class="fas fa-palette"></i> Блочный редактор
+            </a></li>
+            <li><a href="/plugins.html" class="navbar-item ">
+                <i class="fas fa-puzzle-piece"></i> Плагины
+            </a></li>
+            <li><a href="/deploy.html" class="navbar-item ">
+                <i class="fas fa-cloud-upload-alt"></i> Деплой
+            </a></li>
+            <li>
+                <button id="lang-toggle" class="navbar-item" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.3em;">
+                    <i class="fas fa-globe"></i>
+                    <span>EN</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', function() {
+                var current = window.location.pathname;
+                if (current.startsWith('/en/')) {
+                    var newUrl = current.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                }
+                window.location.pathname = newUrl;
+            });
+        }
+    });
+</script>
+
 
     <main>
         <div class="content">
             
-    <h1>Быстрый старт с StaticFlow</h1><p>Это руководство поможет вам быстро начать работу с StaticFlow. Мы создадим простой сайт-блог с основными функциями.</p><h2>Создание проекта</h2><ol><li>Создайте новый проект:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>create<span class="w"></span>my-blog</code></span><span class="line" id="L2"><span class="nb">cd</span><span class="w"></span>my-blog</span><span class="line" id="L3"></span></pre></div></div><ol><li>Чтобы сбилдить приложение, выполните команду:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>build</code></span><span class="line" id="L2"></span></pre></div></div><ol><li>Чтобы запустить сервер разработки, выполните команду:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>serve</code></span><span class="line" id="L2"></span></pre></div></div><h2>Структура проекта</h2><p>После создания проекта у вас будет следующая структура:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>my-blog/</code></span><span class="line" id="L2">├── content/ # Контент сайта</span><span class="line" id="L3">│ └── index.md # Главная страница</span><span class="line" id="L4">├── templates/ # Шаблоны</span><span class="line" id="L5">│ ├── base.html # Базовый шаблон</span><span class="line" id="L6">│ └── page.html # Шаблон страницы</span><span class="line" id="L7">├── static/ # Статические файлы</span><span class="line" id="L8">│ ├── css/ # Стили</span><span class="line" id="L9">│ └── js/ # Скрипты</span><span class="line" id="L10">├── output/ # Собранный сайт</span><span class="line" id="L11">│ ├── ... # Сборка сайта</span><span class="line" id="L12">└── config.toml # Конфигурация</span><span class="line" id="L13"></span></pre></div></div><h2>Создание первой страницы</h2><ol><li>Откройте <code>content/index.md</code> и отредактируйте его:</li></ol><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: Мой блог</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: you name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: page.html</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="gh"># Добро пожаловать в мой блог!</span></span><span class="line" id="L11"></span><span class="line" id="L12">Это моя первая страница, созданная с помощью StaticFlow.</span><span class="line" id="L13"></span></pre></div></div><h2>Настройка шаблона</h2><ol><li>Вы можете менять шаблоны и наследоваться от них. Базовые шаблоны расположены в папке <code>templates/</code>. Создайте свой шаблон в <code>templates/</code> и укажите его в front matter.</li></ol><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span class="ws"></span><span></span><code> {% extends "base.html" %}</code></span><span class="line" id="L2"></span><span class="line" id="L3"><span class="ws"></span>{% block title %}{{ page.title or "Untitled" }}{% endblock %}</span><span class="line" id="L4"></span><span class="line" id="L5"><span class="ws"></span>{% block head %}{{ page_head_content|safe }}{% endblock %}</span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span>{% block content %}</span><span class="line" id="L8"><span class="ws"></span>{{ page_content|safe }}</span><span class="line" id="L9"><span class="ws"></span>{% endblock %} </span><span class="line" id="L10"></span></pre></div></div><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: Мой блог</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: you name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: blog.html # Измените на ваш шаблон</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span></pre></div></div><h2>Добавление стилей</h2><ol><li>Создайте файл <code>static/css/style.css</code>:</li></ol><div class="code-block language-css"><div class="language-tag">css</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="nt">body</span><span class="w"></span><span class="p">{</span></code></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="k">font-family</span><span class="p">:</span><span class="w"></span><span class="n">Arial</span><span class="p">,</span><span class="w"></span><span class="kc">sans-serif</span><span class="p">;</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="k">line-height</span><span class="p">:</span><span class="w"></span><span class="mf">1.6</span><span class="p">;</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="k">margin</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">0</span><span class="p">;</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="k">padding</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L6"><span class="p">}</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="nt">header</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="k">margin-bottom</span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L10"><span class="p">}</span></span><span class="line" id="L11"></span><span class="line" id="L12"><span class="nt">nav</span><span class="w"></span><span class="nt">a</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L13"><span class="ws"></span><span class="w"></span><span class="k">margin-right</span><span class="p">:</span><span class="w"></span><span class="mi">10</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L14"><span class="p">}</span></span><span class="line" id="L15"></span></pre></div></div><p>И подключите его к шаблону:</p><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ static_url }}/css/style.css"</span><span class="p">&gt;</span></code></span><span class="line" id="L2"></span></pre></div></div><h2>Панель администратора</h2><p>StaticFlow предоставляет панель администратора для управления контентом. Чтобы ее использовать, запустите сервер разработки и перейдите по адресу <code>http://localhost:8000/admin/</code>. Вы увидите весь контент вашего сайта:
+    <h1>Быстрый старт с StaticFlow</h1><p>Это руководство поможет вам быстро начать работу с StaticFlow. Мы создадим простой сайт-блог с основными функциями.</p><h2>Создание проекта</h2><ol><li>Создайте новый проект:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>create<span class="w"></span>my-blog</code></span><span class="line" id="L2"><span class="nb">cd</span><span class="w"></span>my-blog</span><span class="line" id="L3"></span></pre></div></div><ol><li>Чтобы сбилдить приложение, выполните команду:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>build</code></span><span class="line" id="L2"></span></pre></div></div><ol><li>Чтобы запустить сервер разработки, выполните команду:</li></ol><div class="code-block language-bash"><div class="language-tag">bash</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>staticflow<span class="w"></span>serve</code></span><span class="line" id="L2"></span></pre></div></div><h2>Структура проекта</h2><p>После создания проекта у вас будет следующая структура:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>my-blog/</code></span><span class="line" id="L2">├── content/ # Контент сайта</span><span class="line" id="L3">│ └── index.md # Главная страница</span><span class="line" id="L4">├── templates/ # Шаблоны</span><span class="line" id="L5">│ ├── base.html # Базовый шаблон</span><span class="line" id="L6">│ └── page.html # Шаблон страницы</span><span class="line" id="L7">├── static/ # Статические файлы</span><span class="line" id="L8">│ ├── css/ # Стили</span><span class="line" id="L9">│ └── js/ # Скрипты</span><span class="line" id="L10">├── output/ # Собранный сайт</span><span class="line" id="L11">│ ├── ... # Сборка сайта</span><span class="line" id="L12">└── config.toml # Конфигурация</span><span class="line" id="L13"></span></pre></div></div><h2>Создание первой страницы</h2><ol><li>Откройте <code>content/index.md</code> и отредактируйте его:</li></ol><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: Мой блог</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: you name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: page.html</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span><span class="line" id="L10"><span class="gh"># Добро пожаловать в мой блог!</span></span><span class="line" id="L11"></span><span class="line" id="L12">Это моя первая страница, созданная с помощью StaticFlow.</span><span class="line" id="L13"></span></pre></div></div><h2>Настройка шаблона</h2><ol><li>Вы можете менять шаблоны и наследоваться от них. Базовые шаблоны расположены в папке <code>templates/</code>. Создайте свой шаблон в <code>templates/</code> и укажите его в front matter.</li></ol><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span class="ws"></span><span></span><code> {% extends "base.html" %}</code></span><span class="line" id="L2"></span><span class="line" id="L3"><span class="ws"></span>{% block title %}{{ page.title or "Untitled" }}{% endblock %}</span><span class="line" id="L4"></span><span class="line" id="L5"><span class="ws"></span>{% block head %}{{ page_head_content|safe }}{% endblock %}</span><span class="line" id="L6"></span><span class="line" id="L7"><span class="ws"></span>{% block content %}</span><span class="line" id="L8"><span class="ws"></span>{{ page_content|safe }}</span><span class="line" id="L9"><span class="ws"></span>{% endblock %} </span><span class="line" id="L10"></span></pre></div></div><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2">title: Мой блог</span><span class="line" id="L3">date: 2025-03-20</span><span class="line" id="L4">author: you name</span><span class="line" id="L5">tags: [blog, welcome]</span><span class="line" id="L6">format: markdown</span><span class="line" id="L7"><span class="gu">template: blog.html # Измените на ваш шаблон</span></span><span class="line" id="L8"><span class="gu">---</span></span><span class="line" id="L9"></span></pre></div></div><h2>Добавление стилей</h2><ol><li>Создайте файл <code>static/css/style.css</code>:</li></ol><div class="code-block language-css"><div class="language-tag">css</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="nt">body</span><span class="w"></span><span class="p">{</span></code></span><span class="line" id="L2"><span class="ws"></span><span class="w"></span><span class="k">font-family</span><span class="p">:</span><span class="w"></span><span class="n">Arial</span><span class="p">,</span><span class="w"></span><span class="kc">sans-serif</span><span class="p">;</span></span><span class="line" id="L3"><span class="ws"></span><span class="w"></span><span class="k">line-height</span><span class="p">:</span><span class="w"></span><span class="mf">1.6</span><span class="p">;</span></span><span class="line" id="L4"><span class="ws"></span><span class="w"></span><span class="k">margin</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">0</span><span class="p">;</span></span><span class="line" id="L5"><span class="ws"></span><span class="w"></span><span class="k">padding</span><span class="w"></span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L6"><span class="p">}</span></span><span class="line" id="L7"></span><span class="line" id="L8"><span class="nt">header</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L9"><span class="ws"></span><span class="w"></span><span class="k">margin-bottom</span><span class="p">:</span><span class="w"></span><span class="mi">20</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L10"><span class="p">}</span></span><span class="line" id="L11"></span><span class="line" id="L12"><span class="nt">nav</span><span class="w"></span><span class="nt">a</span><span class="w"></span><span class="p">{</span></span><span class="line" id="L13"><span class="ws"></span><span class="w"></span><span class="k">margin-right</span><span class="p">:</span><span class="w"></span><span class="mi">10</span><span class="k">px</span><span class="w"></span><span class="p">;</span></span><span class="line" id="L14"><span class="p">}</span></span><span class="line" id="L15"></span></pre></div></div><p>И подключите его к шаблону:</p><div class="code-block language-html"><div class="language-tag">html</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="p">&lt;</span><span class="nt">link</span><span class="na">rel</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"stylesheet"</span><span class="na">href</span><span class="w"></span><span class="o">=</span><span class="w"></span><span class="s">"{{ static_dir }}/css/style.css"</span><span class="p">&gt;</span></code></span><span class="line" id="L2"></span></pre></div></div><h2>Панель администратора</h2><p>StaticFlow предоставляет панель администратора для управления контентом. Чтобы ее использовать, запустите сервер разработки и перейдите по адресу <code>http://localhost:8000/admin/</code>. Вы увидите весь контент вашего сайта:
 <img alt="Toolbar" src="media/toolbar.png"/></p><p>Далее вы можете изменять контент или создавать новые страницы в панели администратора нажав на кнопку "Edit" или "Create new page" соответственно.</p><p>Подробнее о панели администратора вы можете узнать в разделе <a href="admin.html">Панель администратора</a>.</p><h1>Работа с контентом</h1><p>В этом разделе мы рассмотрим, как создавать и управлять контентом в StaticFlow.</p><h2>Форматы контента</h2><p>StaticFlow поддерживает несколько форматов контента:</p><ul><li>Markdown (<code>.md</code>)</li><li>HTML (<code>.html</code>)</li></ul><h2>Структура файлов контента</h2><p>Каждый файл контента состоит из двух частей:</p><ol><li><strong>Front Matter</strong> - метаданные в формате YAML</li><li><strong>Содержимое</strong> - основной контент в выбранном формате</li></ol><h2>Метаданные (Front Matter)</h2><h3>Обязательные поля</h3><ul><li><code>format</code> - формат контента</li><li><code>template</code> - используемый шаблон</li></ul><h3>Опциональные поля</h3><ul><li><code>date</code> - дата создания/публикации</li><li><code>title</code> - заголовок страницы</li><li><code>author</code> - автор контента</li><li><code>tags</code> - список тегов</li><li><code>category</code> - категория</li><li><code>description</code> - описание страницы</li><li><code>slug</code> - URL-friendly версия заголовка</li></ul><h2>Организация контента</h2><h3>Категории</h3><p>Категории позволяют организовать контент иерархически:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>content/</code></span><span class="line" id="L2">├── blog/</span><span class="line" id="L3">│ ├── index.md</span><span class="line" id="L4">│ ├── post-1.md</span><span class="line" id="L5">│ └── post-2.md</span><span class="line" id="L6">├── projects/</span><span class="line" id="L7">│ ├── index.md</span><span class="line" id="L8">│ └── project-1.md</span><span class="line" id="L9">└── about.md</span><span class="line" id="L10"></span></pre></div></div><h3>Теги</h3><p>Теги помогают группировать контент по темам:</p><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>---</code></span><span class="line" id="L2"><span class="gu">tags: [python, web, tutorial]</span></span><span class="line" id="L3"><span class="gu">---</span></span><span class="line" id="L4"></span></pre></div></div><h2>Работа с медиафайлами</h2><h3>Изображения</h3><ol><li>Поместите изображения в директорию <code>media/</code></li><li>Используйте в контенте:</li></ol><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>![<span class="nt">Описание</span>](<span class="na">/media/image.jpg</span>)</code></span><span class="line" id="L2"></span></pre></div></div><h2>Расширенный контент</h2><h3>Математические формулы</h3><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>Inline формула: $E = mc^2$</code></span><span class="line" id="L2"></span><span class="line" id="L3">Блочная формула:</span><span class="line" id="L4">$$</span><span class="line" id="L5">\int_0^\infty e^{-x} dx = 1</span><span class="line" id="L6">$$</span><span class="line" id="L7"></span></pre></div></div><h3>Диаграммы</h3><div class="code-block language-markdown"><div class="language-tag">markdown</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>&lt;div class="mermaid"&gt;graph TD</code></span><span class="line" id="L2">A[Старт] --&gt; B[Процесс]</span><span class="line" id="L3">B --&gt; C{Условие}</span><span class="line" id="L4">C --&gt;|Да| D[Результат 1]</span><span class="line" id="L5">C --&gt;|Нет| E[Результат 2]</span><span class="line" id="L6"></span></pre></div></div><p></p>
 
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
-        </div>
-    </footer>
+    
+<footer>
+    <div class="container">
+        <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+    </div>
+</footer>
+
 
     <script>
         // Улучшенная обработка мобильного меню
@@ -292,7 +317,9 @@
                 '<i class="fas fa-bars"></i>';
         }
 
-        navbarToggle.addEventListener('click', toggleMenu);
+        if (navbarToggle) {
+            navbarToggle.addEventListener('click', toggleMenu);
+        }
 
         // Закрытие меню при клике на пункт меню
         document.querySelectorAll('.navbar-item').forEach(item => {

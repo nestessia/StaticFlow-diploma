@@ -4,14 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page.title }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ static_url }}/css/style.css">
-    <link rel="stylesheet" href="{{ static_url }}/css/code_highlight.css">
+    <link rel="stylesheet" href="{{ site_url }}/{{ static_url }}/css/style.css">
+    <link rel="stylesheet" href="{{ site_url }}/{{ static_url }}/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="canonical" href="{{ site_url }}" />
-    {% for lang, url in page.translations.items() %}
-    <link rel="alternate" hreflang="{{ lang }}" href="{{ site_url }}{{ url }}" />
-    {% endfor %}
     
     {% block head %}{% endblock %}
     <style>
@@ -232,37 +229,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">
-                <img src="/media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
-                StaticFlow
-            </a>
-            <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="navbar-menu" id="navbar-menu">
-                <li><a href="/about.html" class="navbar-item {% if page.url == '/about.html' %}active{% endif %}">
-                    <i class="fas fa-info-circle"></i> О проекте
-                </a></li>
-                <li><a href="/installation.html" class="navbar-item {% if page.url == '/installation.html' %}active{% endif %}">
-                    <i class="fas fa-download"></i> Установка
-                </a></li>
-                <li><a href="/quickstart.html" class="navbar-item {% if page.url == '/quickstart.html' %}active{% endif %}">
-                    <i class="fas fa-rocket"></i> Быстрый старт
-                </a></li>
-                <li><a href="/blocks.html" class="navbar-item {% if page.url == '/blocks.html' %}active{% endif %}">
-                    <i class="fas fa-palette"></i> Блочный редактор
-                </a></li>
-                <li><a href="/plugins.html" class="navbar-item {% if page.url == '/plugins.html' %}active{% endif %}">
-                    <i class="fas fa-puzzle-piece"></i> Плагины
-                </a></li>
-                <li><a href="/deploy.html" class="navbar-item {% if page.url == '/deploy.html' %}active{% endif %}">
-                    <i class="fas fa-cloud-upload-alt"></i> Деплой
-                </a></li>
-            </ul>
-        </div>
-    </nav>
+    {% block navbar %}{% endblock %}
 
     <main>
         <div class="content">
@@ -270,11 +237,7 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; nestessia | Сделано с <i class="fas fa-heart" style="color: #ef4444;"></i></p>
-        </div>
-    </footer>
+    {% block footer %}{% endblock %}
 
     <script>
         // Улучшенная обработка мобильного меню
@@ -291,7 +254,9 @@
                 '<i class="fas fa-bars"></i>';
         }
 
-        navbarToggle.addEventListener('click', toggleMenu);
+        if (navbarToggle) {
+            navbarToggle.addEventListener('click', toggleMenu);
+        }
 
         // Закрытие меню при клике на пункт меню
         document.querySelectorAll('.navbar-item').forEach(item => {

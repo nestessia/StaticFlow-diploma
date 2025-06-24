@@ -4,7 +4,7 @@ date: 2025-05-20
 author: nestessia
 tags: [installation, setup, requirements]
 format: markdown
-template: page.html
+template: en_page.html
 language: en
 ---
 

@@ -122,7 +122,7 @@ nav a {
 И подключите его к шаблону:
 
 ```html
-<link rel="stylesheet" href="{{ static_url }}/css/style.css">
+<link rel="stylesheet" href="{{ static_dir }}/css/style.css">
 ```
 
 ## Панель администратора

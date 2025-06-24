@@ -4,7 +4,7 @@ date: 2025-05-20
 author: nestessia
 tags: [quickstart, tutorial, basics]
 format: markdown
-template: page.html
+template: en_page.html
 language: en
 ---
 
@@ -122,7 +122,7 @@ nav a {
 And connect it to the template:
 
 ```html
-<link rel="stylesheet" href="{{ static_url }}/css/style.css">
+<link rel="stylesheet" href="{{ static_dir }}/css/style.css">
 ```
 
 ## Admin panel

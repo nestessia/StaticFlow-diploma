@@ -55,7 +55,6 @@ auto_redirect = true
 [PLUGIN_RSS]
 site_name = "StaticFlow Documentation"
 site_description = "Документация по фреймворку StaticFlow"
-base_url = "http://localhost:8000"
 output_path = "output"
 language = "ru"
 

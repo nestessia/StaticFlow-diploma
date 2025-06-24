@@ -45,7 +45,9 @@ def validate_project_structure(config):
             output_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Created output directory: {output_dir}")
         except Exception as e:
-            errors.append(f"Could not create output directory '{output_dir}': {e}")
+            errors.append(
+                f"Could not create output directory '{output_dir}': {e}"
+            )
     elif not output_dir.is_dir():
         errors.append(f"'{output_dir}' exists but is not a directory")
 
