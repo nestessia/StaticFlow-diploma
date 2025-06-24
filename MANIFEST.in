@@ -1,6 +1,9 @@
 include LICENSE
 include README.md
 include requirements.txt
+include pytest.ini
+include pyproject.toml
+include poetry.lock
 include staticflow/admin/package.json
 include staticflow/admin/webpack.config.js
 recursive-include staticflow/admin/static/dist *
@@ -12,4 +15,16 @@ recursive-include staticflow/cli *
 recursive-include staticflow/deploy *
 recursive-include staticflow/plugins *
 recursive-include staticflow/themes *
-recursive-include staticflow/tests * 
+recursive-include staticflow/tests *
+recursive-include staticflow/templates/default *
+recursive-include tests *
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude .git*
+global-exclude .vscode
+global-exclude .idea
+global-exclude node_modules
+global-exclude *.log 

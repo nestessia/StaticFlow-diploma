@@ -151,6 +151,11 @@ pre, code, pre *, code * {
     color: var(--code-color);
     border-radius: 0.5rem;
     overflow-x: auto;
+    tab-size: 4 !important;
+    -moz-tab-size: 4 !important;
+    -o-tab-size: 4 !important;
+    -webkit-tab-size: 4 !important;
+    white-space: pre !important;
 }
 
 .highlight pre {
@@ -160,12 +165,80 @@ pre, code, pre *, code * {
     border: none;
     overflow-x: visible;
     color: inherit;
+    white-space: pre !important;
+    display: block !important;
 }
 
 .highlight code {
-    display: block;
+    display: block !important;
     background: transparent;
     color: inherit;
+    white-space: pre !important;
+    position: relative;
+}
+
+/* Стили для строк */
+.highlight .line {
+    display: block !important;
+    white-space: pre !important;
+    position: relative;
+    padding-left: 0;
+    min-height: 1.2em;
+}
+
+/* Стили для пробелов */
+.highlight .w {
+    display: inline-block !important;
+    white-space: pre !important;
+    color: inherit !important;
+    width: 0.6em !important;
+    min-width: 0.6em !important;
+    visibility: visible !important;
+}
+
+/* Стили для имен классов */
+.highlight .nc {
+    display: inline-block !important;
+    white-space: pre !important;
+    color: #a6e22e !important;
+    visibility: visible !important;
+}
+
+/* Специальные классы для отступов в начале строки */
+.highlight .ws {
+    white-space: pre !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    color: transparent !important;
+    position: relative !important;
+    width: 0.6em !important;
+    min-width: 0.6em !important;
+}
+
+/* Стили для span элементов внутри highlight */
+.highlight span {
+    white-space: pre !important;
+    display: inline-block !important;
+}
+
+/* Фиксированная ширина для пробелов после ключевых слов */
+.highlight .k + .w,
+.highlight .kd + .w,
+.highlight .kr + .w,
+.highlight .kt + .w {
+    width: 0.6em !important;
+    min-width: 0.6em !important;
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Принудительные переносы строк */
+.highlight br {
+    display: block !important;
+    content: "" !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    line-height: inherit !important;
 }
 
 code.inline-code {

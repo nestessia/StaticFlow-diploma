@@ -88,7 +88,7 @@ class AdminPanel:
         static_path = Path(__file__).parent / 'static'
         if not static_path.exists():
             static_path.mkdir(parents=True)
-        cached_static_path = Path('public/admin/static')
+        cached_static_path = Path('output/admin/static')
         use_cached = cached_static_path.exists()
         final_static_path = cached_static_path if use_cached else static_path
         self.app.router.add_static('/static', final_static_path)
@@ -188,10 +188,10 @@ class AdminPanel:
                 })
 
         static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
+        static_dir = "/" + str(static_dir).strip("/")
         return {
             'files': files,
-            'static_url': static_url,
+            'static_dir': static_dir,
         }
 
     @aiohttp_jinja2.template('deploy.html')
@@ -203,11 +203,11 @@ class AdminPanel:
         status = deployer.get_deployment_status()
 
         static_dir = self.config.get("static_dir", "static")
-        static_url = "/" + str(static_dir).strip("/")
+        static_dir = "/" + str(static_dir).strip("/")
         return {
             'status': status,
             'config': status['config'],
-            'static_url': static_url,
+            'static_dir': static_dir,
         }
 
     @aiohttp_jinja2.template('block_editor.html')
@@ -422,7 +422,7 @@ class AdminPanel:
                 }, status=400)
 
             original_base_url = self.config.get("base_url")
-            original_static_url = self.config.get("static_url")
+            original_static_dir = self.config.get("static_dir")
             
             try:
                 self._update_config_for_github_pages(repo_url)
@@ -455,11 +455,11 @@ class AdminPanel:
             finally:
                 logger.info("Восстанавливаем оригинальные настройки конфигурации")
                 self.config.set("base_url", original_base_url)
-                self.config.set("static_url", original_static_url)
+                self.config.set("static_dir", original_static_dir)
                 rebuild_success = self.rebuild_site()
                 if not rebuild_success:
                     logger.warning("Не удалось пересобрать сайт после восстановления настроек")
-                logger.info(f"Конфигурация восстановлена: base_url={original_base_url}, static_url={original_static_url}")
+                logger.info(f"Конфигурация восстановлена: base_url={original_base_url}, static_dir={original_static_dir}")
         except Exception as e:
             logger.error(f"Critical error in api_deploy_start_handler: {e}")
             import traceback
@@ -497,9 +497,10 @@ class AdminPanel:
         logger.info(f"Устанавливаем base_url: {base_url}")
 
         self.config.set("base_url", base_url)
-        self.config.set("static_url", f"{repo_name}/static/")
+        # Оставляем static_dir как "static" для корректной работы с GitHub Pages
+        self.config.set("static_dir", "static")
 
-        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_url={repo_name}/static/")
+        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_dir=static")
 
     def _extract_repo_name(self, repo_url):
         """Извлекает имя репозитория из URL GitHub"""

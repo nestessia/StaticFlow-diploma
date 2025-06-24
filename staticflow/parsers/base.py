@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Tuple
 import frontmatter
+from .validation import ContentValidator, ValidationLevel
+from .security import ContentSecurity
+from .cache import ParserCache
 
 
 class ContentParser(ABC):
@@ -18,20 +21,56 @@ class ContentParser(ABC):
             'smart_quotes': True,
             'link_anchors': True,
             'image_processing': True,
-            'diagrams': True
+            'diagrams': True,
+            'validation_level': ValidationLevel.NORMAL,
+            'cache_ttl': 3600,
+            'enable_cache': True,
+            'enable_security': True
         }
         self.extensions: List[str] = []
+        self.validator = ContentValidator()
+        self.security = ContentSecurity()
+        self.cache = ParserCache()
 
     @abstractmethod
     def parse(self, content: str) -> str:
         """Преобразует исходный контент в HTML."""
         pass
 
-    def parse_with_frontmatter(self, content: str) -> tuple[Dict[str, Any], str]:
+    def parse_with_frontmatter(self, content: str) -> Tuple[Dict[str, Any], str]:
         """Парсит контент с frontmatter и возвращает метаданные и содержимое."""
         post = frontmatter.loads(content)
         metadata = dict(post.metadata)
-        return metadata, self.parse(post.content)
+        
+        # Проверка кэша
+        if self.options['enable_cache']:
+            cached_result = self.cache.get(post.content, self.options)
+            if cached_result is not None:
+                return metadata, cached_result
+
+        # Валидация контента
+        if self.options['enable_security']:
+            validation_report = self.validator.validate_structure(post.content)
+            if not validation_report:
+                raise ValueError("Validation failed")
+
+        # Парсинг контента
+        parsed_content = self.parse(post.content)
+
+        # Применение безопасности
+        if self.options['enable_security']:
+            parsed_content = self.security.protect_against_xss(parsed_content)
+
+        # Кэширование результата
+        if self.options['enable_cache']:
+            self.cache.set(
+                post.content,
+                self.options,
+                parsed_content,
+                self.options['cache_ttl']
+            )
+
+        return metadata, parsed_content
 
     def set_option(self, key: str, value: Any) -> None:
         """Устанавливает опцию парсера."""
@@ -53,4 +92,32 @@ class ContentParser(ABC):
 
     def has_extension(self, extension: str) -> bool:
         """Проверяет наличие расширения."""
-        return extension in self.extensions 
+        return extension in self.extensions
+
+    def get_validation_report(self, content: str) -> Dict[str, Any]:
+        """Возвращает отчет о валидации контента."""
+        return self.validator.get_validation_report()
+
+    def get_security_report(self, content: str) -> Dict[str, Any]:
+        """Возвращает отчет о безопасности контента."""
+        return self.security.get_security_report(content)
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Возвращает статистику кэша."""
+        return self.cache.get_stats()
+
+    def invalidate_cache(self, key: Optional[str] = None) -> None:
+        """Инвалидирует кэш."""
+        self.cache.invalidate(key)
+
+    def validate(self, content: str) -> bool:
+        """Валидирует контент."""
+        raise NotImplementedError(
+            "Method validate() must be implemented by subclass"
+        )
+
+    def get_metadata(self, content: str) -> Dict[str, Any]:
+        """Получает метаданные из контента."""
+        raise NotImplementedError(
+            "Method get_metadata() must be implemented by subclass"
+        ) 

@@ -25,7 +25,7 @@ class GitHubPagesDeployer:
     Deployer class for GitHub Pages integration
     """
     
-    def __init__(self, site_path: str = "public"):
+    def __init__(self, site_path: str = "output"):
         """
         Initialize the GitHub Pages deployer
         
@@ -408,18 +408,43 @@ class GitHubPagesDeployer:
                     shutil.rmtree(item)
                 else:
                     item.unlink()
-            
-            # Copy site content to the repo
+
             logger.info(f"Copying site content from {self.site_path} to the repository")
-            for item in self.site_path.iterdir():
-                if item.is_dir():
-                    shutil.copytree(
-                        item,
-                        temp_path / item.name,
-                        dirs_exist_ok=True
-                    )
-                else:
-                    shutil.copy2(item, temp_path / item.name)
+            repo_name = None
+            if self.config.get("repo_url"):
+                repo_name = self.config["repo_url"].rstrip("/").split("/")[-1]
+                if repo_name.endswith('.git'):
+                    repo_name = repo_name[:-4]
+            output_items = list(self.site_path.iterdir())
+
+            def should_copy(item):
+                return item.name != "admin"
+            if repo_name and len(output_items) == 1 and output_items[0].is_dir() and output_items[0].name == repo_name:
+                # Если output содержит только папку с именем репозитория, копируем её содержимое (кроме admin)
+                for item in output_items[0].iterdir():
+                    if not should_copy(item):
+                        continue
+                    if item.is_dir():
+                        shutil.copytree(
+                            item,
+                            temp_path / item.name,
+                            dirs_exist_ok=True
+                        )
+                    else:
+                        shutil.copy2(item, temp_path / item.name)
+            else:
+                for item in output_items:
+                    if not should_copy(item):
+                        continue
+                    if item.is_dir():
+                        shutil.copytree(
+                            item,
+                            temp_path / item.name,
+                            dirs_exist_ok=True
+                        )
+                    else:
+                        shutil.copy2(item, temp_path / item.name)
+            # --- END PATCH ---
             
             # Create CNAME file if specified
             if cname:

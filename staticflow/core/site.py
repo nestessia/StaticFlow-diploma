@@ -66,7 +66,6 @@ class Site:
             for filename in filenames:
                 if filename.endswith(('.md', '.html')):
                     file_path = Path(root) / filename
-                    print(f"\nFound content file: {file_path}")
                     files.append(file_path)
         return files
 
@@ -75,9 +74,7 @@ class Site:
         if not self.source_dir:
             raise ValueError("Source directory not set")
 
-        print(f"\nLoading page: {file_path}")
         rel_path = file_path.relative_to(self.source_dir)
-        print(f"Relative path: {rel_path}")
         page = Page.from_file(file_path, default_lang=self.default_language)
 
         if "language" not in page.metadata:
@@ -95,11 +92,9 @@ class Site:
             page.metadata["language"] = page.language
 
         page.source_path = rel_path
-        print(f"Page metadata: {page.metadata}")
 
         if self.output_dir:
             output_path = self.generate_page_output_path(page)
-            print(f"Generated output path: {output_path}")
             page.set_output_path(output_path)
 
         self.pages[str(rel_path)] = page
@@ -108,15 +103,11 @@ class Site:
         """Generate output path for a page using router."""
         if not self.output_dir:
             raise ValueError("Output directory not set")
-
-        print(f"\nGenerating output path for: {page.source_path}")
         content_type = self.determine_content_type(page)
-        print(f"Content type: {content_type}")
         metadata = page.metadata.copy()
 
         if "slug" not in metadata:
             metadata["slug"] = page.source_path.stem
-            print(f"Generated slug: {metadata['slug']}")
 
         # Handle directory structure for categories
         if "category" not in metadata and "/" in str(page.source_path):
@@ -129,11 +120,9 @@ class Site:
                       path_parts[0] in self.languages)
                 else 0
             )
-            print(f"Start index: {start_idx}")
             
             # Get all directories except the file name
             category_parts = path_parts[start_idx:-1]
-            print(f"Category parts: {category_parts}")
             
             if category_parts:
                 metadata["category"] = "/".join(category_parts)
@@ -141,7 +130,6 @@ class Site:
 
         metadata["language"] = page.language
         metadata["source_path"] = str(page.source_path)
-        print(f"Final metadata: {metadata}")
 
         # Create output path preserving language directory
         if page.source_path.parts and len(page.source_path.parts) > 1:
@@ -155,7 +143,6 @@ class Site:
                 rel_path = rel_path.with_suffix('.html')
                 # Create output path with language directory
                 output_path = self.output_dir / first_dir / rel_path
-                print(f"Final output path with language: {output_path}")
                 return output_path
 
         output_path = self.router.get_output_path(
@@ -163,7 +150,6 @@ class Site:
             content_type,
             metadata
         )
-        print(f"Final output path: {output_path}")
         return output_path
 
     def get_page(self, rel_path: str) -> Optional[Page]:
@@ -254,3 +240,40 @@ class Site:
             path = str(path)
         path = path.lstrip("/")
         return f"{base_url}/{path}" if path else base_url
+
+    def get_template(self, template_name: str):
+        """Get a template by name."""
+        if not self.template_dir:
+            raise ValueError("Template directory not set")
+        
+        template_path = self.template_dir / template_name
+        if not template_path.exists():
+            return None
+            
+        try:
+            import jinja2
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(str(self.template_dir))
+            )
+            return env.get_template(template_name)
+        except Exception as e:
+            print(f"Error loading template {template_name}: {e}")
+            return None
+
+    def save_page(self, page: Page, content: str) -> None:
+        """Save a page with its rendered content."""
+        if not self.output_dir:
+            raise ValueError("Output directory not set")
+            
+        if not page.output_path:
+            raise ValueError("Page output path not set")
+            
+        # Создаем директории если их нет
+        page.output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Сохраняем контент
+        with open(page.output_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+            
+        # Устанавливаем отрендеренный контент
+        page.set_rendered_content(content)

@@ -152,13 +152,36 @@ class Server:
         self.app.router.add_post('/admin/{tail:.*}', self.admin_handler)
 
         # Static files
-        static_url = self.config.get('static_url', '/static')
         static_dir = self.config.get('static_dir', 'static')
         if not isinstance(static_dir, Path):
             static_path = Path(static_dir)
         else:
             static_path = static_dir
-        self.app.router.add_static(static_url, static_path)
+        
+        # Ensure static_dir starts with / for aiohttp
+        if not static_dir.startswith('/'):
+            static_dir = '/' + static_dir
+            
+        self.app.router.add_static(static_dir, static_path)
+
+        # Media files - use output/media instead of root media
+        output_dir = self.config.get('output_dir', 'output')
+        if not isinstance(output_dir, Path):
+            output_path = Path(output_dir)
+        else:
+            output_path = output_dir
+            
+        media_path = output_path / 'media'
+        
+        # Create media directory if it doesn't exist
+        if not media_path.exists():
+            media_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Created media directory: {media_path}")
+        
+        # Ensure media_dir starts with / for aiohttp
+        media_dir = '/media'
+            
+        self.app.router.add_static(media_dir, media_path)
 
         # All other routes
         self.app.router.add_get('/{tail:.*}', self.handle_request)
@@ -224,7 +247,6 @@ class Server:
         """Run the server."""
         if self.dev_mode:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Server running at {server_url}")
             console.print(
                 Panel.fit(
                     f"[green]Server running at[/green] {server_url}\n"
@@ -240,5 +262,4 @@ class Server:
             )
         else:
             server_url = f"http://{self.host}:{self.port}"
-            logger.info(f"Production server running at {server_url}")
             web.run_app(self.app, host=self.host, port=self.port)

@@ -9,7 +9,7 @@ class Router:
     """Router for StaticFlow."""
 
     DEFAULT_URL_PATTERNS = {
-        "page": "{category}/{slug}",                           
+        "page": "{category}/{slug}",         
         "post": "{category_path}/{slug}",
         "tag": "{name}",
         "category": "{category_path}",
@@ -18,7 +18,7 @@ class Router:
     }
 
     DEFAULT_SAVE_AS_PATTERNS = {
-        "page": "{category}/{slug}/index.html",  
+        "page": "{category}/{slug}/index.html",
         "post": "{category_path}/{slug}/index.html",
         "tag": "{name}/index.html",
         "category": "{category_path}/index.html",
@@ -36,10 +36,9 @@ class Router:
             "SAVE_AS_PATTERNS", 
             self.DEFAULT_SAVE_AS_PATTERNS
         )
-        self.use_clean_urls = True  # Always use clean URLs
+        self.use_clean_urls = True
         self.use_language_prefixes = config.get(
-            "USE_LANGUAGE_PREFIXES", 
-            True
+            "USE_LANGUAGE_PREFIXES", True
         )
         self.exclude_default_lang_prefix = config.get(
             "EXCLUDE_DEFAULT_LANG_PREFIX", 
@@ -54,7 +53,7 @@ class Router:
 
         if config:
             self.update_config(config)
-    
+
     def update_config(self, config: Dict[str, Any]) -> None:
         """Update router configuration from site config."""
         url_patterns = config.get('URL_PATTERNS', {})
@@ -76,7 +75,6 @@ class Router:
             'PRESERVE_DIRECTORY_STRUCTURE', True
         )
 
-        # Load categories if provided
         categories_file = config.get('CATEGORIES_FILE')
         if categories_file:
             self.category_manager = CategoryManager.load_from_file(
@@ -92,8 +90,7 @@ class Router:
         if 'url' in metadata:
             return metadata['url']
 
-        # Если это дефолтная страница и запрос к корню сайта
-        if (content_type == 'page' and 
+        if (content_type == 'page' and
                 metadata.get('slug') == self.default_page):
             return '/'
 
@@ -103,7 +100,6 @@ class Router:
                 return f"/{metadata['slug']}"
             return "/"
 
-        # Handle directory structure
         if self.preserve_directory_structure and 'source_path' in metadata:
             source_path = Path(metadata['source_path'])
             if source_path.parent.name != 'content':
@@ -112,7 +108,6 @@ class Router:
                 )).replace('\\', '/')
                 metadata['directory'] = directory
 
-        # Handle category paths
         if 'category' in metadata:
             category_path = self._get_category_path(metadata['category'])
             metadata['category_path'] = category_path
@@ -122,7 +117,6 @@ class Router:
         if self.use_clean_urls and url.endswith('.html'):
             url = url[:-5]
 
-        # Let multilingual plugin handle language prefixes
         if 'language' in metadata and hasattr(self, 'engine'):
             multilingual_plugin = self.engine.get_plugin('multilingual')
             if multilingual_plugin:
@@ -130,7 +124,6 @@ class Router:
                     url, metadata['language']
                 )
 
-        # Ensure URL starts with /
         if not url.startswith('/'):
             url = '/' + url
 
@@ -146,7 +139,6 @@ class Router:
         if 'save_as' in metadata:
             return metadata['save_as']
 
-        # Если это дефолтная страница
         if (content_type == 'page' and 
                 metadata.get('slug') == self.default_page):
             return 'index.html'
@@ -155,7 +147,6 @@ class Router:
         if not pattern:
             return self.get_url(content_type, metadata)
 
-        # Handle directory structure
         if self.preserve_directory_structure and 'source_path' in metadata:
             source_path = Path(metadata['source_path'])
             if source_path.parent.name != 'content':
@@ -164,14 +155,12 @@ class Router:
                 )).replace('\\', '/')
                 metadata['directory'] = directory
 
-        # Handle category paths
         if 'category' in metadata:
             category_path = self._get_category_path(metadata['category'])
             metadata['category_path'] = category_path
 
         save_as = self._format_pattern(pattern, metadata)
 
-        # Let multilingual plugin handle language prefixes
         if 'language' in metadata and hasattr(self, 'engine'):
             multilingual_plugin = self.engine.get_plugin('multilingual')
             if multilingual_plugin:
@@ -189,52 +178,42 @@ class Router:
         metadata: Dict[str, Any]
     ) -> Path:
         """Get output path for content."""
-        print("\nRouter debug:")
-        print(f"Content type: {content_type}")
-        print(f"Metadata: {metadata}")
+        if content_type == "page":
+            category = metadata.get("category")
+            if not category:
+                pattern = "{slug}.html"
+            else:
+                pattern = self.save_as_patterns.get(
+                    content_type, "{category}/{slug}/index.html"
+                )
+        else:
+            pattern = self.save_as_patterns.get(content_type, "{slug}.html")
 
-        # Get the pattern for this content type
-        pattern = self.save_as_patterns.get(content_type, "{slug}.html")
-        
-        # Prepare variables for pattern formatting
         variables = metadata.copy()
-        
-        # Handle category path based on content type
+
         if content_type == "category" and "category_path" in metadata:
-            # For categories, use category_path from metadata
             variables["category"] = metadata["category_path"]
             variables["category_path"] = metadata["category_path"]
         elif content_type == "post" and "category" in metadata:
-            # For posts, use category from metadata
             variables["category_path"] = metadata["category"]
         elif "source_path" in metadata:
-            # For other content types, use directory structure
             source_path = Path(metadata["source_path"])
             if source_path.parent.name != "content":
                 directory = str(source_path.parent).replace("\\", "/")
                 if directory.startswith("content/"):
-                    directory = directory[8:]  # len("content/") = 8
+                    directory = directory[8:]
                 variables["directory"] = directory
                 variables["category"] = directory
                 variables["category_path"] = directory
-        
-        # Format the path
+
         try:
             save_as_path = pattern.format(**variables)
         except KeyError as e:
             print(f"Warning: Missing key in pattern: {e}")
-            # Fallback to simple slug pattern if category is missing
             save_as_path = f"{variables.get('slug', 'index')}.html"
-            
-        print(f"Save as path: {save_as_path}")
-        
-        # Ensure the path is relative and uses forward slashes
         save_as_path = save_as_path.lstrip("/").replace("\\", "/")
-        
-        # Create the full output path
+
         output_path = output_dir / save_as_path
-        print(f"Final output path: {output_path}")
-        
         return output_path
 
     def _get_category_path(self, category: Any) -> str:
@@ -243,11 +222,9 @@ class Router:
         if isinstance(category, Category):
             result = category.full_path
         elif isinstance(category, list) and category:
-            # Handle list of categories, use first one
             cat = self.category_manager.get_or_create_category(category[0])
             result = cat.full_path
         else:
-            # Handle string category
             cat = self.category_manager.get_or_create_category(str(category))
             result = cat.full_path
         print(f"Resulting category path: {result}")

@@ -15,7 +15,6 @@ from ..templates import (
     load_default_config,
     load_default_template
 )
-from staticflow.core.config import Config
 
 console = Console()
 
@@ -115,7 +114,8 @@ def create(path: str):
             default="A new StaticFlow site"
         )
         
-        # 3. Автор сайта (обязательно, по умолчанию - системное имя пользователя)
+        # 3. Автор сайта (обязательно, по умолчанию - системное имя 
+        # пользователя)
         default_author = get_system_username()
         author = ""
         while not author:
@@ -226,10 +226,10 @@ def create(path: str):
         (project_path / "templates").mkdir()
         (project_path / "static").mkdir()
         (project_path / "static/css").mkdir(parents=True)
-        from staticflow.core.config import Config
-        config_path = project_path / "config.toml"
-        config = Config(config_path)
-        output_dir = config.get('output_dir')
+        
+        # Load default config to get output_dir
+        default_config = load_default_config()
+        output_dir = default_config.get('output_dir', 'output')
         (project_path / output_dir).mkdir(exist_ok=True)
 
         # Update config with project info
@@ -276,24 +276,14 @@ def create(path: str):
             f.write(load_default_template('base.html'))
 
         # Создаём page.html
-        with open(project_path / "templates/page.html", "w", encoding="utf-8") as f:
+        with open(project_path / "templates/page.html", "w", 
+                  encoding="utf-8") as f:
             f.write(load_default_template('page.html'))
 
         # Write CSS files
         with open(project_path / "static/css/style.css", "w", 
                   encoding="utf-8") as f:
             f.write(load_default_styles())
-
-        try:
-            from staticflow.utils.pygments_utils import generate_pygments_css
-            style_name = config.get("syntax_highlight", {}).get("style", "monokai")
-            css_content = generate_pygments_css(style_name)
-
-            with open(project_path / "static/css/code_highlight.css", "w", 
-                     encoding="utf-8") as f:
-                f.write(css_content)
-        except Exception as e:
-            console.print(f"[yellow]Warning: Could not generate code highlighting CSS: {e}[/yellow]")
 
         console.print(Panel.fit(
             f"[green]Project '{site_name}' created successfully![/green]\n\n"

@@ -1,0 +1,69 @@
+site_name = "documentation"
+base_url = "http://localhost:8000"
+description = "A new StaticFlow site"
+author = "nastya"
+language = "ru"
+content_dir = "content"
+output_dir = "output"
+static_dir = "static"
+media_dir = "media"
+templates_dir = "templates"
+default_template = "page.html"
+
+[URL_PATTERNS]
+page = "{category}/{slug}"
+post = "{category_path}/{slug}"
+tag = "{name}"
+category = "{category_path}"
+author = "{name}"
+index = ""
+
+[SAVE_AS_PATTERNS]
+page = "{category}/{slug}/index.html"
+post = "{category_path}/{slug}/index.html"
+tag = "{name}/index.html"
+category = "{category_path}/index.html"
+author = "{name}/index.html"
+index = "index.html"
+
+[CATEGORY]
+enabled = true
+hierarchical = true
+max_depth = 3
+
+[TAG]
+enabled = true
+case_sensitive = false
+max_tags = 100
+
+[AUTHOR]
+enabled = true
+use_slug = true
+fields = [ "name", "email", "bio", "avatar",]
+
+[PLUGINS]
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight", "media"]
+
+[PLUGIN_MULTILINGUAL]
+enabled = true
+default_language = "en"
+languages = [ "en", "ru",]
+url_prefix = true
+exclude_default_lang_prefix = false
+auto_redirect = true
+
+[PLUGIN_RSS]
+site_name = "StaticFlow Documentation"
+site_description = "Документация по фреймворку StaticFlow"
+output_path = "output"
+language = "ru"
+
+[PLUGIN_MINIFIER]
+enabled = true
+minify_html = true
+minify_css = true
+minify_js = true
+preserve_comments = false
+
+[syntax_highlight]
+style = "monokai"

@@ -1,13 +1,8 @@
-"""
-Deploy command for StaticFlow CLI
-"""
-
 import click
 from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from pathlib import Path
 import os
-import json
 
 console = Console()
 
@@ -44,39 +39,33 @@ def run(platform, message):
 
 def setup_github_pages(repo_url=None, branch=None, username=None, email=None, token=None, cname=None):
     """Set up GitHub Pages deployment."""
-    # Import the deployer here to avoid circular imports
     from ..deploy.github_pages import GitHubPagesDeployer
-    
     deployer = GitHubPagesDeployer()
-    
-    # Get current config
     config = deployer.config
-    
-    # Interactive setup for missing values
+
     if not repo_url:
         repo_url = Prompt.ask(
             "GitHub repository URL",
             default=config.get('repo_url', ''),
         )
-    
     if not branch:
         branch = Prompt.ask(
             "Branch to deploy to",
             default=config.get('branch', 'gh-pages'),
         )
-    
+
     if not username:
         username = Prompt.ask(
             "GitHub username",
             default=config.get('username', ''),
         )
-    
+
     if not email:
         email = Prompt.ask(
             "Git email",
             default=config.get('email', ''),
         )
-    
+
     if not token and not config.get('token'):
         use_token = Confirm.ask("Do you want to add a GitHub Token (Personal Access Token)?")
         if use_token:
@@ -84,13 +73,13 @@ def setup_github_pages(repo_url=None, branch=None, username=None, email=None, to
                 "GitHub token (Personal Access Token)",
                 password=True,
             )
-    
+
     if not cname and Confirm.ask("Do you want to set up a custom domain?", default=False):
         cname = Prompt.ask(
             "Custom domain name",
             default=config.get('cname', ''),
         )
-    
+
     # Update config
     config_data = {
         'repo_url': repo_url,
@@ -134,12 +123,10 @@ def setup_github_pages(repo_url=None, branch=None, username=None, email=None, to
 
 def run_github_pages_deploy(message=None):
     """Run GitHub Pages deployment."""
-    # Import the deployer here to avoid circular imports
     from ..deploy.github_pages import GitHubPagesDeployer
-    
+
     deployer = GitHubPagesDeployer()
-    
-    # Check if the site is built
+
     site_path = Path("public")
     if not site_path.exists() or not any(site_path.iterdir()):
         console.print("[bold yellow]Site not built or empty. Building site...[/bold yellow]")
