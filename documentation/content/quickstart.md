@@ -20,7 +20,13 @@ staticflow create my-blog
 cd my-blog
 ```
 
-2. Запустите сервер разработки:
+2. Чтобы сбилдить приложение, выполните команду:
+
+```bash
+staticflow build
+```
+
+3. Чтобы запустить сервер разработки, выполните команду:
 
 ```bash
 staticflow serve
@@ -40,6 +46,8 @@ my-blog/
 ├── static/          # Статические файлы
 │   ├── css/        # Стили
 │   └── js/         # Скрипты
+├── output/          # Собранный сайт
+│   ├── ...        # Сборка сайта
 └── config.toml      # Конфигурация
 ```
 
@@ -50,8 +58,8 @@ my-blog/
 ```markdown
 ---
 title: Мой блог
-date: 2024-03-20
-author: nastya
+date: 2025-03-20
+author: you name
 tags: [blog, welcome]
 format: markdown
 template: page.html
@@ -62,53 +70,32 @@ template: page.html
 Это моя первая страница, созданная с помощью StaticFlow.
 ```
 
-## Добавление поста
-
-1. Создайте новый файл `content/posts/my-first-post.md`:
-
-```markdown
----
-title: Мой первый пост
-date: 2024-03-20
-author: nastya
-tags: [blog, first-post]
-format: markdown
-template: post.html
----
-
-# Мой первый пост
-
-Это мой первый пост в блоге. Здесь я буду делиться своими мыслями и идеями.
-```
 
 ## Настройка шаблона
 
-1. Откройте `templates/base.html`:
+1. Вы можете менять шаблоны и наследоваться от них. Базовые шаблоны расположены в папке `templates/`. Создайте свой шаблон в `templates/` и укажите его в front matter.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ page.title }} - {{ config.site_name }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <header>
-        <nav>
-            <a href="/">Главная</a>
-            <a href="/posts">Посты</a>
-        </nav>
-    </header>
-    
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-    
-    <footer>
-        <p>&copy; {{ config.site_name }} {{ now.year }}</p>
-    </footer>
-</body>
-</html>
+    {% extends "base.html" %}
+
+    {% block title %}{{ page.title or "Untitled" }}{% endblock %}
+
+    {% block head %}{{ page_head_content|safe }}{% endblock %}
+
+    {% block content %}
+        {{ page_content|safe }}
+    {% endblock %} 
+```
+
+```markdown
+---
+title: Мой блог
+date: 2025-03-20
+author: you name
+tags: [blog, welcome]
+format: markdown
+template: blog.html # Измените на ваш шаблон
+---
 ```
 
 ## Добавление стилей
@@ -132,26 +119,19 @@ nav a {
 }
 ```
 
-## Сборка сайта
+И подключите его к шаблону:
 
-Для сборки сайта выполните:
-
-```bash
-staticflow build
+```html
+<link rel="stylesheet" href="{{ static_dir }}/css/style.css">
 ```
 
-Собранный сайт будет находиться в директории `output/`.
+## Панель администратора
+StaticFlow предоставляет панель администратора для управления контентом. Чтобы ее использовать, запустите сервер разработки и перейдите по адресу `http://localhost:8000/admin/`. Вы увидите весь контент вашего сайта:
+![Toolbar](media/toolbar.png)
 
-## Следующие шаги
+Далее вы можете изменять контент или создавать новые страницы в панели администратора нажав на кнопку "Edit" или "Create new page" соответственно.
 
-Теперь, когда у вас есть базовый сайт, вы можете:
-
-1. Добавить больше страниц и постов
-2. Настроить категории и теги
-3. Добавить пользовательские шаблоны
-4. Интегрировать плагины
-5. Настроить поиск
-6. Добавить комментарии
+Подробнее о панели администратора вы можете узнать в разделе [Панель администратора](admin.html).
 
 
 # Работа с контентом
@@ -164,8 +144,6 @@ StaticFlow поддерживает несколько форматов конт
 
 - Markdown (`.md`)
 - HTML (`.html`)
-- reStructuredText (`.rst`)
-- Textile (`.textile`)
 
 ## Структура файлов контента
 
@@ -174,38 +152,19 @@ StaticFlow поддерживает несколько форматов конт
 1. **Front Matter** - метаданные в формате YAML
 2. **Содержимое** - основной контент в выбранном формате
 
-### Пример файла
-
-```markdown
----
-title: Заголовок страницы
-date: 2024-03-20
-author: nastya
-tags: [tag1, tag2]
-category: blog
-format: markdown
-template: page.html
----
-
-# Основной контент
-
-Здесь идет содержимое страницы...
-```
 
 ## Метаданные (Front Matter)
 
 ### Обязательные поля
-
-- `title` - заголовок страницы
-- `date` - дата создания/публикации
 - `format` - формат контента
+- `template` - используемый шаблон
 
 ### Опциональные поля
-
+- `date` - дата создания/публикации
+- `title` - заголовок страницы
 - `author` - автор контента
 - `tags` - список тегов
 - `category` - категория
-- `template` - используемый шаблон
 - `description` - описание страницы
 - `slug` - URL-friendly версия заголовка
 
@@ -237,27 +196,6 @@ tags: [python, web, tutorial]
 ---
 ```
 
-## Специальные страницы
-
-### Главная страница
-
-Файл `content/index.md` используется как главная страница сайта.
-
-### Страницы категорий
-
-Создайте `index.md` в директории категории для создания страницы категории:
-
-```markdown
----
-title: Блог
-template: category.html
----
-```
-
-### Страницы тегов
-
-Теги автоматически генерируют страницы при использовании.
-
 ## Работа с медиафайлами
 
 ### Изображения
@@ -269,12 +207,6 @@ template: category.html
 ![Описание](/media/image.jpg)
 ```
 
-
-## Шаблоны контента
-
-### Пользовательские шаблоны
-
-Создайте свой шаблон в `templates/` и укажите его в front matter.
 
 ## Расширенный контент
 
@@ -300,19 +232,3 @@ C -->|Да| D[Результат 1]
 C -->|Нет| E[Результат 2]
 ```
 ```
-
-### Подсветка кода
-
-```markdown
-```python
-def hello_world():
-    print("Привет, StaticFlow!")
-```
-```
-
-## Плагины для контента
-
-- `staticflow-markdown` - расширенная поддержка Markdown
-- `staticflow-images` - оптимизация изображений
-- `staticflow-search` - поиск по контенту
-- `staticflow-comments` - система комментариев 

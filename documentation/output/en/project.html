@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ page.language }}">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ page.title }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ site_url }}{{ static_dir }}/css/style.css">
-    <link rel="stylesheet" href="{{ site_url }}{{ static_dir }}/css/code_highlight.css">
+    <title>Project</title>
+    <link rel="stylesheet" href="http://localhost:8000/static/css/style.css">
+    <link rel="stylesheet" href="http://localhost:8000/static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <link rel="canonical" href="{{ site_url }}" />
+    <link rel="canonical" href="http://localhost:8000" />
     
-    {% block head %}{% endblock %}
+    
     <style>
         :root {
             --primary-color: #2563eb;
@@ -229,15 +229,98 @@
     </style>
 </head>
 <body>
-    {% block navbar %}{% endblock %}
+    
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="/en/" class="navbar-brand">
+            <img src="http://localhost:8000//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+            StaticFlow
+        </a>
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="navbar-menu" id="navbar-menu">
+            <li><a href="http://localhost:8000/en/about.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> About
+            </a></li>
+            <li><a href="http://localhost:8000/en/installation.html" class="navbar-item ">
+                <i class="fas fa-download"></i> Installation
+            </a></li>
+            <li><a href="http://localhost:8000/en/quickstart.html" class="navbar-item ">
+                <i class="fas fa-rocket"></i> Quick Start
+            </a></li>
+            <li><a href="http://localhost:8000/en/blocks.html" class="navbar-item ">
+                <i class="fas fa-palette"></i> Block Editor
+            </a></li>
+            <li><a href="http://localhost:8000/en/plugins.html" class="navbar-item ">
+                <i class="fas fa-puzzle-piece"></i> Plugins
+            </a></li>
+            <li><a href="http://localhost:8000/en/deploy.html" class="navbar-item ">
+                <i class="fas fa-cloud-upload-alt"></i> Deployment
+            </a></li>
+            <li>
+                <button id="lang-toggle" class="navbar-item" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.3em;">
+                    <i class="fas fa-globe"></i>
+                    <span>RU</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', function() {
+                var current = window.location.pathname;
+                if (current.startsWith('/en/')) {
+                    var newUrl = current.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                }
+                window.location.pathname = newUrl;
+            });
+        }
+    });
+</script>
+
 
     <main>
         <div class="content">
-            {% block content %}{% endblock %}
+            
+    <h1>StaticFlow Project</h1><p>This section covers the main concepts and structure of a StaticFlow project.</p><h2>Project structure</h2><p>A typical StaticFlow project has the following structure:</p><div class="code-block language-text"><div class="language-tag">text</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code>project/</code></span><span class="line" id="L2">├── content/ # Source content files</span><span class="line" id="L3">├── templates/ # HTML templates</span><span class="line" id="L4">├── static/ # Static files (CSS, JS, images)</span><span class="line" id="L5">├── output/ # Generated site</span><span class="line" id="L6">├── media/ # Media files</span><span class="line" id="L7">└── config.toml # Project configuration</span><span class="line" id="L8"></span></pre></div></div><h2>Main concepts</h2><h3>Content</h3><p>Content in StaticFlow is stored as Markdown files in the <code>content/</code> directory. Each file can contain metadata in front matter format:</p><div class="code-block language-yaml"><div class="language-tag">yaml</div><div class="highlight"><pre style="white-space: pre !important; tab-size: 4 !important;"><span class="line" id="L1"><span></span><code><span class="nn">---</span></code></span><span class="line" id="L2"><span class="nt">title</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">Page Title</span></span><span class="line" id="L3"><span class="nt">date</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">2024-03-20</span></span><span class="line" id="L4"><span class="nt">author</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">author</span></span><span class="line" id="L5"><span class="nt">tags</span><span class="p">:</span><span class="w"></span><span class="p p-Indicator">[</span><span class="nv">tag1</span><span class="p p-Indicator">,</span><span class="w"></span><span class="nv">tag2</span><span class="p p-Indicator">]</span></span><span class="line" id="L6"><span class="nt">format</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">markdown</span></span><span class="line" id="L7"><span class="nt">template</span><span class="p">:</span><span class="w"></span><span class="l l-Scalar l-Scalar-Plain">page.html</span></span><span class="line" id="L8"><span class="nn">---</span></span><span class="line" id="L9"></span></pre></div></div><h3>Templates</h3><p>Templates define the appearance of pages. They use Jinja2 as the template engine and can include:
+- Base templates
+- Partial templates
+- Macros
+- Template inheritance</p><h3>Static files</h3><p>The <code>static/</code> directory contains all static files that are copied to <code>output/</code> without changes:
+- CSS styles
+- JavaScript files
+- Images
+- Other media files</p><h3>Configuration</h3><p>The <code>config.toml</code> file defines the main project settings:
+- Site name
+- Base URL
+- Languages
+- URL patterns
+- Plugins
+- Other settings</p><h2>Content organization</h2><h3>Categories</h3><p>StaticFlow supports hierarchical content organization through categories:
+- Categories can be nested</p><ul><li><p>Maximum nesting depth is configurable</p></li><li><p>Each category can have its own page</p></li></ul><h3>Tags</h3><p>Tags allow grouping content by topics:
+- Case insensitive</p><ul><li><p>Limit on number of tags</p></li><li><p>Automatic tag page generation</p></li></ul><h3>Authors</h3><p>The author system allows:
+- Linking content to authors</p><ul><li><p>Creating author profiles</p></li><li><p>Generating author pages</p></li></ul><h2>Plugins</h2><p>StaticFlow has a plugin system that allows:
+- Extending functionality
+- Adding new content formats
+- Integrating external services
+- Customizing the build process</p>
+
         </div>
     </main>
 
-    {% block footer %}{% endblock %}
+    
+<footer>
+    <div class="container">
+        <p>&copy; nestessia | Made with <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+    </div>
+</footer>
+
 
     <script>
         // Улучшенная обработка мобильного меню

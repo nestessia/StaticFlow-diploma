@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ page.language }}">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ page.title }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ site_url }}{{ static_dir }}/css/style.css">
-    <link rel="stylesheet" href="{{ site_url }}{{ static_dir }}/css/code_highlight.css">
+    <title>Welcome to StaticFlow Documentation</title>
+    <link rel="stylesheet" href="http://localhost:8000/static/css/style.css">
+    <link rel="stylesheet" href="http://localhost:8000/static/css/code_highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <link rel="canonical" href="{{ site_url }}" />
+    <link rel="canonical" href="http://localhost:8000" />
     
-    {% block head %}{% endblock %}
+    
     <style>
         :root {
             --primary-color: #2563eb;
@@ -229,15 +229,77 @@
     </style>
 </head>
 <body>
-    {% block navbar %}{% endblock %}
+    
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="/en/" class="navbar-brand">
+            <img src="http://localhost:8000//media/staticflow.png" alt="StaticFlow Logo" class="logo-sf"/>
+            StaticFlow
+        </a>
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="navbar-menu" id="navbar-menu">
+            <li><a href="http://localhost:8000/en/about.html" class="navbar-item ">
+                <i class="fas fa-info-circle"></i> About
+            </a></li>
+            <li><a href="http://localhost:8000/en/installation.html" class="navbar-item ">
+                <i class="fas fa-download"></i> Installation
+            </a></li>
+            <li><a href="http://localhost:8000/en/quickstart.html" class="navbar-item ">
+                <i class="fas fa-rocket"></i> Quick Start
+            </a></li>
+            <li><a href="http://localhost:8000/en/blocks.html" class="navbar-item ">
+                <i class="fas fa-palette"></i> Block Editor
+            </a></li>
+            <li><a href="http://localhost:8000/en/plugins.html" class="navbar-item ">
+                <i class="fas fa-puzzle-piece"></i> Plugins
+            </a></li>
+            <li><a href="http://localhost:8000/en/deploy.html" class="navbar-item ">
+                <i class="fas fa-cloud-upload-alt"></i> Deployment
+            </a></li>
+            <li>
+                <button id="lang-toggle" class="navbar-item" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.3em;">
+                    <i class="fas fa-globe"></i>
+                    <span>RU</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', function() {
+                var current = window.location.pathname;
+                if (current.startsWith('/en/')) {
+                    var newUrl = current.replace(/^\/en\//, '/');
+                } else {
+                    var newUrl = '/en' + (current.startsWith('/') ? current : '/' + current);
+                }
+                window.location.pathname = newUrl;
+            });
+        }
+    });
+</script>
+
 
     <main>
         <div class="content">
-            {% block content %}{% endblock %}
+            
+    <h1>Welcome to StaticFlow Documentation</h1><p>Here you'll find everything you need to work with StaticFlow — from first steps to advanced features. The documentation is designed for both developers and content editors.</p><p><strong>New to StaticFlow?</strong> Start with the <a href="about.html">About</a> section to learn how StaticFlow differs from other generators.</p><hr/><h2>Documentation Sections</h2><ul><li><p><strong><a href="about.html">About</a></strong><br/> Brief introduction and StaticFlow philosophy.</p></li><li><p><strong><a href="installation.html">Installation</a></strong><br/> How to install StaticFlow on Windows, Ubuntu, and macOS.</p></li><li><p><strong><a href="quickstart.html">Quick Start</a></strong><br/> Create your first site in 5 minutes.</p></li><li><p><strong><a href="content.html">Content</a></strong><br/> How to store, edit, and structure content.</p></li><li><p><strong><a href="templates.html">Templates</a></strong><br/> Template basics and usage examples.</p></li><li><p><strong><a href="themes.html">Themes</a></strong><br/> Using and creating themes.</p></li><li><p><strong><a href="plugins.html">Plugins</a></strong><br/> Extending functionality with plugins.</p></li><li><p><strong><a href="deploy.html">Deployment</a></strong><br/> Publishing your site on various platforms.</p></li><li><p><strong><a href="api.html">API</a></strong><br/> StaticFlow public API documentation.</p></li></ul><hr/><p>The documentation is constantly evolving and being updated. If you have suggestions or want to help — join the project on <a href="https://github.com/nestessia/StaticFlow-diploma">GitHub</a>!</p>
+
         </div>
     </main>
 
-    {% block footer %}{% endblock %}
+    
+<footer>
+    <div class="container">
+        <p>&copy; nestessia | Made with <i class="fas fa-heart" style="color: #ef4444;"></i></p>
+    </div>
+</footer>
+
 
     <script>
         // Улучшенная обработка мобильного меню

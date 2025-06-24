@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "staticflow-framework"
-version = "0.1.1"
+version = "0.1.6"
 description = "Современный фреймворк для генерации статических сайтов с блочным-редактором и богатой экосистемой плагинов"
 authors = ["nestessia <nestessia@mail.com>"]
 packages = [{include = "staticflow"}]

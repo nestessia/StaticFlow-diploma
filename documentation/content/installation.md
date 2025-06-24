@@ -24,7 +24,7 @@ template: page.html
 Самый простой способ установить StaticFlow - использовать pip:
 
 ```bash
-pip install staticflow
+pip install staticflow-framework
 ```
 
 ## Проверка установки
@@ -40,7 +40,7 @@ staticflow --version
 Для обновления до последней версии:
 
 ```bash
-pip install --upgrade staticflow
+pip install --upgrade staticflow-framework
 ```
 
 ## Установка на Windows
@@ -55,11 +55,11 @@ pip install --upgrade staticflow
    ```
 4. Установите StaticFlow:
    ```bash
-   pip install staticflow
+   pip install staticflow-framework
    ```
 5. Запустите StaticFlow:
    ```bash
-   staticflow --version
+   staticflow-framework --version
    ```
 
 ## Установка на Ubuntu
@@ -79,11 +79,11 @@ pip install --upgrade staticflow
    ```
 4. Установите StaticFlow:
    ```bash
-   pip3 install staticflow
+   pip3 install staticflow-framework
    ```
 5. Запустите StaticFlow:
    ```bash
-   staticflow --version
+   staticflow-framework --version
    ```
 
 ## Установка на macOS
@@ -103,11 +103,11 @@ pip install --upgrade staticflow
    ```
 4. Установите StaticFlow:
    ```bash
-   pip3 install staticflow
+   pip3 install staticflow-framework
    ```
 5. Запустите StaticFlow:
    ```bash
-   staticflow --version
+   staticflow-framework --version
    ```
 
 ## Устранение неполадок

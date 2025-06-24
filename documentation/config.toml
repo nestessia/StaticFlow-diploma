@@ -42,7 +42,7 @@ use_slug = true
 fields = [ "name", "email", "bio", "avatar",]
 
 [PLUGINS]
-enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight"]
+enabled = [ "multilingual", "rss", "sitemap", "minifier", "syntax_highlight", "media"]
 
 [PLUGIN_MULTILINGUAL]
 enabled = true
@@ -55,7 +55,6 @@ auto_redirect = true
 [PLUGIN_RSS]
 site_name = "StaticFlow Documentation"
 site_description = "Документация по фреймворку StaticFlow"
-base_url = "http://localhost:8000"
 output_path = "output"
 language = "ru"
 

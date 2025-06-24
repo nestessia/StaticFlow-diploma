@@ -5,7 +5,7 @@ from ..core.engine import Engine
 from ..plugins import initialize_plugins
 from ..utils.logging import get_logger
 
-# Получаем логгер для данного модуля
+
 logger = get_logger("core.builder")
 
 console = Console()
@@ -39,14 +39,15 @@ def validate_project_structure(config):
     if not content_path.exists() or not any(content_path.iterdir()):
         warnings.append("No content found in content directory")
 
-    # Проверяем и создаём output_dir, если нужно
     output_dir = Path(config.get('output_dir'))
     if not output_dir.exists():
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Created output directory: {output_dir}")
         except Exception as e:
-            errors.append(f"Could not create output directory '{output_dir}': {e}")
+            errors.append(
+                f"Could not create output directory '{output_dir}': {e}"
+            )
     elif not output_dir.is_dir():
         errors.append(f"'{output_dir}' exists but is not a directory")
 
@@ -76,7 +77,6 @@ class Builder:
         template_dir = Path(self.config.get('template_dir', 'templates'))
         self.engine.initialize(source_dir, output_dir, template_dir)
 
-        # Инициализируем плагины
         initialize_plugins(self.engine)
 
     def build(self):

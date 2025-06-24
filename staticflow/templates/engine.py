@@ -30,7 +30,7 @@ class TemplateEngine:
         self.env.globals.update({
             'site_name': 'StaticFlow Site',
             'site_description': 'A site built with StaticFlow',
-            'static_url': '/static',
+            'static_dir': '/static',
         })
 
     def render(self, template_name: str, context: Dict[str, Any]) -> str:
