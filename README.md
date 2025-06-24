@@ -1,6 +1,6 @@
 # StaticFlow
 
-<img src="https://assets-global.website-files.com/5e39e095596498a8b9624af1/5fdcf0ddb8cb5671d24af8cc_Backgrounds%201.png" alt="StaticFlow Logo" width="150">
+<img src="staticflow.png" alt="StaticFlow Logo" width="150">
 
 StaticFlow — это современный фреймворк для генерации быстрых, безопасных и легко поддерживаемых сайтов. Он сочетает в себе лучшие идеи из мира статических генераторов, CMS и веб-фреймворков, чтобы сделать процесс разработки и публикации сайтов максимально простым и гибким.
 
