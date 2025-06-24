@@ -497,9 +497,10 @@ class AdminPanel:
         logger.info(f"Устанавливаем base_url: {base_url}")
 
         self.config.set("base_url", base_url)
-        self.config.set("static_dir", f"{repo_name}/static/")
+        # Оставляем static_dir как "static" для корректной работы с GitHub Pages
+        self.config.set("static_dir", "static")
 
-        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_dir={repo_name}/static/")
+        logger.info(f"Конфигурация обновлена: base_url={base_url}, static_dir=static")
 
     def _extract_repo_name(self, repo_url):
         """Извлекает имя репозитория из URL GitHub"""

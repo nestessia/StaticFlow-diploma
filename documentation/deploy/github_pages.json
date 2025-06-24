@@ -6,8 +6,20 @@
   "email": "nestessia@mail.ru",
   "token": "gAAAAABoTgefjKAumspXjF2OP5uYvn6NgjCR7mBMTltpZm3J9Du-m9-RF-iYlr-oy3FBXmFaM7MdCmY90Fd4aVCSaMbll8izY8OAwMsbByBIYvLgHNa-0Wa8g1JAg0yq7G9dE7zT1CUO",
   "token_encrypted": true,
-  "last_deployment": "2025-06-15T02:38:33.903877",
+  "last_deployment": "2025-06-24T20:11:05.489765",
   "history": [
+    {
+      "timestamp": "2025-06-24T20:11:05.489765",
+      "status": "success"
+    },
+    {
+      "timestamp": "2025-06-24T20:06:17.360953",
+      "status": "success"
+    },
+    {
+      "timestamp": "2025-06-24T20:00:04.298797",
+      "status": "success"
+    },
     {
       "timestamp": "2025-06-15T02:38:33.903877",
       "status": "success"
